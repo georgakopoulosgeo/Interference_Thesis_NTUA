@@ -6,11 +6,39 @@ sudo ./run_social_network.sh init_graph socfb-Reed98
 // Now the 27 containers are running and we have created a small social graph
 
 ## Generating Workload (Here we mean the traffic)
+sudo ./run_social_network.sh workload <threads> <connections> <duration> <requests/sec> <script-path>
 
+// Example:
+// sudo ./run_social_network.sh workload 2 50 60 100 ./wrk2/scripts/social-network/compose-post.lua
 
 
 ## How we run the experiments:
 python3 workload_gathering.py <Test_Case_ID>
 
 // workload_gathering.py:
-1. Take the 
+1. Take the parameters from the .csv file with the given <Test_Case_ID> 
+2. Start Perf Monitoring
+3. Start AMD Monitoring
+4. Start Workload
+5. Handle perf results (to dictionary)
+6. Handle amd results (to dictionary)
+7. Handle DeathStarBench Workload output
+8. Docker stats to take info about the containers
+9. Store all results (dictionaries) to .csv file
+
+
+## INTERFERENCE
+
+## Using iBench
+## Create iBench container
+sudo docker run -it --rm ibench /bin/bash
+## Run scripts (cpu, memCap, memBw, l3, l2, l1i ,l1d)
+(https://github.com/stanford-mast/iBench/tree/master/src)
+
+// Example: Maximize memory capacity and memory bandwidth for 80 seconds
+// ./memCap 80 & ./memBw 80
+
+
+## Using chagned iBench scripts
+## Just run ./cpu_changed 80 80 
+(80 seconds of 80% usage)

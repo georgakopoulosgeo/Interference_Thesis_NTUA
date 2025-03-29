@@ -40,10 +40,26 @@ def main():
     # Workload parameters and scripts (example values)
     social_network_script = "/home/ubuntu/Workspace/run_social_network.sh"
     wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
-    THREADS = 1
-    CONNECTIONS = 50
-    DURATION = 60  # seconds
-    REQS_PER_SEC = 100
+    #THREADS = 1
+    #CONNECTIONS = 50
+    #DURATION = 60  # seconds
+    #REQS_PER_SEC = 100
+    
+    test_cases_csv = os.path.join(script_dir, "VM_Workload_Test_Cases.csv")
+    found = False
+    with open(test_cases_csv, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["TestCaseID"] == test_case_id:
+                THREADS = int(row["THREADS"])
+                CONNECTIONS = int(row["CONNECTIONS"])
+                DURATION = int(row["DURATION"])
+                REQS_PER_SEC = int(row["REQS_PER_SEC"])
+                found = True
+                break
+    if not found:
+        print(f"Test case ID {test_case_id} not found in {test_cases_csv}.")
+        exit(1)
 
     # Start perf monitoring
     print("Starting perf monitoring...")
