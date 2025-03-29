@@ -1,0 +1,16 @@
+## Set up the app
+sudo ./run_social_network.sh build
+sudo ./run_social_network.sh start
+sudo ./run_social_network.sh init_graph socfb-Reed98
+
+// Now the 27 containers are running and we have created a small social graph
+
+## Generating Workload (Here we mean the traffic)
+
+
+
+## How we run the experiments:
+python3 workload_gathering.py <Test_Case_ID>
+
+// workload_gathering.py:
+1. Take the 
