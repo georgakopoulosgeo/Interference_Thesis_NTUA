@@ -32,7 +32,7 @@ def ensure_directories(script_dir, test_case_id):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "Results")
+    baseline_results_dir = os.path.join(script_dir, "ResultsV03")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, f"{test_case_id}_raw")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -130,7 +130,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     container_metrics = collect_container_metrics(container_metrics_file)
     
     print("Storing metrics to CSV files...")
-    store_workload_metrics(workload_csv, test_case_id, date_str,interference, workload_metrics)
+    store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
     store_system_metrics(system_csv, test_case_id, date_str, interference ,system_metrics)
     store_container_metrics(container_csv, test_case_id, date_str, container_metrics)
     
