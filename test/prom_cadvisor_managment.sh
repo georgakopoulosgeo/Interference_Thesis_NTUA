@@ -25,7 +25,7 @@ case "$1" in
     echo "Starting Prometheus container..."
     docker run --name=prometheus -d \
       -p 9090:9090 \
-      -v /home/youruser/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+      -v /home/ubuntu/Workspace/prometheus.yml:/etc/prometheus/prometheus.yml \
       prom/prometheus:latest
     ;;
 
