@@ -130,7 +130,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     container_metrics = collect_container_metrics(container_metrics_file)
     
     print("Storing metrics to CSV files...")
-    store_workload_metrics(workload_csv, test_case_id, date_str, workload_metrics)
+    store_workload_metrics(workload_csv, test_case_id, date_str,interference, workload_metrics)
     store_system_metrics(system_csv, test_case_id, date_str, interference ,system_metrics)
     store_container_metrics(container_csv, test_case_id, date_str, container_metrics)
     
