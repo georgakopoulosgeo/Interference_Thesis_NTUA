@@ -78,7 +78,7 @@ def parse_workload_output(output: str) -> dict:
                 metrics["max_latency"] = latency_val
     return metrics
 
-def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, workload_metrics: dict, interference: str) -> None:
+def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, interference: str, workload_metrics: dict) -> None:
     """
     Store the workload metrics in a CSV file.
     The CSV includes columns:

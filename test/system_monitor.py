@@ -108,6 +108,18 @@ def wait_for_monitors(perf_process: subprocess.Popen, amduprof_process: subproce
     perf_process.wait()
     amduprof_process.wait()
 
+def collect_and_store_system_metrics(perf_raw_file: str, amduprof_raw_file: str, csv_file: str,
+                                       test_case_id: str, date_str: str, interference: str) -> None:
+    """
+    Automatically collect system metrics from the raw monitoring files,
+    merge them, and store them into the specified CSV file.
+    """
+    system_perf_metrics = handle_perf_results(perf_raw_file)
+    system_amduprof_metrics = handle_amduprof_results(amduprof_raw_file)
+    system_metrics = {**system_perf_metrics, **system_amduprof_metrics}
+    store_system_metrics(csv_file, test_case_id, date_str, interference, system_metrics)
+
+
 def store_system_metrics(csv_file: str, test_case_id: str, date_str: str, interference: str, system_metrics: dict) -> None:
     """
     Store the system monitoring metrics in a CSV file.

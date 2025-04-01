@@ -169,3 +169,10 @@ def store_container_metrics(csv_file: str, test_case_id: str, date_str: str, int
             "Net_IO_Out": container_metrics.get("net_io_out", "")
         }
         writer.writerow(row)
+
+def collect_and_store_container_metrics(output_file: str, csv_file: str, test_case_id: str, date_str: str) -> None:
+    """
+    Automatically collect container metrics from the output file and store them in the specified CSV file.
+    """
+    container_metrics = collect_container_metrics(output_file)
+    store_container_metrics(csv_file, test_case_id, date_str, container_metrics)
