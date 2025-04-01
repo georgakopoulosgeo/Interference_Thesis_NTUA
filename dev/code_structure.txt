@@ -1,0 +1,19 @@
+/project
+  ├── run_social_network.sh
+  ├── coordinator.py             # Take input from the user (TestCase, Interference) and coordinate the test
+  ├── workload_run_monitors.py   # Functions to run the workload and create the workload_metrics.csv from the workload output
+  ├── container_monitor.py       # Fucntions to start/stop container monitoring and store metrics in container_metrics.csv
+  ├── system_monitor.py          # Functions to start/stop system monitoring and store metrics in system_metrics.csv
+  ├── Results
+    │   ├── workload_metrics.csv   # Metrics from the workload run (These are application-level metrics)
+    │   ├── container_metrics.csv  # Metrics from the container monitoring
+    │   ├── system_metrics.csv     # Metrics from the system monitoring
+  ├── VM_Workload_Test_Cases.csv
+
+
+// Format of CSVs
+workload_metrics:
+
+container_metrics:
+
+system_metrics:
