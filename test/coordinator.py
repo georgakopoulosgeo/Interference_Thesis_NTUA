@@ -7,7 +7,7 @@ import subprocess
 
 # Import functions from the other modules (assumed to be implemented)
 from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics
-from container_monitor import start_container_monitoring, store_container_metrics, collect_and_store_container_metrics
+from container_monitor import start_container_monitoring, collect_container_metrics, store_container_metrics
 from system_monitor import (
     start_perf_monitoring,
     start_amduprof_monitoring,
@@ -123,13 +123,12 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Let system_monitor module automatically handle system metrics storage.
     collect_and_store_system_metrics(perf_raw_file, amduprof_raw_file, system_csv, test_case_id, date_str, interference)
     # Process container metrics.
-    collect_and_store_container_metrics(container_metrics_file, container_csv, test_case_id, date_str)
-
+    container_metrics = collect_container_metrics(container_metrics_file)
     
     print("Storing metrics to CSV files...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
     #store_system_metrics(system_csv, test_case_id, date_str, interference ,system_metrics)
-    #store_container_metrics(container_csv, test_case_id, date_str, container_metrics)
+    store_container_metrics(container_csv, test_case_id, date_str, container_metrics)
     
     print(f"Test Case {test_case_id} with Interference {interference} completed.")
     print(f"System logs: {perf_raw_file}, {amduprof_raw_file}")
