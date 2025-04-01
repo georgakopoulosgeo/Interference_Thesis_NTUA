@@ -92,16 +92,13 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
     
     print("Starting system-level monitoring...")
-    # Start perf and AMD uProf monitoring.
     perf_process = start_perf_monitoring(duration, perf_raw_file)
     amduprof_process = start_amduprof_monitoring(duration, amduprof_raw_file)
     
     print("Starting container-level monitoring...")
-    # Start container monitoring.
     container_monitor_process = start_container_monitoring(container_metrics_file)
     
     print("Starting workload traffic...")
-    # Run the workload and capture its output.
     workload_output = run_workload(social_network_script, threads, connections, duration, reqs_per_sec, wrk2_script_path)
     
     print("Waiting for workload to complete...")
@@ -109,26 +106,24 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # assuming it runs synchronously and returns when done.
     
     print("Stopping system-level monitoring...")
-    # Wait for the system monitoring processes to complete.
     wait_for_monitors(perf_process, amduprof_process)
     
     print("Stopping container-level monitoring...")
-    # Terminate the container monitoring process.
     container_monitor_process.terminate()
     container_monitor_process.wait()
     
     print("Collecting and processing metrics...")
-    # Process workload metrics.
+    # Workload-Level Metrics
     workload_metrics = parse_workload_output(workload_output)
     # Let system_monitor module automatically handle system metrics storage.
     collect_and_store_system_metrics(perf_raw_file, amduprof_raw_file, system_csv, test_case_id, date_str, interference)
-    # Process container metrics.
+    # Container-Level Metrics
     container_metrics = collect_container_metrics(container_metrics_file)
     
     print("Storing metrics to CSV files...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
-    #store_system_metrics(system_csv, test_case_id, date_str, interference ,system_metrics)
-    store_container_metrics(container_csv, test_case_id, date_str, container_metrics)
+    store_container_metrics(container_csv, test_case_id, date_str, interference, container_metrics)
+    # Storing system metrics is handled by collect_and_store_system_metrics.
     
     print(f"Test Case {test_case_id} with Interference {interference} completed.")
     print(f"System logs: {perf_raw_file}, {amduprof_raw_file}")

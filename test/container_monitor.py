@@ -41,7 +41,7 @@ def start_container_monitoring(output_file: str) -> subprocess.Popen:
     # Run docker stats in a loop using a bash command.
     cmd = [
         "bash", "-c", "while true; do docker stats --no-stream --format '{{json .}}'; sleep 5; done"
-    ]
+    ] 
     out_file = open(output_file, "w")
     process = subprocess.Popen(cmd, stdout=out_file, stderr=subprocess.PIPE)
     return process

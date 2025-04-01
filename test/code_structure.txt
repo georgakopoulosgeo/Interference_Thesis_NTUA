@@ -17,3 +17,6 @@ workload_metrics:
 container_metrics:
 
 system_metrics:
+
+// Prometheus
+ssh -L 9090:localhost:9090 ubuntu@147.102.13.70
