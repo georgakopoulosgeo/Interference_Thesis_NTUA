@@ -115,7 +115,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     print("Collecting and processing metrics...")
     # Container-Level Metrics
-    collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP,test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
+    collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
     # Workload-Level Metrics
     workload_metrics = parse_workload_output(workload_output)
     # Let system_monitor module automatically handle system metrics storage.

@@ -30,6 +30,7 @@ def query_range(query, start_time, end_time, step):
             results.setdefault(cid, []).extend(result["values"])
     else:
         print("Prometheus query failed:", data)
+    print("Results from query range after the request:", results)
     return results
 
 def merge_metric(metric_name, metric_data, detailed_data):

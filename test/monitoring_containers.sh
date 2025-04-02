@@ -12,14 +12,13 @@ case "$1" in
   start)
     echo "Starting cAdvisor container..."
     VERSION=v0.49.1 # use the latest release version from https://github.com/google/cadvisor/releases
-    docker run \
+    docker run -d \
     --volume=/:/rootfs:ro \
     --volume=/var/run:/var/run:ro \
     --volume=/sys:/sys:ro \
     --volume=/var/lib/docker/:/var/lib/docker:ro \
     --volume=/dev/disk/:/dev/disk:ro \
     --publish=8085:8080 \ 
-    --detach=true \
     --name=cadvisor \
     --privileged \
     --device=/dev/kmsg \
@@ -33,7 +32,7 @@ case "$1" in
     sleep 5
 
     echo "Starting Prometheus container..."
-    docker run --name=prometheus -d \
+    docker run --network host --name=prometheus -d \
       -p 9090:9090 \
       -v /home/ubuntu/Workspace/prometheus.yml:/etc/prometheus/prometheus.yml \
       prom/prometheus:latest
