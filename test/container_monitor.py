@@ -7,6 +7,7 @@ import time
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
 STEP = "5"  # 5-second resolution
+container_names = {} # Global dictionary to store container names for each container ID
 
 def query_range(query, start_time, end_time, step):
     """
@@ -27,6 +28,7 @@ def query_range(query, start_time, end_time, step):
         for result in data["data"]["result"]:
             # Use container id if available; fallback to container_name
             cid = result["metric"].get("id") or result["metric"].get("container_name", "unknown")
+            container_names[cid] = result["metric"].get("container_name", "unknown")
             # Prometheus returns a list of (timestamp, value) pairs in "values"
             for ts_value in result["values"]:
                 ts = ts_value[0]  # timestamp as string (seconds since epoch)
@@ -96,12 +98,13 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
     # CPU_Usage, Memory_Usage, Disk_IO_Read, Disk_IO_Write, Net_IO_In, Net_IO_Out
     with open(detail_csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(["TestCaseID", "Interference", "Date", "Timestamp", "Container_ID",
+        writer.writerow(["TestCaseID", "Interference", "Date", "Timestamp", "Container_ID", "Container_Name",
                          "CPU_Usage", "Memory_Usage", "Disk_IO_Read", "Disk_IO_Write", "Net_IO_In", "Net_IO_Out"])
         for cid in sorted(detailed_data.keys()):
             for ts in sorted(detailed_data[cid].keys()):
+                cname = container_names.get(cid, "unknown")
                 metrics = detailed_data[cid][ts]
-                writer.writerow([test_case_id, interference, date_str, ts, cid,
+                writer.writerow([test_case_id, interference, date_str, ts, cid, cname,
                                  metrics.get("CPU_Usage", ""),
                                  metrics.get("Memory_Usage", ""),
                                  metrics.get("Disk_IO_Read", ""),

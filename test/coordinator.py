@@ -103,7 +103,11 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     print("Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
+    #Print starting time from datetime now
+    print("Starting time: ", datetime.datetime.now())
     workload_output = run_workload(social_network_script, threads, connections, duration, reqs_per_sec, wrk2_script_path)
+    #Print ending time from datetime now
+    print("Ending time: ", datetime.datetime.now())
     
     print("Waiting for workload to complete...")
     # If run_workload is asynchronous, you could wait here; 
