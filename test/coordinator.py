@@ -4,16 +4,21 @@ import csv
 import datetime
 import argparse
 import subprocess
+import time
 
 # Import functions from the other modules (assumed to be implemented)
 from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics
-from container_monitor import start_container_monitoring, collect_container_metrics, store_container_metrics
+from container_monitor import collect_container_metrics
 from system_monitor import (
     start_perf_monitoring,
     start_amduprof_monitoring,
     wait_for_monitors,
     collect_and_store_system_metrics
 )
+
+# Global configuration
+PROMETHEUS_URL = "http://localhost:9090"
+STEP = "5"  # 5-second resolution
 
 def parse_arguments():
     # Parse command-line arguments.
@@ -73,12 +78,13 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Define file paths for raw monitoring logs.
     perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{timestamp}.txt")
     amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{timestamp}.txt")
-    container_metrics_file = os.path.join(raw_log_folder, f"container_metrics_{test_case_id}_{timestamp}.csv")
     
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
-    container_csv = os.path.join(baseline_results_dir, "container_metrics.csv")
     system_csv = os.path.join(baseline_results_dir, "system_metrics.csv")
+    detail_csv_path = os.path.join(baseline_results_dir, f"container_metrics_detail_{test_case_id}_{date_str}.csv")
+    agg_csv_path = os.path.join(baseline_results_dir, f"container_metrics_agg_{test_case_id}_{date_str}.csv")
+
     
     # Read workload parameters from the test cases CSV.
     params = read_test_case_parameters(test_cases_csv, test_case_id)
@@ -95,10 +101,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     perf_process = start_perf_monitoring(duration, perf_raw_file)
     amduprof_process = start_amduprof_monitoring(duration, amduprof_raw_file)
     
-    print("Starting container-level monitoring...")
-    container_monitor_process = start_container_monitoring(container_metrics_file)
-    
     print("Starting workload traffic...")
+    start_time_str = str(int(time.time())-10)
     workload_output = run_workload(social_network_script, threads, connections, duration, reqs_per_sec, wrk2_script_path)
     
     print("Waiting for workload to complete...")
@@ -107,28 +111,23 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     print("Stopping system-level monitoring...")
     wait_for_monitors(perf_process, amduprof_process)
-    
-    print("Stopping container-level monitoring...")
-    container_monitor_process.terminate()
-    container_monitor_process.wait()
+    end_time_str = str(int(time.time()))
     
     print("Collecting and processing metrics...")
+    # Container-Level Metrics
+    collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP,test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
     # Workload-Level Metrics
     workload_metrics = parse_workload_output(workload_output)
     # Let system_monitor module automatically handle system metrics storage.
     collect_and_store_system_metrics(perf_raw_file, amduprof_raw_file, system_csv, test_case_id, date_str, interference)
-    # Container-Level Metrics
-    container_metrics = collect_container_metrics(container_metrics_file)
     
     print("Storing metrics to CSV files...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
-    store_container_metrics(container_csv, test_case_id, date_str, interference, container_metrics)
     # Storing system metrics is handled by collect_and_store_system_metrics.
     
     print(f"Test Case {test_case_id} with Interference {interference} completed.")
     print(f"System logs: {perf_raw_file}, {amduprof_raw_file}")
-    print(f"Container metrics log: {container_metrics_file}")
-    print(f"Results stored in: {workload_csv}, {system_csv}, {container_csv}")
+    print(f"Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
 
 def main():
     args = parse_arguments()

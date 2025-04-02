@@ -18,12 +18,16 @@ case "$1" in
     --volume=/sys:/sys:ro \
     --volume=/var/lib/docker/:/var/lib/docker:ro \
     --volume=/dev/disk/:/dev/disk:ro \
-    --publish=8080:8080 \
+    --publish=8085:8080 \ 
     --detach=true \
     --name=cadvisor \
     --privileged \
     --device=/dev/kmsg \
     gcr.io/cadvisor/cadvisor:$VERSION
+
+    #Ports:
+    # 8080: Inside the container
+    # 8085: Host machine
 
     echo "Waiting 5 seconds for cAdvisor to initialize..."
     sleep 5

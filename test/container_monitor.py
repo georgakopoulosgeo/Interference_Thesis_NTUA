@@ -1,172 +1,166 @@
 #!/usr/bin/env python3
-import os
+import requests
 import csv
-import subprocess
-import json
+import datetime
+import time
 
-def parse_size(size_str: str) -> float:
+# Global configuration
+PROMETHEUS_URL = "http://localhost:9090"
+STEP = "5"  # 5-second resolution
+
+def query_range(query, start_time, end_time, step):
     """
-    Convert a human-readable size string to bytes.
-    E.g., "1.2MB" -> 1.2e6, "508kB" -> 508e3, "3.833GiB" -> 3.833 * 1073741824.
+    Query the Prometheus API for a given PromQL query over the specified time range.
+    Returns a dictionary keyed by container ID, each with a list of (timestamp, value) pairs.
     """
-    size_str = size_str.strip()
-    if size_str == "0B":
-        return 0.0
-    multipliers = {
-        "B": 1,
-        "kB": 1e3,
-        "KB": 1e3,
-        "MB": 1e6,
-        "GB": 1e9,
-        "GiB": 1073741824,
+    url = f"{PROMETHEUS_URL}/api/v1/query_range"
+    params = {
+        "query": query,
+        "start": start_time,
+        "end": end_time,
+        "step": step
     }
-    for unit, mult in multipliers.items():
-        if size_str.endswith(unit):
-            try:
-                num = float(size_str[:-len(unit)])
-                return num * mult
-            except:
-                return 0.0
-    try:
-        return float(size_str)
-    except:
-        return 0.0
+    response = requests.get(url, params=params)
+    data = response.json()
+    results = {}
+    if data["status"] == "success":
+        for result in data["data"]["result"]:
+            # Use container_name as the identifier; adjust if you use a different label.
+            cid = result["metric"].get("container_name", "unknown")
+            results.setdefault(cid, []).extend(result["values"])
+    else:
+        print("Prometheus query failed:", data)
+    return results
 
-def start_container_monitoring(output_file: str) -> subprocess.Popen:
+def merge_metric(metric_name, metric_data, detailed_data):
     """
-    Start container monitoring by running docker stats in an infinite loop.
-    The command outputs JSON formatted data every 5 seconds to the specified output file.
-    Returns the subprocess.Popen object.
+    Merge a specific metric’s data into the detailed_data dictionary.
+    detailed_data is a nested dictionary keyed first by container ID then by timestamp.
     """
-    # Run docker stats in a loop using a bash command.
-    cmd = [
-        "bash", "-c", "while true; do docker stats --no-stream --format '{{json .}}'; sleep 5; done"
-    ] 
-    out_file = open(output_file, "w")
-    process = subprocess.Popen(cmd, stdout=out_file, stderr=subprocess.PIPE)
-    return process
+    for cid, values in metric_data.items():
+        for ts, val in values:
+            # Convert the timestamp (seconds since epoch) to a human-readable string.
+            ts_str = datetime.datetime.fromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
+            if ts_str not in detailed_data.setdefault(cid, {}):
+                detailed_data[cid][ts_str] = {}
+            detailed_data[cid][ts_str][metric_name] = float(val)
 
-def collect_container_metrics(output_file: str) -> dict:
+def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id, interference, date_str, detail_csv_path, agg_csv_path):
     """
-    Parse the container monitoring output file and aggregate container metrics.
-    Aggregates:
-      - Average container CPU usage (Avg_Container_CPU)
-      - Average container memory usage (Avg_Container_Mem)
-      - Total disk I/O read (Disk_IO_Read) and write (Disk_IO_Write)
-      - Total network I/O in (Net_IO_In) and out (Net_IO_Out)
-      - Number of containers monitored (Container_Count)
-    Returns a dictionary with these aggregated metrics.
+    Collect container metrics from Prometheus between start_time and end_time,
+    then store both detailed and aggregated metrics in CSV files.
+    
+    The following PromQL queries are used (filtering by the label for your social network app):
+      - CPU usage: rate(container_cpu_usage_seconds_total[5s])
+      - Memory usage: container_memory_usage_bytes
+      - Disk I/O (read/write): rate(container_fs_reads_bytes_total[5s]) and rate(container_fs_writes_bytes_total[5s])
+      - Network I/O (in/out): rate(container_network_receive_bytes_total[5s]) and rate(container_network_transmit_bytes_total[5s])
     """
-    if not os.path.exists(output_file):
-        print(f"Container monitoring output file {output_file} does not exist.")
-        return {}
+    # Define the queries – adjust label filters as necessary.
+    query_cpu = 'rate(container_cpu_usage_seconds_total{container_label_com_docker_swarm_service_name="socialnetwork_app"}[5s])'
+    query_mem = 'container_memory_usage_bytes{container_label_com_docker_swarm_service_name="socialnetwork_app"}'
+    query_disk_read = 'rate(container_fs_reads_bytes_total{container_label_com_docker_swarm_service_name="socialnetwork_app"}[5s])'
+    query_disk_write = 'rate(container_fs_writes_bytes_total{container_label_com_docker_swarm_service_name="socialnetwork_app"}[5s])'
+    query_net_in = 'rate(container_network_receive_bytes_total{container_label_com_docker_swarm_service_name="socialnetwork_app"}[5s])'
+    query_net_out = 'rate(container_network_transmit_bytes_total{container_label_com_docker_swarm_service_name="socialnetwork_app"}[5s])'
     
-    with open(output_file, "r") as f:
-        lines = f.readlines()
+    # Query Prometheus for each metric over the experiment window.
+    cpu_data = query_range(query_cpu, start_time, end_time, step)
+    mem_data = query_range(query_mem, start_time, end_time, step)
+    disk_read_data = query_range(query_disk_read, start_time, end_time, step)
+    disk_write_data = query_range(query_disk_write, start_time, end_time, step)
+    net_in_data = query_range(query_net_in, start_time, end_time, step)
+    net_out_data = query_range(query_net_out, start_time, end_time, step)
     
-    container_data = []
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            data = json.loads(line)
-            container_data.append(data)
-        except Exception as e:
-            print(f"Error parsing line: {line}\nError: {e}")
+    # Merge the data from all queries into a detailed data structure.
+    detailed_data = {}
+    merge_metric("cpu", cpu_data, detailed_data)
+    merge_metric("mem", mem_data, detailed_data)
+    merge_metric("disk_read", disk_read_data, detailed_data)
+    merge_metric("disk_write", disk_write_data, detailed_data)
+    merge_metric("net_in", net_in_data, detailed_data)
+    merge_metric("net_out", net_out_data, detailed_data)
     
-    if not container_data:
-        print("No container metrics retrieved.")
-        return {}
+    # Write detailed CSV file.
+    # Columns: TestCaseID, Interference, Date, Timestamp, Container_ID, CPU_Usage, Memory_Usage, Disk_IO_Read, Disk_IO_Write, Net_IO_In, Net_IO_Out
+    with open(detail_csv_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["TestCaseID", "Interference", "Date", "Timestamp", "Container_ID",
+                         "CPU_Usage", "Memory_Usage", "Disk_IO_Read", "Disk_IO_Write", "Net_IO_In", "Net_IO_Out"])
+        for cid in sorted(detailed_data.keys()):
+            for ts in sorted(detailed_data[cid].keys()):
+                metrics = detailed_data[cid][ts]
+                writer.writerow([test_case_id, interference, date_str, ts, cid,
+                                 metrics.get("cpu", ""),
+                                 metrics.get("mem", ""),
+                                 metrics.get("disk_read", ""),
+                                 metrics.get("disk_write", ""),
+                                 metrics.get("net_in", ""),
+                                 metrics.get("net_out", "")])
     
-    total_cpu = 0.0
-    total_mem = 0.0
-    total_disk_read = 0.0
-    total_disk_write = 0.0
-    total_net_in = 0.0
-    total_net_out = 0.0
-    count = 0
-    
-    for entry in container_data:
-        count += 1
-        # CPU usage (e.g., "201.14%")
-        cpu_str = entry.get("CPUPerc", "").replace("%", "").strip()
-        try:
-            total_cpu += float(cpu_str)
-        except:
-            pass
-        # Memory usage (e.g., "49.42%")
-        mem_str = entry.get("MemPerc", "").replace("%", "").strip()
-        try:
-            total_mem += float(mem_str)
-        except:
-            pass
-        # BlockIO: "X / Y" where X = read, Y = write
-        block_io = entry.get("BlockIO", "0B / 0B")
-        parts = block_io.split("/")
-        if len(parts) == 2:
-            read_str = parts[0].strip()
-            write_str = parts[1].strip()
-            total_disk_read += parse_size(read_str)
-            total_disk_write += parse_size(write_str)
-        # NetIO: "X / Y" where X = in, Y = out
-        net_io = entry.get("NetIO", "0B / 0B")
-        parts = net_io.split("/")
-        if len(parts) == 2:
-            net_in_str = parts[0].strip()
-            net_out_str = parts[1].strip()
-            total_net_in += parse_size(net_in_str)
-            total_net_out += parse_size(net_out_str)
-    
-    avg_container_cpu = total_cpu / count if count > 0 else 0.0
-    avg_container_mem = total_mem / count if count > 0 else 0.0
-    
-    aggregated = {
-        "avg_container_cpu": avg_container_cpu,
-        "avg_container_mem": avg_container_mem,
-        "container_count": count,
-        "disk_io_read": total_disk_read,
-        "disk_io_write": total_disk_write,
-        "net_io_in": total_net_in,
-        "net_io_out": total_net_out
-    }
-    return aggregated
-
-def store_container_metrics(csv_file: str, test_case_id: str, date_str: str, interference: str, container_metrics: dict) -> None:
-    """
-    Store the aggregated container metrics in a CSV file.
-    The CSV includes columns:
-      TestCaseID, Date, Avg_Container_CPU, Avg_Container_Mem, Container_Count,
-      Disk_IO_Read, Disk_IO_Write, Net_IO_In, Net_IO_Out
-    """
-    header = [
-        "TestCaseID",
-        "Interference",
-        "Date",
-        "Avg_Container_CPU",
-        "Avg_Container_Mem",
-        "Container_Count",
-        "Disk_IO_Read",
-        "Disk_IO_Write",
-        "Net_IO_In",
-        "Net_IO_Out"
-    ]
-    file_exists = os.path.exists(csv_file)
-    with open(csv_file, "a", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=header)
-        if not file_exists:
-            writer.writeheader()
-        row = {
-            "TestCaseID": test_case_id,
-            "Interference": interference,
-            "Date": date_str,
-            "Avg_Container_CPU": container_metrics.get("avg_container_cpu", ""),
-            "Avg_Container_Mem": container_metrics.get("avg_container_mem", ""),
-            "Container_Count": container_metrics.get("container_count", ""),
-            "Disk_IO_Read": container_metrics.get("disk_io_read", ""),
-            "Disk_IO_Write": container_metrics.get("disk_io_write", ""),
-            "Net_IO_In": container_metrics.get("net_io_in", ""),
-            "Net_IO_Out": container_metrics.get("net_io_out", "")
+    # Compute aggregated metrics for each container.
+    agg_data = {}
+    for cid, ts_data in detailed_data.items():
+        cpu_vals = []
+        mem_vals = []
+        disk_read_vals = []
+        disk_write_vals = []
+        net_in_vals = []
+        net_out_vals = []
+        for ts, metrics in ts_data.items():
+            if "cpu" in metrics:
+                cpu_vals.append(metrics["cpu"])
+            if "mem" in metrics:
+                mem_vals.append(metrics["mem"])
+            if "disk_read" in metrics:
+                disk_read_vals.append(metrics["disk_read"])
+            if "disk_write" in metrics:
+                disk_write_vals.append(metrics["disk_write"])
+            if "net_in" in metrics:
+                net_in_vals.append(metrics["net_in"])
+            if "net_out" in metrics:
+                net_out_vals.append(metrics["net_out"])
+        agg_data[cid] = {
+            "avg_cpu": sum(cpu_vals)/len(cpu_vals) if cpu_vals else None,
+            "avg_mem": sum(mem_vals)/len(mem_vals) if mem_vals else None,
+            "avg_disk_read": sum(disk_read_vals)/len(disk_read_vals) if disk_read_vals else None,
+            "avg_disk_write": sum(disk_write_vals)/len(disk_write_vals) if disk_write_vals else None,
+            "avg_net_in": sum(net_in_vals)/len(net_in_vals) if net_in_vals else None,
+            "avg_net_out": sum(net_out_vals)/len(net_out_vals) if net_out_vals else None,
         }
-        writer.writerow(row)
+    
+    # Write aggregated CSV file.
+    # Columns: TestCaseID, Interference, Date, Container_ID, Avg_CPU_Usage, Avg_Memory_Usage, Avg_Disk_IO_Read, Avg_Disk_IO_Write, Avg_Net_IO_In, Avg_Net_IO_Out
+    with open(agg_csv_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["TestCaseID", "Interference", "Date", "Container_ID",
+                         "Avg_CPU_Usage", "Avg_Memory_Usage", "Avg_Disk_IO_Read", "Avg_Disk_IO_Write", "Avg_Net_IO_In", "Avg_Net_IO_Out"])
+        for cid in sorted(agg_data.keys()):
+            agg = agg_data[cid]
+            writer.writerow([test_case_id, interference, date_str, cid,
+                             agg["avg_cpu"], agg["avg_mem"], agg["avg_disk_read"],
+                             agg["avg_disk_write"], agg["avg_net_in"], agg["avg_net_out"]])
+    
+    print(f"Detailed metrics stored in {detail_csv_path}")
+    print(f"Aggregated metrics stored in {agg_csv_path}")
 
+'''
+# Example usage:
+# In practice, your coordinator will call collect_container_metrics() after workload completion,
+# passing the correct epoch timestamps as strings.
+if __name__ == "__main__":
+    test_case_id = "Test01"
+    interference = "None"
+    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    
+    # For demonstration, assume the workload ran for 2 minutes.
+    # In your experiment, record the precise start and end timestamps.
+    end_time = time.time() - 60   # Ended 1 minute ago
+    start_time = end_time - 120   # 2-minute duration
+    start_time_str = str(start_time)
+    end_time_str = str(end_time)
+    
+    detail_csv_path = f"container_metrics_detail_{test_case_id}_{date_str}.csv"
+    agg_csv_path = f"container_metrics_agg_{test_case_id}_{date_str}.csv"
+
+'''
