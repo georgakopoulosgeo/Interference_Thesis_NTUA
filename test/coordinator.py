@@ -18,7 +18,7 @@ from system_monitor import (
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
-STEP = "5"  # 5-second resolution
+STEP = "10"  # 5-second resolution
 
 def parse_arguments():
     # Parse command-line arguments.
@@ -35,7 +35,7 @@ def ensure_directories(script_dir, test_case_id):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "ResultsV03")
+    baseline_results_dir = os.path.join(script_dir, "ResultsV04")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, f"{test_case_id}_raw")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -76,14 +76,14 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
     
     # Define file paths for raw monitoring logs.
-    perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{timestamp}.txt")
-    amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{timestamp}.txt")
+    perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{interference}.txt")
+    amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{interference}.txt")
     
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
     system_csv = os.path.join(baseline_results_dir, "system_metrics.csv")
-    detail_csv_path = os.path.join(baseline_results_dir, f"container_metrics_detail_{test_case_id}_{date_str}.csv")
-    agg_csv_path = os.path.join(baseline_results_dir, f"container_metrics_agg_{test_case_id}_{date_str}.csv")
+    detail_csv_path = os.path.join(baseline_results_dir, f"container_metrics_detail_{test_case_id}_{interference}.csv")
+    agg_csv_path = os.path.join(baseline_results_dir, f"container_metrics_agg_{test_case_id}_{interference}.csv")
 
     
     # Read workload parameters from the test cases CSV.

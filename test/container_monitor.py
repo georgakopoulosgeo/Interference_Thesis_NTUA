@@ -6,7 +6,7 @@ import time
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
-STEP = "5"  # 5-second resolution
+STEP = "10"  # 5-second resolution
 container_names = {} # Global dictionary to store container names for each container ID
 
 def query_range(query, start_time, end_time, step):
@@ -28,7 +28,10 @@ def query_range(query, start_time, end_time, step):
         for result in data["data"]["result"]:
             # Use container id if available; fallback to container_name
             cid = result["metric"].get("id") or result["metric"].get("container_name", "unknown")
-            container_names[cid] = result["metric"].get("container_name", "unknown")
+            # cid has the form "/system.slice/docker-00f86d51cc143710c51b51edf34266d16c23204df72b47e1509c4b8cc34d817e.scope"
+            # Extract the container ID from the end of the string
+            cid = cid.split("/")[-1].split(".scope")[0]
+            container_names[cid] = result["metric"].get("name", "unknown")
             # Prometheus returns a list of (timestamp, value) pairs in "values"
             for ts_value in result["values"]:
                 ts = ts_value[0]  # timestamp as string (seconds since epoch)
@@ -148,12 +151,13 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
     # Avg_Disk_IO_Read, Avg_Disk_IO_Write, Avg_Net_IO_In, Avg_Net_IO_Out
     with open(agg_csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(["TestCaseID", "Interference", "Date", "Container_ID",
+        writer.writerow(["TestCaseID", "Interference", "Date", "Container_ID", "Container_Name",
                          "Avg_CPU_Usage", "Avg_Memory_Usage", "Avg_Disk_IO_Read", "Avg_Disk_IO_Write",
                          "Avg_Net_IO_In", "Avg_Net_IO_Out"])
         for cid in sorted(agg_data.keys()):
+            cname = container_names.get(cid, "unknown")
             agg = agg_data[cid]
-            writer.writerow([test_case_id, interference, date_str, cid,
+            writer.writerow([test_case_id, interference, date_str, cid, cname,
                              agg["Avg_CPU_Usage"], agg["Avg_Memory_Usage"], agg["Avg_Disk_IO_Read"],
                              agg["Avg_Disk_IO_Write"], agg["Avg_Net_IO_In"], agg["Avg_Net_IO_Out"]])
     
