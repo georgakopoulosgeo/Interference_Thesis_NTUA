@@ -11,6 +11,7 @@ from workload_run_monitor import run_workload, parse_workload_output, store_work
 from container_monitor import collect_container_metrics
 from system_monitor_perf import perf_monitoring
 from system_monitor_amduprof import amduprof_monitoring
+import threading
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
@@ -95,8 +96,22 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
     
     print("Coordinator: Starting system-level monitoring...")
-    perf_monitoring(duration, 5000, perf_raw_file)
-    amduprof_monitoring(duration, 5000, amduprof_raw_file, amduprof_filtered_file)
+    # Run perf_monitoring and amduprof_monitoring in parallel using threads
+    perf_thread = threading.Thread(target=perf_monitoring, args=(duration, 5000, perf_raw_file))
+    amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration, 5000, amduprof_raw_file, amduprof_filtered_file))
+
+    # ChatGPT comment:
+    # Using a thread to run a function that spawns a subprocess is perfectly acceptable.
+    # The thread will manage the lifecycle of the subprocess, and the subprocess itself runs as an independent OS process.
+    # This setup allows you to run external commands asynchronously, which is often helpful in keeping your main application responsive.
+
+    # Start both threads
+    perf_thread.start()
+    amduprof_thread.start()
+
+    # Optionally, you can join the threads later if you need to ensure they complete
+    # perf_thread.join()
+    # amduprof_thread.join()
     
     print("Coordinator: Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
