@@ -10,7 +10,7 @@ def run_amduprof(duration: int, sampling_interval: int, output_csv: str) -> None
     Sampling interval is in milliseconds.
     """
     cmd = [
-        "sudo", "./AMDuProfPcm",      # Adjust path if needed
+        "sudo", "/opt/AMDuProf_5.0-1479/bin/AMDuProfPcm",  # Corrected path to the executable
         "-m", "ipc,l2",
         "-a",
         "-A", "system",
@@ -36,7 +36,7 @@ def filter_csv(input_csv: str, output_csv: str, columns_to_keep: list) -> None:
         # Determine which columns from the header match our desired columns.
         header = [field for field in reader.fieldnames if field in columns_to_keep]
         if not header:
-            print("None of the desired columns were found in the CSV header.")
+            print("AMDuProf: None of the desired columns were found in the CSV header.")
             return
 
         with open(output_csv, "w", newline="") as outfile:
@@ -65,6 +65,7 @@ def amduprof_monitoring(duration: int, sampling_interval: int, raw_csv: str, fil
         "Giga Instructions Per Sec"
     ]
 
+    print("AMDuProf: Starting monitoring...")
     # Run AMD uProf PCM in a separate thread so that we can potentially manage concurrency
     thread = threading.Thread(target=run_amduprof, args=(duration, sampling_interval, raw_csv))
     thread.start()
@@ -73,6 +74,6 @@ def amduprof_monitoring(duration: int, sampling_interval: int, raw_csv: str, fil
     # Check if the raw CSV file was created and process it
     if os.path.exists(raw_csv):
         filter_csv(raw_csv, filtered_csv, columns_to_keep)
-        print("Filtered metrics have been written to:", filtered_csv)
+        print("AMDuProf: Filtered metrics have been written to:", filtered_csv)
     else:
-        print("Error: The output CSV file was not found:", raw_csv)
+        print("AMDuProf: Error: The output CSV file was not found:", raw_csv)

@@ -18,7 +18,7 @@ case "$1" in
     --volume=/sys:/sys:ro \
     --volume=/var/lib/docker/:/var/lib/docker:ro \
     --volume=/dev/disk/:/dev/disk:ro \
-    --publish=8085:8080 \ 
+    --publish=8085:8080 \
     --name=cadvisor \
     --privileged \
     --device=/dev/kmsg \

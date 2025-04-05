@@ -31,6 +31,7 @@ def query_range(query, start_time, end_time, step):
             # cid has the form "/system.slice/docker-00f86d51cc143710c51b51edf34266d16c23204df72b47e1509c4b8cc34d817e.scope"
             # Extract the container ID from the end of the string
             cid = cid.split("/")[-1].split(".scope")[0]
+            cid = cid.split("-")[-1]
             container_names[cid] = result["metric"].get("name", "unknown")
             # Prometheus returns a list of (timestamp, value) pairs in "values"
             for ts_value in result["values"]:
