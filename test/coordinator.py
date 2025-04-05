@@ -9,12 +9,7 @@ import time
 # Import functions from the other modules (assumed to be implemented)
 from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics
 from container_monitor import collect_container_metrics
-from system_monitor import (
-    start_perf_monitoring,
-    start_amduprof_monitoring,
-    wait_for_monitors,
-    collect_and_store_system_metrics
-)
+from system_monitor_perf import perf_monitoring
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
@@ -35,7 +30,7 @@ def ensure_directories(script_dir, test_case_id):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "ResultsV04")
+    baseline_results_dir = os.path.join(script_dir, "ResultsV05")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, f"{test_case_id}_raw")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -98,8 +93,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
     
     print("Starting system-level monitoring...")
-    perf_process = start_perf_monitoring(duration, perf_raw_file)
-    amduprof_process = start_amduprof_monitoring(duration, amduprof_raw_file)
+    perf_monitoring(duration, 5000, perf_raw_file)
     
     print("Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
@@ -112,22 +106,18 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     print("Waiting for workload to complete...")
     # If run_workload is asynchronous, you could wait here; 
     # assuming it runs synchronously and returns when done.
-    
-    print("Stopping system-level monitoring...")
-    wait_for_monitors(perf_process, amduprof_process)
     end_time_str = str(int(time.time()))
+    # Print ending time from datetime now
+    print("Ending time 2: ", datetime.datetime.now())
     
     print("Collecting and processing metrics...")
     # Container-Level Metrics
     collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
     # Workload-Level Metrics
     workload_metrics = parse_workload_output(workload_output)
-    # Let system_monitor module automatically handle system metrics storage.
-    collect_and_store_system_metrics(perf_raw_file, amduprof_raw_file, system_csv, test_case_id, date_str, interference)
     
     print("Storing metrics to CSV files...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
-    # Storing system metrics is handled by collect_and_store_system_metrics.
     
     print(f"Test Case {test_case_id} with Interference {interference} completed.")
     print(f"System logs: {perf_raw_file}, {amduprof_raw_file}")
