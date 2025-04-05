@@ -15,7 +15,7 @@ import threading
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
-STEP = "10"  # 10-second resolution
+STEP = "5"  # 10-second resolution
 
 def parse_arguments():
     # Parse command-line arguments.
@@ -74,8 +74,9 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     # Define file paths for raw monitoring logs.
     perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{interference}.txt")
+    perf_csv = os.path.join(baseline_results_dir, f"perf_metrics_{test_case_id}_{interference}.csv")
     amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{interference}.txt")
-    amduprof_filtered_file = os.path.join(raw_log_folder, f"amduprof_filtered_{test_case_id}_{interference}.csv")
+    amduprof_filtered_file = os.path.join(baseline_results_dir, f"amduprof_filtered_{test_case_id}_{interference}.csv")
     
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
@@ -97,8 +98,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     print("Coordinator: Starting system-level monitoring...")
     # Run perf_monitoring and amduprof_monitoring in parallel using threads
-    perf_thread = threading.Thread(target=perf_monitoring, args=(duration, 5000, perf_raw_file))
-    amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration, 5000, amduprof_raw_file, amduprof_filtered_file))
+    perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
+    amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
 
     # ChatGPT comment:
     # Using a thread to run a function that spawns a subprocess is perfectly acceptable.
@@ -108,17 +109,13 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Start both threads
     perf_thread.start()
     amduprof_thread.start()
-
-    # Optionally, you can join the threads later if you need to ensure they complete
-    # perf_thread.join()
-    # amduprof_thread.join()
+    time.sleep(1)  # Give some time for the monitoring to start
     
     print("Coordinator: Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
-    print("Coordinator: Starting time = ", datetime.datetime.now())
+    print("Coordinator: Workload Starting time = ", datetime.datetime.now())
     workload_output = run_workload(social_network_script, threads, connections, duration, reqs_per_sec, wrk2_script_path)
-    print("Coordinator: Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
-    print("Coordinator: Waiting for workload to complete...")
+    print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
     
     print("Coordinator: Starting Container-level monitoring...")
@@ -129,10 +126,14 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     print("Coordinator: Store workload metrics...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
+
+    # Wait for monitoring threads to finish
+    perf_thread.join()
+    amduprof_thread.join()
     
-    print(f"Test Case {test_case_id} with Interference {interference} completed.")
-    print(f"System logs: {perf_raw_file}, {amduprof_raw_file}, {amduprof_filtered_file}")
-    print(f"Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
+    print(f"Coordinator: Test Case {test_case_id} with Interference {interference} completed.")
+    print(f"Coordinator: System logs: {perf_raw_file}, {amduprof_raw_file}, {amduprof_filtered_file}")
+    print(f"Coordinator: Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
 
 def main():
     args = parse_arguments()

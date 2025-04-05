@@ -6,7 +6,7 @@ import time
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
-STEP = "10"  # 5-second resolution
+STEP = "5"  # 5-second resolution
 container_names = {} # Global dictionary to store container names for each container ID
 
 def query_range(query, start_time, end_time, step):
