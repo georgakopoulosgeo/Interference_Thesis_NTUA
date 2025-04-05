@@ -13,10 +13,20 @@
 
 // Format of CSVs
 workload_metrics:
+TestCaseID,Interference,Date,Throughput,Avg_Latency,P50_Latency,P75_Latency,P90_Latency,P99_Latency,Max_Latency
 
 container_metrics:
+Detailed:
+TestCaseID,Interference,Date,Timestamp,Container_ID,Container_Name,CPU_Usage,Memory_Usage,Disk_IO_Read,Disk_IO_Write,Net_IO_In,Net_IO_Out
+Aggregated:
+TestCaseID,Interference,Date,Container_ID,Container_Name,Avg_CPU_Usage,Avg_Memory_Usage,Avg_Disk_IO_Read,Avg_Disk_IO_Write,Avg_Net_IO_In,Avg_Net_IO_Out
 
 system_metrics:
+perf:
+time,ls_dmnd_fills_from_sys.mem_io_local,ls_hw_pf_dc_fills.mem_io_local,ls_sw_pf_dc_fills.mem_io_local,ls_dispatch.store_dispatch,instructions,cpu-cycles,cache-misses,page-faults,major-faults
+
+amduprof:
+IPC (Sys + User),CPI (Sys + User),L2 Miss (pti),L2 Access (pti),L2 Hit (pti),Giga Instructions Per Sec
 
 // Prometheus
 ssh -L 9090:localhost:9090 ubuntu@147.102.13.70
