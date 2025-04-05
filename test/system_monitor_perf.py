@@ -62,11 +62,11 @@ def perf_monitoring(duration: int, interval: int, output_csv: str):
     # duration = 10
     # interval = 5000
 
-    print("Perf Monitoring: Starting...")
+    print("Perf: Starting monitoring ...")
     perf_process = run_combined_perf(duration, interval, output_csv)
     # You can later run this in a separate thread or process as required.
-    perf_process.wait()  # Wait for the perf command to complete
+    # perf_process.wait()  # Wait for the perf command to complete
 
-    print("Perf Monitoring: Parsing results...")
+    print("Perf: Parsing results...")
     metrics = parse_perf_csv(output_csv)
-    print("Perf Monitoring: Completed.")
+    print("Perf: Completed.")
