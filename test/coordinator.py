@@ -10,10 +10,11 @@ import time
 from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics
 from container_monitor import collect_container_metrics
 from system_monitor_perf import perf_monitoring
+from system_monitor_amduprof import amduprof_monitoring
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
-STEP = "10"  # 5-second resolution
+STEP = "10"  # 10-second resolution
 
 def parse_arguments():
     # Parse command-line arguments.
@@ -73,6 +74,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Define file paths for raw monitoring logs.
     perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{interference}.txt")
     amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{interference}.txt")
+    amduprof_filtered_file = os.path.join(raw_log_folder, f"amduprof_filtered_{test_case_id}_{interference}.csv")
     
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
@@ -92,35 +94,29 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     social_network_script = "/home/ubuntu/Workspace/run_social_network.sh"
     wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
     
-    print("Starting system-level monitoring...")
+    print("Coordinator: Starting system-level monitoring...")
     perf_monitoring(duration, 5000, perf_raw_file)
+    amduprof_monitoring(duration, 5000, amduprof_raw_file, amduprof_filtered_file)
     
-    print("Starting workload traffic...")
+    print("Coordinator: Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
-    #Print starting time from datetime now
-    print("Starting time: ", datetime.datetime.now())
+    print("Coordinator: Starting time = ", datetime.datetime.now())
     workload_output = run_workload(social_network_script, threads, connections, duration, reqs_per_sec, wrk2_script_path)
-    #Print ending time from datetime now
-    print("Ending time: ", datetime.datetime.now())
-    
-    print("Waiting for workload to complete...")
-    # If run_workload is asynchronous, you could wait here; 
-    # assuming it runs synchronously and returns when done.
+    print("Coordinator: Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
+    print("Coordinator: Waiting for workload to complete...")
     end_time_str = str(int(time.time()))
-    # Print ending time from datetime now
-    print("Ending time 2: ", datetime.datetime.now())
     
-    print("Collecting and processing metrics...")
-    # Container-Level Metrics
+    print("Coordinator: Starting Container-level monitoring...")
     collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
-    # Workload-Level Metrics
+    print("Coordinator: Container-level monitoring completed.")
+
     workload_metrics = parse_workload_output(workload_output)
     
-    print("Storing metrics to CSV files...")
+    print("Coordinator: Store workload metrics...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
     
     print(f"Test Case {test_case_id} with Interference {interference} completed.")
-    print(f"System logs: {perf_raw_file}, {amduprof_raw_file}")
+    print(f"System logs: {perf_raw_file}, {amduprof_raw_file}, {amduprof_filtered_file}")
     print(f"Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
 
 def main():
