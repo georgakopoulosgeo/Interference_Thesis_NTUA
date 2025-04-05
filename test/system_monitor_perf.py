@@ -3,7 +3,7 @@ import subprocess
 import csv
 import os
 
-def run_combined_perf(duration: int, interval: int, output_csv: str) -> subprocess.Popen:
+def run_combined_perf(duration: int, interval: int, output_csv: str) -> None:
     """
     Run a single perf command that collects:
       - Memory traffic counters:
@@ -39,7 +39,13 @@ def run_combined_perf(duration: int, interval: int, output_csv: str) -> subproce
         "sleep", str(duration)
     ]
     # Start the perf command; its output will be directed to output_csv
-    return subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    print("Perf: Executing command:", " ".join(cmd))
+    process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    print("Perf: perf stat finished with return code:", process.returncode)
+    if process.stdout:
+        print("Perf: stdout:", process.stdout)
+    if process.stderr:
+        print("Perf: stderr:", process.stderr)
 
 def parse_perf_csv(csv_file: str) -> list:
     """
@@ -63,7 +69,7 @@ def perf_monitoring(duration: int, interval: int, output_csv: str):
     # interval = 5000
 
     print("Perf: Starting monitoring ...")
-    perf_process = run_combined_perf(duration, interval, output_csv)
+    run_combined_perf(duration, interval, output_csv)
     # You can later run this in a separate thread or process as required.
     # perf_process.wait()  # Wait for the perf command to complete
 
