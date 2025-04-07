@@ -11,6 +11,9 @@
   ├── VM_Workload_Test_Cases.csv
 
 
+// Prometheus
+ssh -L 9090:localhost:9090 ubuntu@147.102.13.70
+
 // Format of CSVs
 workload_metrics:
 TestCaseID,Interference,Date,Throughput,Avg_Latency,P50_Latency,P75_Latency,P90_Latency,P99_Latency,Max_Latency
@@ -28,22 +31,19 @@ time,ls_dmnd_fills_from_sys.mem_io_local,ls_hw_pf_dc_fills.mem_io_local,ls_sw_pf
 amduprof:
 IPC (Sys + User),CPI (Sys + User),L2 Miss (pti),L2 Access (pti),L2 Hit (pti),Giga Instructions Per Sec
 
-// Prometheus
-ssh -L 9090:localhost:9090 ubuntu@147.102.13.70
 
+// Create a new .csv using the formulas:
 
-4. Create a new .csv using the formulas:
- Total_Bytes_Read = (F_demand + F_hw_prefetch + F_sw_prefetch) × Cache_Line_Size
+Total_Bytes_Read = (F_demand + F_hw_prefetch + F_sw_prefetch) × Cache_Line_Size
 where:
 • F_demand is the count from ls_dmnd_fills_from_sys.mem_io_local
 • F_hw_prefetch is the count from ls_hw_pf_dc_fills.mem_io_local
 • F_sw_prefetch is the count from ls_sw_pf_dc_fills.mem_io_local
 • Cache_Line_Size is typically 64 bytes
+
 Total_Bytes_Writes ≈ (Store_Count) × (Average_Write_Size)
 Where:  
 • Store_Count is the count from ls_dispatch.store_dispatch
 • Average_Write_Size is the typical size of each write (e.g., 8 bytes for a 64-bit operation)
-IPC = (instructions) / (cpu-cycles)
 
-all the other information will be stored as they were monitored.
-(Keep in mind that this data is high resolution, meaning that for each )
+IPC = (instructions) / (cpu-cycles)
