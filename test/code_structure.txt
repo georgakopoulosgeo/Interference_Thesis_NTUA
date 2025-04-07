@@ -26,7 +26,7 @@ TestCaseID,Interference,Date,Container_ID,Container_Name,Avg_CPU_Usage,Avg_Memor
 
 system_metrics:
 perf:
-time,ls_dmnd_fills_from_sys.mem_io_local,ls_hw_pf_dc_fills.mem_io_local,ls_sw_pf_dc_fills.mem_io_local,ls_dispatch.store_dispatch,instructions,cpu-cycles,cache-misses,page-faults,major-faults
+timestamp,ls_dmnd_fills_from_sys.mem_io_local,ls_hw_pf_dc_fills.mem_io_local,ls_sw_pf_dc_fills.mem_io_local,ls_dispatch.store_dispatch,instructions,cpu-cycles,cache-misses,page-faults,major-faults
 
 amduprof:
 IPC (Sys + User),CPI (Sys + User),L2 Miss (pti),L2 Access (pti),L2 Hit (pti),Giga Instructions Per Sec
