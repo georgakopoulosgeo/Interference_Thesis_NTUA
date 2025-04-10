@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  ibench_cpu:
+    image: ibench
+    container_name: ibench_cpu
+    cpuset: "0-1"                    # Fixed to cores 0 and 1 (4 threads total)
+    # The command takes the duration argument from the environment variable DURATION.
+    command: [ "./cpu", "${DURATION}" ]
+    restart: "no"
