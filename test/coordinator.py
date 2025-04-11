@@ -11,6 +11,7 @@ from workload_run_monitor import run_workload, parse_workload_output, store_work
 from container_monitor import collect_container_metrics
 from system_monitor_perf import perf_monitoring
 from system_monitor_amduprof import amduprof_monitoring
+from system_monitor_intepcm import pcm_monitoring
 import threading
 
 # Global configuration
@@ -77,12 +78,16 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     perf_csv = os.path.join(baseline_results_dir, f"perf_metrics_{test_case_id}_{interference}.csv")
     amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{interference}.txt")
     amduprof_filtered_file = os.path.join(baseline_results_dir, f"amduprof_filtered_{test_case_id}_{interference}.csv")
+    pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{test_case_id}_{interference}.csv")
+    pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_metrics_{test_case_id}_{interference}.csv")
+    pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_metrics_{test_case_id}_{interference}.csv")
     
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
     system_csv = os.path.join(baseline_results_dir, "system_metrics.csv")
     detail_csv_path = os.path.join(baseline_results_dir, f"container_metrics_detail_{test_case_id}_{interference}.csv")
     agg_csv_path = os.path.join(baseline_results_dir, f"container_metrics_agg_{test_case_id}_{interference}.csv")
+
 
     
     # Read workload parameters from the test cases CSV.
@@ -99,7 +104,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     print("Coordinator: Starting system-level monitoring...")
     # Run perf_monitoring and amduprof_monitoring in parallel using threads
     perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
-    amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
+    #amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
+    intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+5, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
 
     # ChatGPT comment:
     # Using a thread to run a function that spawns a subprocess is perfectly acceptable.
@@ -108,7 +114,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
 
     # Start both threads
     perf_thread.start()
-    amduprof_thread.start()
+    #amduprof_thread.start()
+    intelpcm_thread.start()
     time.sleep(1)  # Give some time for the monitoring to start
     
     print("Coordinator: Starting workload traffic...")
@@ -129,11 +136,13 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
 
     # Wait for monitoring threads to finish
     perf_thread.join()
-    amduprof_thread.join()
+    #amduprof_thread.join()
+    intelpcm_thread.join()
     
     print(f"Coordinator: Test Case {test_case_id} with Interference {interference} completed.")
     print(f"Coordinator: System logs: {perf_raw_file}, {amduprof_raw_file}, {amduprof_filtered_file}")
     print(f"Coordinator: Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
+    print(f"Coordinator: PCM logs: {pcm_raw_file}, {pcm_system_csv}, {pcm_core_csv}")
 
 def main():
     args = parse_arguments()
