@@ -98,7 +98,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     reqs_per_sec = params["REQS_PER_SEC"]
     
     # Define workload script paths.
-    social_network_script = "/home/ubuntu/Workspace/run_social_network.sh"
+    social_network_script = "/home/george/Workspace/run_social_network.sh"
     wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
     
     print("Coordinator: Starting system-level monitoring...")
@@ -113,7 +113,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # This setup allows you to run external commands asynchronously, which is often helpful in keeping your main application responsive.
 
     # Start both threads
-    perf_thread.start()
+    #perf_thread.start()
     #amduprof_thread.start()
     intelpcm_thread.start()
     time.sleep(1)  # Give some time for the monitoring to start
@@ -135,7 +135,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
 
     # Wait for monitoring threads to finish
-    perf_thread.join()
+    #perf_thread.join()
     #amduprof_thread.join()
     intelpcm_thread.join()
     
