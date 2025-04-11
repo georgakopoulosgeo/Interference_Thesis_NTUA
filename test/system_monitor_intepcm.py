@@ -2,6 +2,7 @@
 import subprocess
 import csv
 import os
+import sys
 
 def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     """
@@ -18,6 +19,9 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
         with open(output_csv, 'w') as f:
             f.write("")
 
+    # Go to the directory where the PCM tool is located.
+    pcm_dir = "/home/george/Workspace/pcm/build/bin"
+    os.chdir(pcm_dir)
     cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
     print("Executing PCM command:", " ".join(cmd))
     try:
@@ -26,6 +30,9 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
         print("PCM monitoring completed: duration reached.")
     except subprocess.CalledProcessError as e:
         print(f"Error running PCM: {e}")
+    print("PCM monitoring finished. Output written to", output_csv)
+    # Return to the original directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, desired_keywords: list) -> None:
     """
@@ -45,42 +52,42 @@ def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, des
             (b) the metric header (second row) contains at least one of the desired_keywords.
     """
     with open(raw_file, mode='r', newline='') as infile:
-        reader = csv.reader(infile)
-        header_domain = next(reader)  # first header row: domains (e.g., System, Socket, Core)
-        header_metric = next(reader)  # second header row: metric names (e.g., Date, IPC, L2MISS, etc.)
-        
-        # Prepare lists of indices to keep.
-        indices_to_keep = []
-        for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
-            met_lower = met.strip().lower()
-            dom_lower = dom.strip().lower()
-            # Always include if the metric is "date" or "time"
-            if met_lower in ("date", "time"):
-                indices_to_keep.append(idx)
-            else:
-                # Check if the metric contains any desired keyword.
-                include_metric = any(kw in met_lower for kw in desired_keywords)
-                # Only include if the metric matches and the domain header contains the domain_filter.
-                if include_metric and (domain_filter in dom_lower):
+            reader = csv.reader(infile)
+            header_domain = next(reader)  # first header row: domains (e.g., System, Socket, Core)
+            header_metric = next(reader)  # second header row: metric names (e.g., Date, IPC, L2MISS, etc.)
+            
+            # Prepare lists of indices to keep.
+            indices_to_keep = []
+            for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
+                met_lower = met.strip().lower()
+                dom_lower = dom.strip().lower()
+                # Always include if the metric is "date" or "time"
+                if met_lower in ("date", "time"):
                     indices_to_keep.append(idx)
+                else:
+                    # Check if the metric contains any desired keyword.
+                    include_metric = any(kw in met_lower for kw in desired_keywords)
+                    # Only include if the metric matches and the domain header contains the domain_filter.
+                    if include_metric and (domain_filter in dom_lower):
+                        indices_to_keep.append(idx)
 
-        if not indices_to_keep:
-            print(f"No columns matched for domain filter '{domain_filter}' with the desired keywords.")
-            return
+            if not indices_to_keep:
+                print(f"No columns matched for domain filter '{domain_filter}' with the desired keywords.")
+                return
 
-        # Write filtered data: include both header rows and all subsequent rows.
-        with open(output_csv, mode='w', newline='') as outfile:
-            writer = csv.writer(outfile)
-            # Write filtered header rows
-            filtered_header_domain = [header_domain[i] for i in indices_to_keep]
-            filtered_header_metric = [header_metric[i] for i in indices_to_keep]
-            writer.writerow(filtered_header_domain)
-            writer.writerow(filtered_header_metric)
-            # Write the rest of the data
-            for row in reader:
-                filtered_row = [row[i] for i in indices_to_keep]
-                writer.writerow(filtered_row)
-        print(f"Filtered CSV written to {output_csv} using domain filter '{domain_filter}'.")
+            # Write filtered data: include both header rows and all subsequent rows.
+            with open(output_csv, mode='w', newline='') as outfile:
+                writer = csv.writer(outfile)
+                # Write filtered header rows
+                filtered_header_domain = [header_domain[i] for i in indices_to_keep]
+                filtered_header_metric = [header_metric[i] for i in indices_to_keep]
+                writer.writerow(filtered_header_domain)
+                writer.writerow(filtered_header_metric)
+                # Write the rest of the data
+                for row in reader:
+                    filtered_row = [row[i] for i in indices_to_keep]
+                    writer.writerow(filtered_row)
+            print(f"Filtered CSV written to {output_csv} using domain filter '{domain_filter}'.")
 
 def pcm_monitoring(duration: int, interval: int, raw_csv: str, system_csv: str, core_csv: str) -> None:
     # Configuration parameters
