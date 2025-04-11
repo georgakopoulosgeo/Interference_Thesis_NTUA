@@ -13,6 +13,11 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
       interval: Sampling interval in seconds (e.g., 300 for 5 minutes per sample).
       output_csv: Filename for the raw PCM CSV output.
     """
+    # If output_csv does not exist, create it.
+    if not os.path.exists(output_csv):
+        with open(output_csv, 'w') as f:
+            f.write("")
+
     cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
     print("Executing PCM command:", " ".join(cmd))
     try:
