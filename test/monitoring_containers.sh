@@ -28,13 +28,13 @@ case "$1" in
     # 8080: Inside the container
     # 8085: Host machine
 
-    echo "Waiting 5 seconds for cAdvisor to initialize..."
-    sleep 5
+    echo "Waiting 2 seconds for cAdvisor to initialize..."
+    sleep 2
 
     echo "Starting Prometheus container..."
     docker run --network host --name=prometheus -d \
       -p 9090:9090 \
-      -v /home/ubuntu/Workspace/prometheus.yml:/etc/prometheus/prometheus.yml \
+      -v /home/george/Workspace/prometheus.yml:/etc/prometheus/prometheus.yml \
       prom/prometheus:latest
     ;;
 
