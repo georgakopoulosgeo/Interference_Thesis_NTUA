@@ -25,7 +25,7 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
     print("Executing PCM command:", " ".join(cmd))
     try:
-        subprocess.run(cmd, timeout=duration, check=True)
+        subprocess.run(cmd, timeout=duration)
     except subprocess.TimeoutExpired:
         print("PCM monitoring completed: duration reached.")
     except subprocess.CalledProcessError as e:
@@ -75,14 +75,12 @@ def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, des
                 print(f"No columns matched for domain filter '{domain_filter}' with the desired keywords.")
                 return
 
-            # Write filtered data: include both header rows and all subsequent rows.
+            # Write filtered data: combine first two header rows and include all subsequent rows.
             with open(output_csv, mode='w', newline='') as outfile:
                 writer = csv.writer(outfile)
-                # Write filtered header rows
-                filtered_header_domain = [header_domain[i] for i in indices_to_keep]
-                filtered_header_metric = [header_metric[i] for i in indices_to_keep]
-                writer.writerow(filtered_header_domain)
-                writer.writerow(filtered_header_metric)
+                # Combine first two header rows
+                combined_header = [f"{header_domain[i]} - {header_metric[i]}" for i in indices_to_keep]
+                writer.writerow(combined_header)
                 # Write the rest of the data
                 for row in reader:
                     filtered_row = [row[i] for i in indices_to_keep]
