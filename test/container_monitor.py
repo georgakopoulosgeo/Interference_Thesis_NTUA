@@ -73,20 +73,24 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
       - Network I/O (in/out): rate(container_network_receive_bytes_total[5s]) and rate(container_network_transmit_bytes_total[5s])
     """
     # Define the queries – adjust label filters as necessary.
-    query_cpu = 'rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
+    query_cpu = 'irate(container_cpu_usage_seconds_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
     query_mem = 'container_memory_usage_bytes{container_label_com_docker_compose_project="socialnetwork_app"}'
-    query_disk_read = 'rate(container_fs_reads_bytes_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
-    query_disk_write = 'rate(container_fs_writes_bytes_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
-    query_net_in = 'rate(container_network_receive_bytes_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
-    query_net_out = 'rate(container_network_transmit_bytes_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
-    
+    query_disk_read = 'irate(container_fs_reads_seconds_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
+    query_disk_write = 'irate(container_fs_writes_seconds_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
+    query_fs_usage = 'container_fs_usage_bytes{container_label_com_docker_compose_project="socialnetwork_app"}'
+    query_net_in = 'irate(container_network_receive_bytes_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
+    query_net_out = 'irate(container_network_transmit_bytes_total{container_label_com_docker_compose_project="socialnetwork_app"}[5s])'
+    query_processes = 'container_processes{container_label_com_docker_compose_project="socialnetwork_app"}'
+
     # Query Prometheus for each metric over the experiment window.
     cpu_data = query_range(query_cpu, start_time, end_time, step)
     mem_data = query_range(query_mem, start_time, end_time, step)
     disk_read_data = query_range(query_disk_read, start_time, end_time, step)
     disk_write_data = query_range(query_disk_write, start_time, end_time, step)
+    fs_usage_data = query_range(query_fs_usage, start_time, end_time, step)
     net_in_data = query_range(query_net_in, start_time, end_time, step)
     net_out_data = query_range(query_net_out, start_time, end_time, step)
+    processes_data = query_range(query_processes, start_time, end_time, step)
     
     # Merge the data from all queries into a detailed data structure.
     detailed_data = {}
@@ -94,8 +98,10 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
     merge_metric("Memory_Usage", mem_data, detailed_data)
     merge_metric("Disk_IO_Read", disk_read_data, detailed_data)
     merge_metric("Disk_IO_Write", disk_write_data, detailed_data)
+    merge_metric("FS_Usage", fs_usage_data, detailed_data)
     merge_metric("Net_IO_In", net_in_data, detailed_data)
     merge_metric("Net_IO_Out", net_out_data, detailed_data)
+    merge_metric("Processes", processes_data, detailed_data)
     
     # Write detailed CSV file.
     # Columns: TestCaseID, Interference, Date, Timestamp, Container_ID,
@@ -103,7 +109,7 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
     with open(detail_csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(["TestCaseID", "Interference", "Date", "Timestamp", "Container_ID", "Container_Name",
-                         "CPU_Usage", "Memory_Usage", "Disk_IO_Read", "Disk_IO_Write", "Net_IO_In", "Net_IO_Out"])
+                         "CPU_Usage", "Memory_Usage", "Disk_IO_Read", "Disk_IO_Write", "FS Usage", "Net_IO_In", "Net_IO_Out", "Processes"])
         for cid in sorted(detailed_data.keys()):
             for ts in sorted(detailed_data[cid].keys()):
                 cname = container_names.get(cid, "unknown")
@@ -113,8 +119,10 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
                                  metrics.get("Memory_Usage", ""),
                                  metrics.get("Disk_IO_Read", ""),
                                  metrics.get("Disk_IO_Write", ""),
+                                 metrics.get("FS_Usage", ""),
                                  metrics.get("Net_IO_In", ""),
-                                 metrics.get("Net_IO_Out", "")])
+                                 metrics.get("Net_IO_Out", ""),
+                                 metrics.get("Processes", "")])
     
     # Compute aggregated metrics for each container.
     agg_data = {}
@@ -123,8 +131,10 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
         mem_vals = []
         disk_read_vals = []
         disk_write_vals = []
+        fs_vals = []
         net_in_vals = []
         net_out_vals = []
+        proc_vals = []
         for ts, metrics in ts_data.items():
             if "CPU_Usage" in metrics:
                 cpu_vals.append(metrics["CPU_Usage"])
@@ -134,6 +144,10 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
                 disk_read_vals.append(metrics["Disk_IO_Read"])
             if "Disk_IO_Write" in metrics:
                 disk_write_vals.append(metrics["Disk_IO_Write"])
+            if "FS_Usage" in metrics:
+                fs_vals.append(metrics["FS_Usage"])
+            if "Processes" in metrics:
+                proc_vals.append(metrics["Processes"]) 
             if "Net_IO_In" in metrics:
                 net_in_vals.append(metrics["Net_IO_In"])
             if "Net_IO_Out" in metrics:
@@ -143,6 +157,8 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
             "Avg_Memory_Usage": sum(mem_vals)/len(mem_vals) if mem_vals else None,
             "Avg_Disk_IO_Read": sum(disk_read_vals)/len(disk_read_vals) if disk_read_vals else None,
             "Avg_Disk_IO_Write": sum(disk_write_vals)/len(disk_write_vals) if disk_write_vals else None,
+            "Avg_FS_Usage": sum(fs_vals)/len(fs_vals) if fs_vals else None,
+            "Avg_Processes": sum(proc_vals)/len(proc_vals) if proc_vals else None,
             "Avg_Net_IO_In": sum(net_in_vals)/len(net_in_vals) if net_in_vals else None,
             "Avg_Net_IO_Out": sum(net_out_vals)/len(net_out_vals) if net_out_vals else None,
         }
@@ -153,14 +169,14 @@ def collect_container_metrics(prom_url, start_time, end_time, step, test_case_id
     with open(agg_csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(["TestCaseID", "Interference", "Date", "Container_ID", "Container_Name",
-                         "Avg_CPU_Usage", "Avg_Memory_Usage", "Avg_Disk_IO_Read", "Avg_Disk_IO_Write",
-                         "Avg_Net_IO_In", "Avg_Net_IO_Out"])
+                         "Avg_CPU_Usage", "Avg_Memory_Usage", "Avg_Disk_IO_Read", "Avg_Disk_IO_Write", "Avg_FS_Usage",
+                         "Avg_Net_IO_In", "Avg_Net_IO_Out", "Avg_Processes"])
         for cid in sorted(agg_data.keys()):
             cname = container_names.get(cid, "unknown")
             agg = agg_data[cid]
             writer.writerow([test_case_id, interference, date_str, cid, cname,
                              agg["Avg_CPU_Usage"], agg["Avg_Memory_Usage"], agg["Avg_Disk_IO_Read"],
-                             agg["Avg_Disk_IO_Write"], agg["Avg_Net_IO_In"], agg["Avg_Net_IO_Out"]])
+                             agg["Avg_Disk_IO_Write"], agg["Avg_FS_Usage"], agg["Avg_Net_IO_In"], agg["Avg_Net_IO_Out"], agg["Avg_Processes"]])
     
     print(f"Detailed metrics stored in {detail_csv_path}")
     print(f"Aggregated metrics stored in {agg_csv_path}")

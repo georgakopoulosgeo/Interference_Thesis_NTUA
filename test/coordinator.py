@@ -103,7 +103,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     print("Coordinator: Starting system-level monitoring...")
     # Run perf_monitoring and amduprof_monitoring in parallel using threads
-    #perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
+    perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
     #amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
     intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+5, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
 
@@ -113,7 +113,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # This setup allows you to run external commands asynchronously, which is often helpful in keeping your main application responsive.
 
     # Start both threads
-    #perf_thread.start()
+    perf_thread.start()
     #amduprof_thread.start()
     intelpcm_thread.start()
     time.sleep(1)  # Give some time for the monitoring to start
@@ -135,14 +135,13 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
 
     # Wait for monitoring threads to finish
-    #perf_thread.join()
+    perf_thread.join()
     #amduprof_thread.join()
     intelpcm_thread.join()
     
     print(f"Coordinator: Test Case {test_case_id} with Interference {interference} completed.")
-    print(f"Coordinator: System logs: {perf_raw_file}, {amduprof_raw_file}, {amduprof_filtered_file}")
+    print(f"Coordinator: System logs: {perf_raw_file}, {pcm_core_csv}, {pcm_system_csv}")
     print(f"Coordinator: Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
-    print(f"Coordinator: PCM logs: {pcm_raw_file}, {pcm_system_csv}, {pcm_core_csv}")
 
 def main():
     args = parse_arguments()

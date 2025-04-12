@@ -20,15 +20,28 @@ def run_combined_perf(duration: int, interval: int, output_csv: str) -> None:
     """
     # Combine all events into a single comma separated string
     events = (
-        "ls_dmnd_fills_from_sys.mem_io_local,"
-        "ls_hw_pf_dc_fills.mem_io_local,"
-        "ls_sw_pf_dc_fills.mem_io_local,"
-        "ls_dispatch.store_dispatch,"
-        "instructions,"
-        "cpu-cycles,"
+        "task-clock,"
+        "branches,"
+        "branch-instructions,"
+        "branch-misses,"
+        "stalled-cycles-frontend,"
+        "stalled-cycles-backend,"
+        "bus-cycles,"
+        "L2 cache-misses,"
+        "C0-residency,"
+        "C1-residency,"
+        "C6-residency,"
+        "cache-references,"
         "cache-misses,"
-        "page-faults,"
-        "major-faults"
+        "LLC-loads,"
+        "LLC-load-misses,"
+        "LLC-stores,"
+        "LLC-store-misses,"
+        "cycle_activity.stalls_l3_miss,"
+        "mem-loads,"
+        "mem-stores,"
+        "dtlb_load_misses.stlb_hit,"
+        "page-faults"
     )
     cmd = [
         "perf", "stat", "--csv",
@@ -55,15 +68,28 @@ def parse_perf_csv(raw_file: str, output_csv: str) -> None:
 
     # Define the order of events we expect (excluding the time column)
     events_order = [
-        "ls_dmnd_fills_from_sys.mem_io_local",
-        "ls_hw_pf_dc_fills.mem_io_local",
-        "ls_sw_pf_dc_fills.mem_io_local",
-        "ls_dispatch.store_dispatch",
-        "instructions",
-        "cpu-cycles",
+        "task-clock",
+        "branches",
+        "branch-instructions",
+        "branch-misses",
+        "stalled-cycles-frontend",
+        "stalled-cycles-backend",
+        "bus-cycles",
+        "L2 cache-misses",
+        "C0-residency",
+        "C1-residency",
+        "C6-residency",
+        "cache-references",
         "cache-misses",
-        "page-faults",
-        "major-faults"
+        "LLC-loads",
+        "LLC-load-misses",
+        "LLC-stores",
+        "LLC-store-misses",
+        "cycle_activity.stalls_l3_miss",
+        "mem-loads",
+        "mem-stores",
+        "dtlb_load_misses.stlb_hit",
+        "page-faults"
     ]
     
     samples = []       # List to hold each sample as a dictionary.
