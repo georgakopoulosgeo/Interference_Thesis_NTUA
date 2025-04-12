@@ -40,7 +40,7 @@ def run_combined_perf(duration: int, interval: int, output_csv: str) -> None:
         "page-faults"
     )
     cmd = [
-        "perf", "stat", "--csv",
+        "sudo perf", "stat", "--csv",
         "-I", str(interval),
         "-e", events,
         "-a",  # system-wide measurement
