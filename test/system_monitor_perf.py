@@ -27,10 +27,6 @@ def run_combined_perf(duration: int, interval: int, output_csv: str) -> None:
         "stalled-cycles-frontend,"
         "stalled-cycles-backend,"
         "bus-cycles,"
-        "L2 cache-misses,"
-        "C0-residency,"
-        "C1-residency,"
-        "C6-residency,"
         "cache-references,"
         "cache-misses,"
         "LLC-loads,"
@@ -75,10 +71,6 @@ def parse_perf_csv(raw_file: str, output_csv: str) -> None:
         "stalled-cycles-frontend",
         "stalled-cycles-backend",
         "bus-cycles",
-        "L2 cache-misses",
-        "C0-residency",
-        "C1-residency",
-        "C6-residency",
         "cache-references",
         "cache-misses",
         "LLC-loads",
