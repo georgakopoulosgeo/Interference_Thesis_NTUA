@@ -6,7 +6,7 @@ import time
 
 # Global configuration
 PROMETHEUS_URL = "http://localhost:9090"
-STEP = "5"  # 5-second resolution
+STEP = "10"  # 5-second resolution
 container_names = {} # Global dictionary to store container names for each container ID
 
 def query_range(query, start_time, end_time, step):
@@ -14,6 +14,7 @@ def query_range(query, start_time, end_time, step):
     Query the Prometheus API for a given PromQL query over the specified time range.
     Returns a dictionary keyed by container ID, each with a list of (timestamp, value) pairs.
     """
+    step = STEP
     url = f"{PROMETHEUS_URL}/api/v1/query_range"
     params = {
         "query": query,

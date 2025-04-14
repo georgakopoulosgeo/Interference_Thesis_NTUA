@@ -105,7 +105,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Run perf_monitoring and amduprof_monitoring in parallel using threads
     perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
     #amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
-    intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+5, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
+    intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
 
     # ChatGPT comment:
     # Using a thread to run a function that spawns a subprocess is perfectly acceptable.
