@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wrk2-compose-post
+spec:
+  ttlSecondsAfterFinished: 60
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: wrk2
+        image: wrk2-socialnetwork:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/usr/local/bin/wrk"]
+        args:
+          - "-D"
+          - "exp"
+          - "-t"
+          - "2"
+          - "-c"
+          - "200"
+          - "-d"
+          - "60"
+          - "-L"
+          - "-s"
+          - "/workspace/scripts/social-network/compose-post.lua"
+          - "http://nginx-thrift:8080/wrk2-api/post/compose"
+          - "-R"
+          - "100"

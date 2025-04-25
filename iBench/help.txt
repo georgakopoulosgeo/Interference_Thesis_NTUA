@@ -1,0 +1,96 @@
+////////////////////////////////////////////////////////////
+# Minikube commands
+
+# Stop and remove any existing Minikube cluster
+echo "Stopping and deleting existing Minikube..."
+minikube stop
+minikube delete
+
+# (Optional) Disable swap on host to avoid kubeadm swap checks
+# sudo swapoff -a
+
+# Start Minikube with static CPU Manager and swap-check disabled
+minikube start \
+  --driver=docker \
+  --cpus=8 \
+  --memory=8g \
+  --ignore-preflight-errors=Swap \
+  --extra-config=kubelet.cpu-manager-policy=static \
+  --extra-config=kubelet.cpu-manager-reconcile-period=5s \
+  --extra-config=kubeadm.ignore-preflight-errors=Swap
+
+# Verify the node is ready and CPU Manager policy is static
+kubectl get nodes
+kubectl describe node minikube | grep -i "CPU Manager Policy"
+
+# (Optional) Re-enable swap after testing
+# sudo swapon -a
+
+////////////////////////////////////////////////////////////
+PROBLEM: cpu-manager-policy=static DOESN'T WORK
+
+# As a result we started minikube using the following command:
+
+minikube start --driver=docker --cpus=max --memory=max
+
+////////////////////////////////////////////////////////////
+# iBench Image
+
+# The ibench is build in the host os. We have to load it inot minikube
+minikube image load ibench:latest
+
+////////////////////////////////////////////////////////////
+# Stressing commands
+
+///// CPU 
+# Deploy CPU stress pods (1 thread per pod)
+# Replace <N> with the desired number of replicas (e.g., 1,2,4,8)
+python3 deploy_replicas.py <N> --namespace default
+
+# Alternatively, using kubectl directly:
+# Update replicas in YAML and apply
+kubectl apply -f /home/george/Workspace/iBench/ibench-cpu-deploy.yaml
+kubectl scale deployment ibench-cpu --replicas=<N>
+
+# Wait for 90 seconds while CPU stress runs
+sleep 90
+
+# Clean up CPU stress deployment
+kubectl delete deployment ibench-cpu
+# or, equivalently:
+kubectl delete -f ibench-cpu-deploy.yaml
+
+# Verify the new replica count and pod status
+kubectl get deployment ibench-cpu
+kubectl get pods -l app=ibench-cpu
+
+
+///// L3
+# Deploy L3 cache stress pods (each accesses 50% of LLC)
+# Replace <M> with the desired number of replicas (e.g., 1,2,4,8)
+python3 deploy_ibench_l3.py <M> --namespace default
+
+# Alternatively, using kubectl directly:
+kubectl apply -f /home/george/Workspace/iBench/ibench-l3-deploy.yaml
+kubectl scale deployment ibench-l3 --replicas=<M>
+
+# Wait for 80 seconds while L3 stress runs
+sleep 80
+
+# Clean up L3 stress deployment
+kubectl delete deployment ibench-l3
+
+///// memBw
+# Deploy memBw stress pods (each creates 1 stream to DRAM)
+# Replace <M> with the desired number of replicas (e.g., 1,2,4,8)
+python3 deploy_ibench_membw.py <M> --namespace default
+
+# Alternatively, using kubectl directly:
+kubectl apply -f /home/george/Workspace/iBench/ibench-membw-deploy.yaml
+kubectl scale deployment ibench-membw --replicas=<M>
+
+# Wait for 80 seconds while memBw stress runs
+sleep 80
+
+# Clean up memBw stress deployment
+kubectl delete deployment ibench-membw
