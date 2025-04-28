@@ -4,13 +4,13 @@ import csv
 import os
 import re
 
-def run_workload(social_network_script: str, threads: int, connections: int, duration: int, reqs_per_sec: int, wrk2_script_path: str) -> str:
+def run_workload(script: str, threads: int, connections: int, duration: int, reqs_per_sec: int, wrk2_script_path: str) -> str:
     """
     Run the workload traffic using the specified parameters.
     Returns the raw output of the workload run.
     """
     workload_cmd = [
-        social_network_script, "workload",
+        script, "workload",
         str(threads), str(connections), str(duration), str(reqs_per_sec), wrk2_script_path
     ]
     result = subprocess.run(workload_cmd, capture_output=True, text=True)

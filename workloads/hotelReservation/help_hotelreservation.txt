@@ -1,6 +1,6 @@
 # 1. Build the Docker image inside the minikube VM
 eval $(minikube docker-env)
-docker build -t deathstarbench/hotelreservation:latest .
+docker build -t igorrudyk1/hotelreservation:latest .
 
 # 2. Create the pods
 kubectl apply -Rf kubernetes/

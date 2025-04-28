@@ -15,8 +15,8 @@ from system_monitor_intepcm import pcm_monitoring
 import threading
 
 # Global configuration
-PROMETHEUS_URL = "http://localhost:9090"
-STEP = "5"  # 10-second resolution
+#PROMETHEUS_URL = "http://localhost:9090"
+#STEP = "5"  # 10-second resolution
 
 def parse_arguments():
     # Parse command-line arguments.
@@ -33,7 +33,7 @@ def ensure_directories(script_dir, test_case_id):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "ResultsV05")
+    baseline_results_dir = os.path.join(script_dir, "HR_Metrics_V01")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, f"{test_case_id}_raw")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -74,10 +74,10 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
     
     # Define file paths for raw monitoring logs.
-    perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{interference}.txt")
-    perf_csv = os.path.join(baseline_results_dir, f"perf_metrics_{test_case_id}_{interference}.csv")
-    amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{interference}.txt")
-    amduprof_filtered_file = os.path.join(baseline_results_dir, f"amduprof_filtered_{test_case_id}_{interference}.csv")
+    #perf_raw_file = os.path.join(raw_log_folder, f"perf_raw_{test_case_id}_{interference}.txt")
+    #perf_csv = os.path.join(baseline_results_dir, f"perf_metrics_{test_case_id}_{interference}.csv")
+    #amduprof_raw_file = os.path.join(raw_log_folder, f"amduprof_raw_{test_case_id}_{interference}.txt")
+    #amduprof_filtered_file = os.path.join(baseline_results_dir, f"amduprof_filtered_{test_case_id}_{interference}.csv")
     pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{test_case_id}_{interference}.csv")
     pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_metrics_{test_case_id}_{interference}.csv")
     pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_metrics_{test_case_id}_{interference}.csv")
@@ -85,8 +85,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
     system_csv = os.path.join(baseline_results_dir, "system_metrics.csv")
-    detail_csv_path = os.path.join(baseline_results_dir, f"container_metrics_detail_{test_case_id}_{interference}.csv")
-    agg_csv_path = os.path.join(baseline_results_dir, f"container_metrics_agg_{test_case_id}_{interference}.csv")
+    #detail_csv_path = os.path.join(baseline_results_dir, f"container_metrics_detail_{test_case_id}_{interference}.csv")
+    #agg_csv_path = os.path.join(baseline_results_dir, f"container_metrics_agg_{test_case_id}_{interference}.csv")
 
 
     
@@ -99,11 +99,15 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     # Define workload script paths.
     social_network_script = "/home/george/Workspace/run_social_network.sh"
-    wrk2_script_path = "./wrk2/scripts/social-network/compose-post.lua"
+    wrk2_script_path_sn = "./wrk2/scripts/social-network/compose-post.lua"
+    # Define hotel reservation script paths.
+    hotel_reservation_script = "/home/george/Workspace/run_hotel_reservation.sh"
+    wrk2_script_path_hr = "../wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua"
+
     
     print("Coordinator: Starting system-level monitoring...")
     # Run perf_monitoring and amduprof_monitoring in parallel using threads
-    perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
+    # perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
     #amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
     intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
 
@@ -113,7 +117,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # This setup allows you to run external commands asynchronously, which is often helpful in keeping your main application responsive.
 
     # Start both threads
-    perf_thread.start()
+    #perf_thread.start()
     #amduprof_thread.start()
     intelpcm_thread.start()
     time.sleep(1)  # Give some time for the monitoring to start
@@ -121,12 +125,12 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     print("Coordinator: Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
     print("Coordinator: Workload Starting time = ", datetime.datetime.now())
-    workload_output = run_workload(social_network_script, threads, connections, duration, reqs_per_sec, wrk2_script_path)
+    workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
     print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
     
-    print("Coordinator: Starting Container-level monitoring...")
-    collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
+    #print("Coordinator: Starting Container-level monitoring...")
+    #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
     print("Coordinator: Container-level monitoring completed.")
 
     workload_metrics = parse_workload_output(workload_output)
@@ -135,13 +139,13 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)
 
     # Wait for monitoring threads to finish
-    perf_thread.join()
+    #perf_thread.join()
     #amduprof_thread.join()
     intelpcm_thread.join()
     
     print(f"Coordinator: Test Case {test_case_id} with Interference {interference} completed.")
-    print(f"Coordinator: System logs: {perf_raw_file}, {pcm_core_csv}, {pcm_system_csv}")
-    print(f"Coordinator: Results stored in: {workload_csv}, {system_csv}, {detail_csv_path}, {agg_csv_path}")
+    print(f"Coordinator: System logs:{pcm_core_csv}, {pcm_system_csv}")
+    print(f"Coordinator: Results stored in: {workload_csv}, {system_csv}")
 
 def main():
     args = parse_arguments()
