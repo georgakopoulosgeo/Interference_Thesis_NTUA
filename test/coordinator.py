@@ -102,7 +102,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     wrk2_script_path_sn = "./wrk2/scripts/social-network/compose-post.lua"
     # Define hotel reservation script paths.
     hotel_reservation_script = "/home/george/Workspace/run_hotel_reservation.sh"
-    wrk2_script_path_hr = "../wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua"
+    wrk2_script_path_hr = "./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua"
 
     
     print("Coordinator: Starting system-level monitoring...")

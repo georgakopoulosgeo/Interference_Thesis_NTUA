@@ -14,21 +14,21 @@ SCRIPT=$5
 
 # Change these paths if your layout differs
 HOTEL_RESERVATION_DIR="/home/george/Workspace/Interference/workloads/hotelReservation"
-WRK2_DIR="/home/george/Workspace/Interference/wrk2"
+WRK2_DIR="/home/george/Workspace/Interference/workloads/wrk2"
 TARGET_URL="http://127.0.0.1:5000"
 
 echo "Setting up and running workload generator..."
 
 # Enable port forwarding for the hotelReservation service
 
-
+# Already done!
 # Initialize any git submodules in the workload directory (if needed)
-cd "$HOTEL_RESERVATION_DIR" || exit
-git submodule update --init --recursive
+#cd "$HOTEL_RESERVATION_DIR" || exit
+#git submodule update --init --recursive
 
 # Build wrk2
-cd "$WRK2_DIR" || exit
-make
+#cd "$WRK2_DIR" || exit
+#make
 
 # Run wrk2 against the hotelReservation service
 cd "$HOTEL_RESERVATION_DIR" || exit
@@ -42,4 +42,4 @@ cd "$HOTEL_RESERVATION_DIR" || exit
     -R "$REQUESTS_PER_SEC"
 
 # Usage: 
-# ./run_hotel_reservation.sh 2 100 60s 1000 ../wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua
+# ./run_hotel_reservation.sh 2 100 60s 1000 ./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua
