@@ -11,7 +11,7 @@ def main():
     parser.add_argument("--namespace", default="default",
                         help="Kubernetes namespace")
     parser.add_argument("--deploy-file",
-                        default="/home/george/Workspace/iBench/ibench-membw-deploy.yaml",
+                        default="./iBench/ibench-membw-deploy.yaml",
                         help="Path to the membw Deployment YAML")
     parser.add_argument("--duration", type=int, default=80,
                         help="Seconds to wait before deleting the deployment")

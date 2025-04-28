@@ -131,7 +131,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     
     #print("Coordinator: Starting Container-level monitoring...")
     #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
-    print("Coordinator: Container-level monitoring completed.")
+    #print("Coordinator: Container-level monitoring completed.")
 
     workload_metrics = parse_workload_output(workload_output)
     
