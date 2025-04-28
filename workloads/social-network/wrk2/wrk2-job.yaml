@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: wrk2-compose-post
+  namespace: social-network
 spec:
   ttlSecondsAfterFinished: 60
   backoffLimit: 3

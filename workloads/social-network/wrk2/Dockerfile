@@ -8,7 +8,7 @@
  COPY src/ src/
  COPY deps/ deps/
  COPY Makefile Makefile
-+COPY scripts/ scripts/
+ COPY scripts/ scripts/
 
  RUN make && make install
 
@@ -18,7 +18,7 @@
  COPY --from=builder /usr/local/lib/lua /usr/local/lib/lua
  COPY --from=builder /usr/local/lib/luarocks /usr/local/lib/luarocks
  COPY --from=builder /usr/local/share/lua /usr/local/share/lua
-+COPY --from=builder /workspace/scripts /workspace/scripts
+ COPY --from=builder /workspace/scripts /workspace/scripts
 
  CMD ["/bin/bash"]
 
