@@ -10,8 +10,7 @@ def run_workload(script: str, threads: int, connections: int, duration: int, req
     Returns the raw output of the workload run.
     """
     workload_cmd = [
-        script, "workload",
-        str(threads), str(connections), str(duration), str(reqs_per_sec), wrk2_script_path
+        script, str(threads), str(connections), str(duration), str(reqs_per_sec), wrk2_script_path
     ]
     result = subprocess.run(workload_cmd, capture_output=True, text=True)
     return result.stdout
