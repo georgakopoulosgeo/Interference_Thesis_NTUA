@@ -28,7 +28,7 @@ spec:
       containers:
         - command:
             - rate
-          image: deathstarbench/hotelreservation:latest
+          image: igorrudyk1/hotelreservation:latest
           imagePullPolicy: Always
           name: hotel-reserv-rate
           ports:
