@@ -1,0 +1,390 @@
+{
+  "service": {
+    "name": "hotelreservation",
+    "benchmark": "DeathStarBench",
+    "environment": {
+      "cluster": "minikube",
+      "nodes": 1,
+      "sockets": 1,
+      "cores_per_socket": 8
+    }
+  },
+  "baseline": {
+    "throughput_rps": 989.65,
+    "latency_ms": {
+      "avg": 4850.0,
+      "p50": 3650.0,
+      "p75": 6120.0,
+      "p90": 9430.0,
+      "p99": 19200.0,
+      "max": 72450.0
+    },
+    "hardware_counters": {
+      "System - IPC": 0.6646666666666667,
+      "System - L3MISS": 2.4226666666666667,
+      "System - L2MISS": 10.906,
+      "System - READ": 26.46933333333333,
+      "System - WRITE": 4.767333333333332,
+      "System Core C-States - C0res%": 3.9419999999999997,
+      "System Core C-States - C1res%": 92.22733333333332,
+      "System Core C-States - C6res%": 0.0
+    }
+  },
+  "interference_profiles": [
+    {
+      "id": "TC-VM-01-cpu12.5",
+      "type": "cpu12.5",
+      "avg_hardware_counters": {
+        "System - IPC": 0.7823076923076923,
+        "System - L3MISS": 4.233846153846153,
+        "System - L2MISS": 18.666923076923077,
+        "System - READ": 26.19846153846154,
+        "System - WRITE": 4.885384615384615,
+        "System Core C-States - C0res%": 8.035384615384615,
+        "System Core C-States - C1res%": 90.13076923076923,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 995.24,
+        "latency_ms": {
+          "avg": 7360.0,
+          "p50": 5510.0,
+          "p75": 9610.0,
+          "p90": 15190.0,
+          "p99": 28740.0,
+          "max": 85180.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 1.610816542948038,
+        "throughput_ratio": 1.0056484615773253
+      }
+    },
+    {
+      "id": "TC-VM-01-cpu25",
+      "type": "cpu25",
+      "avg_hardware_counters": {
+        "System - IPC": 0.8723076923076923,
+        "System - L3MISS": 9.30076923076923,
+        "System - L2MISS": 39.543076923076924,
+        "System - READ": 22.86846153846154,
+        "System - WRITE": 4.746923076923077,
+        "System Core C-States - C0res%": 20.37076923076923,
+        "System Core C-States - C1res%": 78.28384615384616,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 995.16,
+        "latency_ms": {
+          "avg": 12960.0,
+          "p50": 9250.0,
+          "p75": 17690.0,
+          "p90": 28210.0,
+          "p99": 51260.0,
+          "max": 125950.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 2.9915164369034994,
+        "throughput_ratio": 1.0055676249179002
+      }
+    },
+    {
+      "id": "TC-VM-01-cpu50",
+      "type": "cpu50",
+      "avg_hardware_counters": {
+        "System - IPC": 1.0146153846153847,
+        "System - L3MISS": 2.463076923076923,
+        "System - L2MISS": 9.247692307692308,
+        "System - READ": 16.290769230769232,
+        "System - WRITE": 4.386923076923077,
+        "System Core C-States - C0res%": 7.380000000000001,
+        "System Core C-States - C1res%": 92.07461538461537,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 985.14,
+        "latency_ms": {
+          "avg": 466440.0,
+          "p50": 328190.0,
+          "p75": 633850.0,
+          "p90": 1050000.0,
+          "p99": 2080000.0,
+          "max": 4530000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 111.34676564156946,
+        "throughput_ratio": 0.9954428333249129
+      }
+    },
+    {
+      "id": "TC-VM-01-cpu100",
+      "type": "cpu100",
+      "avg_hardware_counters": {
+        "System - IPC": 1.0600000000000003,
+        "System - L3MISS": 5.318461538461539,
+        "System - L2MISS": 21.18846153846153,
+        "System - READ": 12.633846153846152,
+        "System - WRITE": 3.451538461538462,
+        "System Core C-States - C0res%": 20.768461538461533,
+        "System Core C-States - C1res%": 79.16461538461537,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 685.76,
+        "latency_ms": {
+          "avg": 10670000.0,
+          "p50": 10530000.0,
+          "p75": 14530000.0,
+          "p90": 17380000.0,
+          "p99": 21170000.0,
+          "max": 24230000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 1843.0540827147402,
+        "throughput_ratio": 0.6929318445915222
+      }
+    },
+    {
+      "id": "TC-VM-01-l3_1",
+      "type": "l3_1",
+      "avg_hardware_counters": {
+        "System - IPC": 0.5630769230769231,
+        "System - L3MISS": 3.065384615384615,
+        "System - L2MISS": 7.523076923076924,
+        "System - READ": 36.53153846153846,
+        "System - WRITE": 22.444615384615382,
+        "System Core C-States - C0res%": 5.66,
+        "System Core C-States - C1res%": 93.0807692307692,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 968.02,
+        "latency_ms": {
+          "avg": 1340000.0,
+          "p50": 989700.0,
+          "p75": 1940000.0,
+          "p90": 3070000.0,
+          "p99": 4970000.0,
+          "max": 7620000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 325.5567338282078,
+        "throughput_ratio": 0.9781437882079523
+      }
+    },
+    {
+      "id": "TC-VM-01-l3_2",
+      "type": "l3_2",
+      "avg_hardware_counters": {
+        "System - IPC": 0.33399999999999996,
+        "System - L3MISS": 1.8780000000000001,
+        "System - L2MISS": 5.114666666666666,
+        "System - READ": 36.38666666666666,
+        "System - WRITE": 24.92266666666667,
+        "System Core C-States - C0res%": 5.914666666666665,
+        "System Core C-States - C1res%": 93.93866666666668,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 596.68,
+        "latency_ms": {
+          "avg": 13570000.0,
+          "p50": 13160000.0,
+          "p75": 18600000.0,
+          "p90": 22090000.0,
+          "p99": 26480000.0,
+          "max": 28880000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 2342.5238600212087,
+        "throughput_ratio": 0.6029202243217299
+      }
+    },
+    {
+      "id": "TC-VM-01-l3_4",
+      "type": "l3_4",
+      "avg_hardware_counters": {
+        "System - IPC": 0.19692307692307692,
+        "System - L3MISS": 1.9569230769230768,
+        "System - L2MISS": 4.430769230769231,
+        "System - READ": 33.03615384615385,
+        "System - WRITE": 25.839230769230767,
+        "System Core C-States - C0res%": 11.219230769230766,
+        "System Core C-States - C1res%": 88.78076923076924,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 186.05,
+        "latency_ms": {
+          "avg": 28820000.0,
+          "p50": 28820000.0,
+          "p75": 40470000.0,
+          "p90": 44790000.0,
+          "p99": 48560000.0,
+          "max": NaN
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 4749.7348886532345,
+        "throughput_ratio": 0.1879957560753802
+      }
+    },
+    {
+      "id": "TC-VM-01-membw_1",
+      "type": "membw_1",
+      "avg_hardware_counters": {
+        "System - IPC": 0.688,
+        "System - L3MISS": 2.500666666666667,
+        "System - L2MISS": 9.185333333333334,
+        "System - READ": 45.33933333333334,
+        "System - WRITE": 16.109333333333332,
+        "System Core C-States - C0res%": 4.986000000000001,
+        "System Core C-States - C1res%": 92.15066666666668,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 994.7,
+        "latency_ms": {
+          "avg": 24720.0,
+          "p50": 18300.0,
+          "p75": 32610.0,
+          "p90": 51010.0,
+          "p99": 102210.0,
+          "max": 288000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 5.40933191940615,
+        "throughput_ratio": 1.0051028141262064
+      }
+    },
+    {
+      "id": "TC-VM-01-membw_2",
+      "type": "membw_2",
+      "avg_hardware_counters": {
+        "System - IPC": 0.5327272727272728,
+        "System - L3MISS": 2.380909090909091,
+        "System - L2MISS": 6.992727272727273,
+        "System - READ": 47.48909090909091,
+        "System - WRITE": 18.849999999999998,
+        "System Core C-States - C0res%": 5.949090909090909,
+        "System Core C-States - C1res%": 93.80363636363637,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 771.89,
+        "latency_ms": {
+          "avg": 8070000.0,
+          "p50": 7860000.0,
+          "p75": 10930000.0,
+          "p90": 13480000.0,
+          "p99": 16970000.0,
+          "max": 19270000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 1429.4803817603392,
+        "throughput_ratio": 0.7799626130450159
+      }
+    },
+    {
+      "id": "TC-VM-01-membw_4",
+      "type": "membw_4",
+      "avg_hardware_counters": {
+        "System - IPC": 0.4338461538461538,
+        "System - L3MISS": 1.7384615384615383,
+        "System - L2MISS": 4.165384615384616,
+        "System - READ": 46.41615384615385,
+        "System - WRITE": 19.72153846153846,
+        "System Core C-States - C0res%": 5.999230769230768,
+        "System Core C-States - C1res%": 94.00076923076924,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 300.64,
+        "latency_ms": {
+          "avg": 24200000.0,
+          "p50": 23990000.0,
+          "p75": 33010000.0,
+          "p90": 38470000.0,
+          "p99": 42470000.0,
+          "max": 46100000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 4079.5334040296925,
+        "throughput_ratio": 0.3037841661193351
+      }
+    },
+    {
+      "id": "TC-VM-01-membw_8",
+      "type": "membw_8",
+      "avg_hardware_counters": {
+        "System - IPC": 0.4038461538461539,
+        "System - L3MISS": 2.436153846153846,
+        "System - L2MISS": 5.56923076923077,
+        "System - READ": 46.05692307692308,
+        "System - WRITE": 19.949230769230766,
+        "System Core C-States - C0res%": 9.075384615384614,
+        "System Core C-States - C1res%": 90.92461538461538,
+        "System Core C-States - C6res%": 0.0
+      },
+      "performance": {
+        "throughput_rps": 207.47,
+        "latency_ms": {
+          "avg": 27450000.0,
+          "p50": 27820000.0,
+          "p75": 37030000.0,
+          "p90": 43380000.0,
+          "p99": 47840000.0,
+          "max": 50070000.0
+        }
+      },
+      "sensitivity": {
+        "p90_latency_ratio": 4600.212089077412,
+        "throughput_ratio": 0.20963977163643713
+      }
+    }
+  ],
+  "model": {
+    "type": "Pipeline(StandardScaler + KNeighborsRegressor)",
+    "features": [
+      "System - IPC",
+      "System - L3MISS",
+      "System - L2MISS",
+      "System - READ",
+      "System - WRITE",
+      "System Core C-States - C0res%",
+      "System Core C-States - C1res%",
+      "System Core C-States - C6res%"
+    ],
+    "target": "P90_Latency",
+    "hyperparameters": {
+      "scaler": {
+        "with_mean": true,
+        "with_std": true
+      },
+      "knn": {
+        "n_neighbors": 5,
+        "weights": "uniform",
+        "metric": "minkowski"
+      }
+    },
+    "serialized_model_base64": "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"
+  },
+  "contentiousness": {
+    "System - IPC": 1.0600000000000003,
+    "System - L3MISS": 9.30076923076923,
+    "System - L2MISS": 39.543076923076924,
+    "System - READ": 47.48909090909091,
+    "System - WRITE": 25.839230769230767,
+    "System Core C-States - C0res%": 20.768461538461533,
+    "System Core C-States - C1res%": 94.00076923076924,
+    "System Core C-States - C6res%": 0.0
+  }
+}
