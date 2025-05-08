@@ -8,8 +8,8 @@ kubectl apply -Rf kubernetes/
 # 3. Wait for the pods to be up and running
 kubectl get pods
 
-# 4. Delete all pods
-kubectl delete pods --all -n default
+# 4. Delete Workload
+kubectl delete all --all -n default
 
 # 5. Port forwarding
 kubectl port-forward svc/frontend 5000:5000 -n default
