@@ -15,6 +15,15 @@ def run_workload(script: str, threads: int, connections: int, duration: int, req
     result = subprocess.run(workload_cmd, capture_output=True, text=True)
     return result.stdout
 
+def run_workload_single_pod(script, traffic):
+    """
+    Deploys the nginx workload using a Kubernetes Job via the given shell script.
+    'traffic' is one of: light, medium, heavy.
+    """
+    print(f"Coordinator: Deploying nginx workload job for traffic level '{traffic}'")
+    result = subprocess.run([script, traffic], capture_output=True, text=True, check=True)
+    return result.stdout
+
 def convert_latency_to_us(latency_str: str) -> float:
     """
     Helper function to convert a latency string to microseconds.

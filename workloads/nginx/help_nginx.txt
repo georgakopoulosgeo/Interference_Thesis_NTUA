@@ -1,0 +1,26 @@
+// Allow one node to run nginx
+kubectl label node my-multinode-demo-m02 nginx=true
+
+kubectl get nodes --show-labels
+
+// Create a Deployment and Service for nginx
+# 1. Create both Deployment and Service:
+kubectl apply -f nginx-deployment.yaml
+
+# 2. Wait for the Deployment to roll out:
+kubectl rollout status deployment/my-nginx
+
+# 3. Verify:
+kubectl get pods -o wide          # see the nginx Pod and its node
+kubectl get svc nginx-service     # see the ClusterIP
+
+// Update the number of replicas to 3
+kubectl scale deployment my-nginx --replicas=3
+
+
+// Load Generation (1 of 3 options)
+kubectl apply -f wrk-job-light.yaml
+# kubectl apply -f wrk-job-medium.yaml
+# kubectl apply -f wrk-job-heavy.yaml
+
+kubectl logs -f job/wrk-load

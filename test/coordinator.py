@@ -7,7 +7,7 @@ import subprocess
 import time
 
 # Import functions from the other modules (assumed to be implemented)
-from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics
+from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics, run_workload_single_pod
 from container_monitor import collect_container_metrics
 from system_monitor_perf import perf_monitoring
 from system_monitor_amduprof import amduprof_monitoring
@@ -33,7 +33,7 @@ def ensure_directories(script_dir, test_case_id):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "HR_Metrics_V01")
+    baseline_results_dir = os.path.join(script_dir, "Nginx_Metrics_V01")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, f"{test_case_id}_raw")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -91,11 +91,17 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
 
     
     # Read workload parameters from the test cases CSV.
-    params = read_test_case_parameters(test_cases_csv, test_case_id)
-    threads = params["THREADS"]
-    connections = params["CONNECTIONS"]
-    duration = params["DURATION"]
-    reqs_per_sec = params["REQS_PER_SEC"]
+
+    if test_case_id in ["light", "medium", "heavy"]:
+        print("Coordinator: Deploying nginx workload...")
+        run_nginx_script = "/home/george/Workshop/Interference/workloads/nginx/run_nginx.sh"
+        #workload_output = run_workload_single_pod(run_nginx_script, test_case_id)
+    else:
+        params = read_test_case_parameters(test_cases_csv, test_case_id)
+        threads = params["THREADS"]
+        connections = params["CONNECTIONS"]
+        duration = params["DURATION"]
+        reqs_per_sec = params["REQS_PER_SEC"]
     
     # Define workload script paths.
     social_network_script = "/home/george/Workspace/run_social_network.sh"
@@ -103,6 +109,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     # Define hotel reservation script paths.
     hotel_reservation_script = "/home/george/Workspace/run_hotel_reservation.sh"
     wrk2_script_path_hr = "./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua"
+    # Define nginx script paths.
+    nginx_script = "/home/george/Workshop/Interference/workloads/nginx/run_nginx.sh"
 
     
     print("Coordinator: Starting system-level monitoring...")
@@ -125,7 +133,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     print("Coordinator: Starting workload traffic...")
     start_time_str = str(int(time.time())-10)
     print("Coordinator: Workload Starting time = ", datetime.datetime.now())
-    workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
+    #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
+    workload_output = run_workload_single_pod(run_nginx_script, test_case_id)
     print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
     

@@ -1,0 +1,31 @@
+Your Redis workload is a classic in‐memory key-value cache, serving sub-millisecond GET/SET requests. 
+It’s latency-critical (LC) because many real-time applications (session stores, web caches, recommendation engines) depend on 
+tail-latency guarantees (e.g. P99 < 5 ms) to meet end-user SLOs. Under load, Redis operations are bound primarily by 
+CPU cycles (command parsing, network I/O) and—if your working set exceeds cache—by memory latency/bandwidth. 
+Interference on CPU (e.g. iBench CPU stress) will drive up request queuing and context-switch overhead, sharply 
+inflating P99/P99.9 latencies; memory-bandwidth or LLC contention can worsen cache misses, further lengthening tail latency.
+
+////////////////////////////////////////////// REDIS WORKLOAD
+
+# Add the Redis Helm repo
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+# Install Redis with default settings
+helm install my-redis bitnami/redis --set auth.enabled=false,architecture=standalone,master.persistence.enabled=false
+
+# Uninstall Redis
+helm uninstall my-redis
+
+# Command the Redis pod to use a specific cpu core (in order to measure true claimimg of resources)
+helm upgrade my-redis bitnami/redis \
+  --set auth.enabled=false,architecture=standalone,master.persistence.enabled=false \
+  --set master.resources.requests.cpu=1 \
+  --set master.resources.limits.cpu=1 \
+  --set master.resources.requests.memory=2Gi \
+  --set master.resources.limits.memory=2Gi
+
+
+////////////////////////////////////////////// LOAD GENERATION
+
+kubectl apply -f memtier-job.yaml
+kubectl logs -f job/memtier-benchmark 

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-ng-l3
+  labels:
+    app: stress-ng-l3
+spec:
+  replicas: 1                        # will be patched by your script
+  selector:
+    matchLabels:
+      app: stress-ng-l3
+  template:
+    metadata:
+      labels:
+        app: stress-ng-l3
+    spec:
+      containers:
+      - name: stress-ng
+        image: wdhif/stress-ng:latest      # Official stress-ng Docker image :contentReference[oaicite:1]{index=1}
+        args:
+          - "--cache" "1"                  # one cache worker
+          - "--cache-level" "3"            # exercise L3/LLC :contentReference[oaicite:2]{index=2}
+          - "--cache-size" "2M"            # hammer 4 MiB buffer (½ of 8 MiB LLC)
+          - "--timeout" "80s"              # run for 80 seconds
+        resources:
+          requests:
+            cpu: "1"
+            memory: "128Mi"
+          limits:
+            cpu: "1"
+            memory: "128Mi"

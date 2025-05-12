@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: memtier-benchmark
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: memtier
+        image: redislabs/memtier_benchmark:latest
+        command: ["memtier_benchmark"]
+        args:
+          - "--server=my-redis-master"
+          - "--port=6379"
+          - "--protocol=redis"
+          - "--clients=100"
+          - "--threads=2"
+          - "--test-time=60"
+          - "--ratio=0:1"
+          - "--data-size=32"
+          - "--print-percentiles=50,90,99,99.9"

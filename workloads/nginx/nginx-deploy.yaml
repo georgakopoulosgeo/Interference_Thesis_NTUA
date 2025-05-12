@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-nginx
+  template:
+    metadata:
+      labels:
+        app: my-nginx
+    spec:
+      nodeSelector:
+        nginx: "true"           # ensure this pod lands on the node you labeled
+      containers:
+      - name: nginx
+        image: nginx:1.21-alpine
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: ClusterIP
+  selector:
+    app: my-nginx
+  ports:
+  - port: 80
+    targetPort: 80
