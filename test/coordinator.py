@@ -111,7 +111,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     hotel_reservation_script = "/home/george/Workspace/run_hotel_reservation.sh"
     wrk2_script_path_hr = "./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua"
     # Define nginx script paths.
-    nginx_script = "/home/george/Workshop/Interference/workloads/nginx/run_nginx.py"
+    nginx_script = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
 
     
     print("Coordinator: Starting system-level monitoring...")

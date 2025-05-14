@@ -21,7 +21,7 @@ def run_workload_single_pod(script, traffic):
     'traffic' is one of: light, medium, heavy.
     """
     print(f"Coordinator: Deploying nginx workload job for traffic level '{traffic}'")
-    result = subprocess.run([script, traffic], capture_output=True, text=True, check=True)
+    result = subprocess.run(["sudo",script, traffic], capture_output=True, text=True, check=True)
     return result.stdout
 
 def convert_latency_to_us(latency_str: str) -> float:
