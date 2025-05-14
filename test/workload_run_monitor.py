@@ -21,7 +21,7 @@ def run_workload_single_pod(script, traffic):
     'traffic' is one of: light, medium, heavy.
     """
     print(f"Coordinator: Deploying nginx workload job for traffic level '{traffic}'")
-    result = subprocess.run(["sudo",script, traffic], capture_output=True, text=True, check=True)
+    result = subprocess.run([script, traffic], capture_output=True, text=True, check=True)
     return result.stdout
 
 def convert_latency_to_us(latency_str: str) -> float:
@@ -138,7 +138,7 @@ def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, inte
 # main
 if __name__ == "__main__":
     # Example usage
-    script = "run_nginx.py"  # script
+    script = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"  # script
 
     # Run the workload and parse the output
     raw_output = run_workload_single_pod(script, "light")
