@@ -87,12 +87,9 @@ def parse_workload_output(output: str) -> dict:
     return metrics
 
 def parse_workload_output_single_pod() -> dict:
-    # Run the command to get the pod name
-    cmd = "kubectl get pods -n nginx -o jsonpath='{.items[0].metadata.name}'"
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    pod_name = result.stdout.strip().strip("'")
     # Run the command to get the logs of the pod
-    cmd = f"kubectl logs {pod_name} -n nginx"
+    # kubectl logs -f job/wrk-load
+    cmd = f"kubectl logs -f job/wrk-load"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     output = result.stdout.strip()
     # Parse the output / use the existing function parse_workload_output
