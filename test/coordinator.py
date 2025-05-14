@@ -7,7 +7,7 @@ import subprocess
 import time
 
 # Import functions from the other modules (assumed to be implemented)
-from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics, run_workload_single_pod
+from workload_run_monitor import run_workload, parse_workload_output, store_workload_metrics, run_workload_single_pod, parse_workload_output_single_pod
 from container_monitor import collect_container_metrics
 from system_monitor_perf import perf_monitoring
 from system_monitor_amduprof import amduprof_monitoring
@@ -94,8 +94,9 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
 
     if test_case_id in ["light", "medium", "heavy"]:
         print("Coordinator: Deploying nginx workload...")
-        run_nginx_script = "/home/george/Workshop/Interference/workloads/nginx/run_nginx.sh"
+        run_nginx_script = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.sh"
         #workload_output = run_workload_single_pod(run_nginx_script, test_case_id)
+        duration = 60
     else:
         params = read_test_case_parameters(test_cases_csv, test_case_id)
         threads = params["THREADS"]
@@ -134,7 +135,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     start_time_str = str(int(time.time())-10)
     print("Coordinator: Workload Starting time = ", datetime.datetime.now())
     #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
-    workload_output = run_workload_single_pod(run_nginx_script, test_case_id)
+    run_workload_single_pod(run_nginx_script, test_case_id)
     print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
     
@@ -142,7 +143,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
     #print("Coordinator: Container-level monitoring completed.")
 
-    workload_metrics = parse_workload_output(workload_output)
+    #workload_metrics = parse_workload_output(workload_output)
+    workload_metrics = parse_workload_output_single_pod()
     
     print("Coordinator: Store workload metrics...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)

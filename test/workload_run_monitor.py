@@ -86,6 +86,21 @@ def parse_workload_output(output: str) -> dict:
                 metrics["max_latency"] = latency_val
     return metrics
 
+def parse_workload_output_single_pod() -> dict:
+    # Run the command to get the pod name
+    cmd = "kubectl get pods -n nginx -o jsonpath='{.items[0].metadata.name}'"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    pod_name = result.stdout.strip().strip("'")
+    # Run the command to get the logs of the pod
+    cmd = f"kubectl logs {pod_name} -n nginx"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    output = result.stdout.strip()
+    # Parse the output / use the existing function parse_workload_output
+    metrics = parse_workload_output(output)
+    return metrics
+
+
+
 def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, interference: str, workload_metrics: dict) -> None:
     """
     Store the workload metrics in a CSV file.
