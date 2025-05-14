@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-ng-l3-ways50
+  labels:
+    app: stress-ng-l3-ways50
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress-ng-l3-ways50
+  template:
+    metadata:
+      labels:
+        app: stress-ng-l3-ways50
+    spec:
+      containers:
+      - name: stress-ng
+        image: wdhif/stress-ng:latest     # stress-ng ≥0.11.07
+        args:
+          - "--cache"
+          - "1"
+          - "--cache-level"
+          - "3"
+          - "--cache-ways"
+          - "6"
+          - "--timeout"
+          - "80s"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "128Mi"
+          limits:
+            cpu: "1"
+            memory: "128Mi"

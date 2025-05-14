@@ -94,3 +94,20 @@ sleep 80
 
 # Clean up memBw stress deployment
 kubectl delete deployment ibench-membw
+
+
+
+///////////////////////////////////////////////////////
+# stress ng
+kubectl apply -f stress-ng-l3-50.yaml    
+python3 deploy_stress_ng_l3.py 2
+
+# scaling 
+kubectl scale deployment/stress-ng-l3-50 --replicas=2
+
+
+# Delete the specific pod (it will be recreated by the Deployment):
+kubectl delete pod -l app=stress-ng-l3-ways50
+
+# Delete the entire Deployment (recommended if you want to completely remove it):
+kubectl delete deployment stress-ng-l3-ways50
