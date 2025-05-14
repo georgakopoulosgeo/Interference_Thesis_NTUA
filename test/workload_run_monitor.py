@@ -134,3 +134,12 @@ def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, inte
             "Max_Latency": workload_metrics.get("max_latency", "")
         }
         writer.writerow(row)
+
+# main
+if __name__ == "__main__":
+    # Example usage
+    script = "run_nginx.py"  # script
+
+    # Run the workload and parse the output
+    raw_output = run_workload_single_pod(script, "light")
+    print("Raw output:", raw_output)
