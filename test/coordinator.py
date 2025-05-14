@@ -136,6 +136,10 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     print("Coordinator: Workload Starting time = ", datetime.datetime.now())
     #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
     run_workload_single_pod(nginx_script, test_case_id)
+
+    #Sleep for the duration of the workload
+    time.sleep(duration)
+    print("Coordinator: Workload traffic completed.")
     print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
     
@@ -145,6 +149,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
 
     #workload_metrics = parse_workload_output(workload_output)
     workload_metrics = parse_workload_output_single_pod()
+    print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
     
     print("Coordinator: Store workload metrics...")
     store_workload_metrics(workload_csv, test_case_id, date_str, interference, workload_metrics)

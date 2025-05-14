@@ -94,8 +94,8 @@ def parse_workload_output_single_pod() -> dict:
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     output = result.stdout.strip()
     # Parse the output / use the existing function parse_workload_output
-    metrics = parse_workload_output(output)
-    return metrics
+    print("Parsing workload output for single pod", output)
+    return parse_workload_output(output)
 
 
 
@@ -135,17 +135,3 @@ def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, inte
             "Max_Latency": workload_metrics.get("max_latency", "")
         }
         writer.writerow(row)
-
-# main
-if __name__ == "__main__":
-    # Example usage
-    script = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"  # script
-
-    # Run the workload and parse the output
-    raw_output = run_workload_single_pod(script, "light")
-    print("Raw output:", raw_output)
-    # wait 60 seconds for the job to finish
-    time.sleep(60)
-    # Parse the workload output
-    workload_metrics = parse_workload_output_single_pod()
-    print("Parsed metrics:", workload_metrics)
