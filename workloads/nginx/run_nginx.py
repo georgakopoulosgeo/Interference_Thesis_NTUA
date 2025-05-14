@@ -25,6 +25,9 @@ def main():
         print(f"Invalid traffic level: {traffic}", file=sys.stderr)
         sys.exit(1)
 
+    # Yaml file path
+    yaml_file = f"/home/george/Workspace/Interference/workloads/nginx/{yaml_file}"
+
     # Construct and run the kubectl command
     cmd = ["kubectl", "apply", "-f", yaml_file]
     try:

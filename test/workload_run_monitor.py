@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import re
+import time
 
 def run_workload(script: str, threads: int, connections: int, duration: int, reqs_per_sec: int, wrk2_script_path: str) -> str:
     """
@@ -143,3 +144,8 @@ if __name__ == "__main__":
     # Run the workload and parse the output
     raw_output = run_workload_single_pod(script, "light")
     print("Raw output:", raw_output)
+    # wait 60 seconds for the job to finish
+    time.sleep(60)
+    # Parse the workload output
+    workload_metrics = parse_workload_output_single_pod()
+    print("Parsed metrics:", workload_metrics)
