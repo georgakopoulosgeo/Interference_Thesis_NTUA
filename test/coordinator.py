@@ -135,7 +135,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
     start_time_str = str(int(time.time())-10)
     print("Coordinator: Workload Starting time = ", datetime.datetime.now())
     #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
-    run_workload_single_pod(run_nginx_script, test_case_id)
+    run_workload_single_pod(nginx_script, test_case_id)
     print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
     
