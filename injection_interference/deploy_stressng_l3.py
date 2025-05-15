@@ -5,7 +5,8 @@ import sys
 import os
 
 DEPLOYMENT_NAME = "stress-ng-l3-ways50"
-YAML_PATH = "/stress-ng/stress-ng-l3-deploy.yaml"
+YAML_PATH = "stress-ng/"
+YAML_FILE = "stress-ng/stress-ng-l3-50.yaml"
 TIMEOUT_SECONDS = 80
 
 def run_command(command):
@@ -18,17 +19,11 @@ def run_command(command):
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e.stderr}")
         return None
-"""
-def verify_yaml_exists():
-    if not os.path.exists(YAML_PATH):
-        print(f"Error: YAML file not found at {YAML_PATH}")
-        sys.exit(1)
-"""
 
 def create_deployment():
     """Create the Kubernetes deployment."""
     print(f"Creating deployment {DEPLOYMENT_NAME} from {YAML_PATH}...")
-    output = run_command(f"kubectl apply -f {YAML_PATH}")
+    output = run_command(f"kubectl apply -f {YAML_FILE}")
     if output:
         print(output.strip())
 
@@ -47,8 +42,6 @@ def delete_deployment():
         print(output.strip())
 
 def main():
-    #verify_yaml_exists()
-    
     # 1. Apply the deployment
     create_deployment()
     
