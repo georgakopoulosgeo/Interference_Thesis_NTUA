@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-ng-mem-bandwidth-50
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress-ng-mem-bandwidth
+  template:
+    metadata:
+      labels:
+        app: stress-ng-mem-bandwidth
+    spec:
+      containers:
+      - name: stress-ng
+        image: wdhif/stress-ng:latest
+        args:
+          - "--stream"
+          - "1"                # 1 stream stressor
+          - "--stream-l3-size"
+          - "4M"               # Working set size
+          - "--stream-ops"
+          - "1000000000"       # High iteration count
+        resources:
+          limits:
+            cpu: "1"
+            memory: "256Mi"

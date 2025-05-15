@@ -94,3 +94,6 @@ sleep 80
 
 # Clean up memBw stress deployment
 kubectl delete deployment ibench-membw
+
+
+/////////////////////////////// STRESS NG

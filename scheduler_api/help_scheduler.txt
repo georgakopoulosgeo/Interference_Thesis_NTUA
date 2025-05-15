@@ -1,0 +1,77 @@
+KUBERNETES ML-DRIVEN SCHEDULER ARCHITECTURE
+
+Core Components:
+─────────────────────────────────────────────────
+1. Nginx Benchmark Pods (Workload)
+   • Multi-container pods running:
+     - Nginx server container
+     - wrk load generator container (hitting localhost)
+   • Self-contained test units generating their own load
+   • Multiple replicas possible with isolated traffic
+
+2. Metrics Collection System
+   • PCM tool running on each node
+   • Gathers hardware metrics (CPU, memory bandwidth, cache, etc.)
+   • 20-second sampling windows before scheduling decisions
+
+3. Predictor API Service
+   • Hosts pre-trained RandomForest model
+   • Accepts node metrics as input
+   • Returns "fitness" score (0-1) for scheduling
+   • Optional: Replica-aware scoring logic
+
+4. Custom Scheduler Extender
+   • Kubernetes scheduler extension
+   • Intercepts pod scheduling requests
+   • Queries Predictor API for node scores
+   • Implements placement logic:
+     - Spread/Pack/Balanced strategies
+     - Replica distribution awareness
+
+5. Control Plane
+   • Modified kube-scheduler with extender policy
+   • Custom scheduling policies JSON config
+   • Optional: Horizontal Pod Autoscaler integration
+
+Data Flow:
+─────────────────────────────────────────────────
+1. Pod Creation Trigger → 2. Metrics Collection → 
+3. Predictor Scoring → 4. Scheduling Decision → 
+5. Pod Placement → 6. Performance Monitoring
+
+Key Characteristics:
+─────────────────────────────────────────────────
+• Self-contained benchmark pods (Nginx + wrk)
+• Hardware-level metrics via PCM
+• ML model evaluating node fitness
+• Replica-aware placement decisions
+• Isolated traffic per test pod
+• Comparison against default scheduler
+
+Optional Extensions:
+─────────────────────────────────────────────────
+• Scaling recommendations
+• Topology-aware placement
+• Dynamic model updating
+• Multi-metric QoS enforcement
+
+
+┌─────────────────────────────────────────────────┐
+│               Kubernetes Cluster                │
+│                                                 │
+│  ┌─────────────┐       ┌─────────────────────┐  │
+│  │   Scheduler │───────▶ Predictor API       │  │
+│  └─────────────┘       │ (RandomForest Model)│  │
+│        ▲               └─────────────────────┘  │
+│        │                      ▲                 │
+│  ┌─────┴─────┐                │                 │
+│  │ Extender  │                │                 │
+│  └───────────┘                │                 │
+│        ▲                      │                 │
+│        │               ┌──────┴──────┐          │
+│  ┌─────┴─────┐         │ Metrics     │          │
+│  │ Pod       │         │ Collector   │          │
+│  │ Creation  │         │ (pcm tool)  │          │
+│  └───────────┘         └─────────────┘          │
+│                                                 │
+└─────────────────────────────────────────────────┘
