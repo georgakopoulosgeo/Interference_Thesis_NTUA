@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: stress-ng-l3-ways50
+  labels:
+    app: stress-ng-l3-ways50
 spec:
   replicas: 1
   selector:
@@ -12,7 +14,6 @@ spec:
       labels:
         app: stress-ng-l3-ways50
     spec:
-      restartPolicy: Never  # Add this line
       containers:
       - name: stress-ng
         image: wdhif/stress-ng:latest

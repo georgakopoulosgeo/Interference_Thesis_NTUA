@@ -33,7 +33,7 @@ def ensure_directories(script_dir, test_case_id):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "Nginx_Metrics_V01")
+    baseline_results_dir = os.path.join(script_dir, "Nginx_Metrics_V04")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, f"{test_case_id}_raw")
     os.makedirs(raw_log_folder, exist_ok=True)
