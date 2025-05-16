@@ -27,7 +27,7 @@ def main():
     ns = args.namespace
 
     # Select the appropriate YAML file
-    yaml_file = 'iBench/ibench-nginx-node-cpu.yaml' if args.nginx else 'iBench/ibench-regular-node-cpu.yaml'
+    yaml_file = 'iBench_custom/ibench-nginx-node-cpu.yaml' if args.nginx else 'iBench_custom/ibench-regular-node-cpu.yaml'
 
     # Load and modify the Deployment manifest
     with open(yaml_file) as f:

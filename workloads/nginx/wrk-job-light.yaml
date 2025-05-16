@@ -13,7 +13,7 @@ spec:
         image: skandyla/wrk:latest
         args:
           - "-t1"                        # 4 worker threads
-          - "-c50"                      # 100 concurrent connections
+          - "-c50"                       # 100 concurrent connections
           - "-d60s"                      # run for 60 seconds
-          - "-L"                  # report latency percentiles
+          - "--latency"                  # report latency percentiles
           - "http://nginx-service/"      # target service (ClusterDNS)
