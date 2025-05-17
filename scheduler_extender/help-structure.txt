@@ -1,0 +1,12 @@
+scheduler-extender/
+├── app/
+│   ├── __init__.py
+│   ├── predictor.py       # Predictor API client
+│   ├── metrics.py         # Metrics Collector client
+│   ├── scheduler.py       # Core scheduling logic
+│   └── api.py             # HTTP endpoints
+├── config/
+│   └── config.yaml        # Configuration
+├── Dockerfile
+└── requirements.txt
+

@@ -13,7 +13,7 @@ def run_test(yaml_file, duration):
 
 if __name__ == "__main__":
     test_type = sys.argv[1] if len(sys.argv) > 1 else "50"
-    duration = int(sys.argv[2]) if len(sys.argv) > 2 else 60
+    duration = int(sys.argv[2]) if len(sys.argv) > 2 else 80
 
     if test_type == "50":
         run_test("stress-ng/stress-ng-membw-50.yaml", duration)

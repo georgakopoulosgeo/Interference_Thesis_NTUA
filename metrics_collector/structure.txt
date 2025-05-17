@@ -1,0 +1,24 @@
+metrics_collector/
+├── app/
+│   ├── __init__.py
+│   ├── collector.py      # Core collection logic
+│   └── api.py           # FastAPI endpoints
+├── Dockerfile
+├── requirements.txt
+└── config.yaml
+
+
+# Build and push
+docker build -t your-registry/metrics-collector:v1 .
+docker push your-registry/metrics-collector:v1
+
+# Deploy
+kubectl apply -f metrics-collector-daemonset.yaml
+
+# Verify
+kubectl get pods -l app=metrics-collector -o wide
+kubectl logs -f metrics-collector-<node-id>
+
+# Test endpoint
+kubectl exec -it metrics-collector-<node-id> -- \
+  curl -s localhost:8000/metrics?window_seconds=20 | jq

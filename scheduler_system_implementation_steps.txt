@@ -1,0 +1,112 @@
+KUBERNETES ML-DRIVEN SCHEDULER IMPLEMENTATION STEPS
+
+1. SET UP THE INFRASTRUCTURE
+---------------------------------
+1.1. Configure Kubernetes cluster with:
+     - Minimum 3 worker nodes
+     - Metrics server installed
+     - PCM tool installed on all nodes
+1.2. Label nodes for specific workloads:
+     kubectl label nodes <node-name> nginx=true
+
+2. BUILD THE PREDICTOR API
+---------------------------------
+2.1. Create predictor_api/app.py with:
+     - Flask REST endpoint (/predict)
+     - Load trained RandomForest model
+     - Input: Node metrics from PCM
+     - Output: Score (0-1)
+2.2. Create Dockerfile for the API
+2.3. Build and push container image:
+     docker build -t predictor-api:v1 .
+     docker push <registry>/predictor-api:v1
+
+3. IMPLEMENT METRICS COLLECTOR
+---------------------------------
+3.1. Create metrics_collector/app.py with:
+     - Endpoint to trigger PCM metrics collection
+     - 20-second sampling window
+     - Returns structured metrics data
+3.2. Containerize and deploy to cluster
+
+4. DEVELOP SCHEDULER EXTENDER
+---------------------------------
+4.1. Implement extender logic (app.py) with:
+     - /filter endpoint (optional node filtering)
+     - /prioritize endpoint (scoring nodes)
+     - Replica awareness logic
+4.2. Configure communication with:
+     - Predictor API
+     - Metrics Collector
+     - Kubernetes API
+
+5. CONFIGURE KUBERNETES SCHEDULER
+---------------------------------
+5.1. Create scheduler-policy-config.json:
+     {
+       "kind": "Policy",
+       "apiVersion": "v1",
+       "extenders": [{
+         "urlPrefix": "http://scheduler-extender:8080",
+         "prioritizeVerb": "prioritize",
+         "weight": 1,
+         "enableHttps": false
+       }]
+     }
+5.2. Modify kube-scheduler to use policy config
+
+6. DEPLOY ALL COMPONENTS
+---------------------------------
+6.1. Apply Kubernetes manifests for:
+     - Predictor API Deployment/Service
+     - Metrics Collector Deployment/Service
+     - Scheduler Extender Deployment/Service
+6.2. Verify component communication
+
+7. CREATE TEST WORKLOADS
+---------------------------------
+7.1. Develop Nginx+wrk combo pods:
+     apiVersion: apps/v1
+     kind: Deployment
+     metadata:
+       name: nginx-test
+     spec:
+       template:
+         spec:
+           containers:
+           - name: nginx
+             image: nginx:1.21
+           - name: wrk
+             image: skandyla/wrk
+             args: ["-t1","-c50","-d60s","-L","http://localhost/"]
+7.2. Create interference workloads
+
+8. IMPLEMENT TESTING FRAMEWORK
+---------------------------------
+8.1. Automated test sequence:
+     - Deploy test pods
+     - Trigger load generation
+     - Collect metrics
+     - Verify placement decisions
+8.2. Comparison against default scheduler
+
+9. MONITORING AND VALIDATION
+---------------------------------
+9.1. Track key metrics:
+     - Scheduler decision time
+     - Prediction accuracy
+     - QoS compliance (p99 latency)
+9.2. Compare with baseline performance
+
+10. OPTIONAL ADVANCED FEATURES
+---------------------------------
+10.1. Implement scaling recommendations
+10.2. Add topology awareness
+10.3. Dynamic model updating
+10.4. Multi-metric optimization
+
+DEPLOYMENT NOTES:
+- Start with small cluster (3 nodes)
+- Gradually increase complexity
+- Monitor resource usage of all components
+- Ensure proper RBAC permissions

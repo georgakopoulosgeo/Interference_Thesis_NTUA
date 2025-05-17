@@ -23,7 +23,7 @@ spec:
           - "--cache-level"
           - "3"
           - "--cache-ways"
-          - "6"
+          - "4"
           - "--timeout"
           - "80s"
         resources:

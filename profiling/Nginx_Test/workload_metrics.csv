@@ -1,0 +1,2 @@
+TestCaseID,Interference,Date,Throughput,Avg_Latency,P50_Latency,P75_Latency,P90_Latency,P99_Latency,Max_Latency
+light,test_cpu_1_l3_1,2025-05-16,45409.69,910.0,515.0,745.0,1500.0,7420.0,

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: metrics-collector
+spec:
+  selector:
+    matchLabels:
+      app: metrics-collector
+  template:
+    metadata:
+      labels:
+        app: metrics-collector
+    spec:
+      hostPID: true
+      containers:
+      - name: collector
+        image: your-registry/metrics-collector:v1
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: dev-msr
+          mountPath: /dev/cpu/msr
+          readOnly: true
+      volumes:
+      - name: dev-msr
+        hostPath:
+          path: /dev/cpu/msr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-collector
+spec:
+  selector:
+    app: metrics-collector
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

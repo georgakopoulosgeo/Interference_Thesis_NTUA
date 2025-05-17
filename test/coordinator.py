@@ -96,7 +96,7 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
         print("Coordinator: Deploying nginx workload...")
         run_nginx_script = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.sh"
         #workload_output = run_workload_single_pod(run_nginx_script, test_case_id)
-        duration = 60
+        duration = 100
     else:
         params = read_test_case_parameters(test_cases_csv, test_case_id)
         threads = params["THREADS"]
