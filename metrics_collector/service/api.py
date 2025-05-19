@@ -20,7 +20,7 @@ def get_metrics(window: int = 20):
     """
     try:
         # Get all data points from buffer
-        buffer_data = sampler.buffer.snapshot()
+        buffer_data = sampler.buffer.get_buffer()
         if not buffer_data:
             return Response("No data available", media_type="text/plain")
 

@@ -19,7 +19,7 @@ class PCMReader:
         ]
 
     def read_metrics(self, duration) -> list[dict]:
-        """Returns metrics with PCM's native timestamps (System-Data + System-Time)."""
+        """Returns a list of metric dictionaries (one per timestamp)."""
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp_path = tmp.name
 
@@ -30,48 +30,55 @@ class PCMReader:
             except subprocess.TimeoutExpired:
                 print("PCM monitoring completed: duration reached.", file=sys.stderr)
 
+            # Read raw CSV data
+            with open(tmp_path, 'r') as f:
+                raw_csv = f.read()
+                print(f"Raw CSV (first 100 chars):\n{raw_csv[:100]}...", file=sys.stderr)  # Debug
+
             metrics_series = []
             with open(tmp_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
-                header_domain = next(reader)  # e.g., ["System", "System", ...]
-                header_metric = next(reader)  # e.g., ["Data", "Time", "IPC", ...]
+                header_domain = next(reader)  # First header (domains)
+                header_metric = next(reader)  # Second header (metrics)
                 
+                # Process all rows (not just the first one)
                 for row in reader:
                     if not row:
-                        continue
+                        continue  # Skip empty rows
 
-                    # Extract System-Data and System-Time
+                    # Extract timestamp (assuming "Date" and "Time" columns exist)
+                    timestamp = None
                     row_metrics = {}
                     
                     for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
                         dom_l = dom.strip().lower()
                         met_l = met.strip().lower()
-
-                        # Combine Date + Time columns
-                        if met_l == "data" and dom_l == "system":
-                            date_str = row[idx]
-                        elif met_l == "time" and dom_l == "system":
-                            time_str = row[idx]
+                        
+                        # Always capture "Date" and "Time" for timestamps
+                        if met_l in ("date", "time"):
+                            if met_l == "date":
+                                date_str = row[idx]
+                            elif met_l == "time":
+                                time_str = row[idx]
+                            continue
+                        
                         # Filter other metrics
-                        elif (self.domain_filter in dom_l) and any(kw in met_l for kw in self.desired_keywords):
+                        if (self.domain_filter in dom_l) and any(kw in met_l for kw in self.desired_keywords):
                             name = f"{dom.strip()}_{met.strip()}"
                             try:
                                 row_metrics[name] = float(row[idx])
                             except ValueError:
                                 pass
 
-                    # Only add entries with valid metrics
-                    if row_metrics and "date_str" in locals() and "time_str" in locals():
-                        metrics_series.append({
-                            "System-Data": date_str,
-                            "System-Time": time_str,
-                            **row_metrics
-                        })
-
+            print(f"Collected {len(metrics_series)} metric samples.", file=sys.stderr)
             return metrics_series
 
         except Exception as e:
-            print(f"PCM Error: {e}", file=sys.stderr)
-            return []
+            print(f"⚠️ PCM Error: {e}", file=sys.stderr)
+            return []  # Return empty list on failure
+
         finally:
-            os.unlink(tmp_path)
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
