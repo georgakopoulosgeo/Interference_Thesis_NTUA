@@ -69,6 +69,20 @@ class PCMReader:
                                 row_metrics[name] = float(row[idx])
                             except ValueError:
                                 pass
+                    
+                    # Combine date/time into a timestamp (if available)
+                    if "date_str" in locals() and "time_str" in locals():
+                        timestamp_str = f"{date_str} {time_str}"
+                        try:
+                            timestamp = time.mktime(time.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S"))
+                        except ValueError:
+                            timestamp = time.time()  # Fallback to current time
+                    
+                    if row_metrics:  # Only add non-empty metrics
+                        metrics_series.append({
+                            "timestamp": timestamp,
+                            **row_metrics
+                        })
 
             print(f"Collected {len(metrics_series)} metric samples.", file=sys.stderr)
             return metrics_series
