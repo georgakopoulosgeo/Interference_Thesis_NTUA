@@ -24,4 +24,8 @@ class RollingBuffer:
         """
         cutoff = time.time() - window_sec
         with self.lock:
-            return [m for ts, m in self.buffer if ts >= cutoff]
+            return [
+                metrics  # Return the full metrics dict
+                for timestamp, metrics in self.buffer
+                if timestamp >= cutoff and metrics  # Filter by time and non-empty
+            ]

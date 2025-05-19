@@ -14,23 +14,24 @@ sampler.start()  # Start the background thread
 
 @app.get("/metrics")
 def get_metrics(window: int = 20):
-    """Return the last `window` seconds of PCM metrics as CSV."""
+    """Returns metrics with PCM's native timestamps in CSV format."""
     try:
-        #data = sampler.buffer.snapshot(window)
-        with sampler.buffer.lock:  # Ensure thread-safe access
-            data = sampler.buffer.buffer
-        if not data:
-            return Response(content="No data available", media_type="text/plain")
+        data_points = sampler.buffer.snapshot(window)
+        if not data_points:
+            return Response("No data available", media_type="text/plain")
 
         output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=list(data[0].keys()))
+        writer = csv.DictWriter(output, fieldnames=data_points[0].keys())
         writer.writeheader()
-        writer.writerows(data)
+        writer.writerows(data_points)
 
-        return Response(content=output.getvalue(), media_type="text/csv")
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment;filename=pcm_metrics.csv"}
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+        raise HTTPException(500, detail=str(e))
 
 @app.get("/debug/buffer")
 def debug_buffer():
