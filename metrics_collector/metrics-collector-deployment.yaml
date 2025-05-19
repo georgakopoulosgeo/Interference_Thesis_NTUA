@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-collector
+  template:
+    metadata:
+      labels:
+        app: metrics-collector
+    spec:
+      containers:
+      - name: metrics-collector
+        image: metrics-collector:latest
+        imagePullPolicy: IfNotPresent   # use local image in Minikube
+        securityContext:
+          privileged: true              # needed for PCM access
+          capabilities:
+            add: ["SYS_ADMIN", "IPC_LOCK"]
+        ports:
+        - name: http
+          containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-collector
+spec:
+  selector:
+    app: metrics-collector
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP
