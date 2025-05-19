@@ -24,8 +24,11 @@ class PCMReader:
             tmp_path = tmp.name
 
         try:
-            cmd = [self.pcm_path, str(duration), "-csv=" + tmp_path]
-            subprocess.run(cmd, check=True, timeout=duration + 5)
+            cmd = [self.pcm_path, "2", "-csv=" + tmp_path]
+            try:
+                subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except subprocess.TimeoutExpired:
+                print("PCM monitoring completed: duration reached.", file=sys.stderr)
 
             metrics_series = []
             with open(tmp_path, newline="") as csvfile:
@@ -38,7 +41,6 @@ class PCMReader:
                         continue
 
                     # Extract System-Data and System-Time
-                    timestamp_str = None
                     row_metrics = {}
                     
                     for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
@@ -60,7 +62,6 @@ class PCMReader:
 
                     # Only add entries with valid metrics
                     if row_metrics and "date_str" in locals() and "time_str" in locals():
-                        timestamp_str = f"{date_str} {time_str}"
                         metrics_series.append({
                             "System-Data": date_str,
                             "System-Time": time_str,
