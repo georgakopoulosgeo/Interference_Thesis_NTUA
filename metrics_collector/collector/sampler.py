@@ -15,16 +15,21 @@ class Sampler(threading.Thread):
         self.buffer = RollingBuffer(buffer_window_sec)
         self._stop_event = threading.Event()
 
-    def run(self):
-        while not self._stop_event.is_set():
-            ts = time.time()
-            metrics = self.reader.read_metrics(self.collection_duration)
-            self.buffer.add(ts, metrics)
-            
-            # Sleep for remaining interval time
-            elapsed = time.time() - ts
-            sleep_time = max(0, self.sampling_interval - elapsed)
-            time.sleep(sleep_time)
+def run(self):
+    while not self._stop_event.is_set():
+        ts = time.time()
+        print(f"⏱️ Collecting metrics (duration={self.collection_duration}s)...")  # DEBUG
+        metrics = self.reader.read_metrics(self.collection_duration)
+        
+        if metrics:  # Only log if data was captured
+            print(f"✅ Stored metrics: {metrics.keys()} at {ts}")
+        else:
+            print("❌ No metrics collected!")
+
+        self.buffer.add(ts, metrics)
+        elapsed = time.time() - ts
+        sleep_time = max(0, self.sampling_interval - elapsed)
+        time.sleep(sleep_time)
 
     def stop(self):
         self._stop_event.set()

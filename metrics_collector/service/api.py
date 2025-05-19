@@ -30,3 +30,16 @@ def get_metrics(window: int = 20):
         return Response(content=output.getvalue(), media_type="text/csv")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/debug/buffer")
+def debug_buffer():
+    """Inspect raw buffer contents (for debugging)."""
+    with sampler.buffer.lock:  # Ensure thread-safe access
+        buffer_data = list(sampler.buffer.buffer)  # Get all (timestamp, metrics) pairs
+    
+    return {
+        "buffer_size": len(buffer_data),
+        "window_sec": sampler.buffer.window_size,
+        "samples": buffer_data,
+    }

@@ -21,20 +21,18 @@ class PCMReader:
             tmp_path = tmp.name
 
         try:
-            cmd = [self.pcm_path, "2", f"-csv={tmp_path}"]
-            
-            # Remove timeout or increase it significantly
-            subprocess.run(
-                cmd,
-                timeout=duration + 5,  # Give extra 5s buffer
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            
+            cmd = [self.pcm_path, "1", "-csv=" + tmp_path]
+            subprocess.run(cmd, timeout=duration + 5, check=True)  # Ensure command succeeds
+
+            # DEBUG: Log the raw CSV content
+            with open(tmp_path, 'r') as f:
+                raw_csv = f.read()
+                print(f"Raw CSV content: {raw_csv}")  # DEBUG: Verify PCM output
+
             metrics = {}
             with open(tmp_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
-                header_domain = next(reader)
+                header_domain = next(reader)  # Skip headers
                 header_metric = next(reader)
                 row = next(reader, None)
                 
@@ -48,15 +46,13 @@ class PCMReader:
                                 metrics[name] = float(row[idx])
                             except ValueError:
                                 pass
+            
+            print(f"Extracted metrics: {metrics}")  # DEBUG: Verify parsed data
             return metrics
-
-        except subprocess.TimeoutExpired:
-            print("⚠️ PCM timed out - returning empty metrics")
-            return {}  # Avoid crashing, return empty data
 
         except Exception as e:
             print(f"⚠️ PCM Error: {e}")
-            return {}
+            return {}  # Return empty dict on failure
 
         finally:
             try:
