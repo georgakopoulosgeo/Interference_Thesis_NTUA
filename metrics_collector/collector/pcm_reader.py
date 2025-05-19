@@ -36,6 +36,7 @@ class PCMReader:
                 header_domain = next(reader)
                 header_metric = next(reader)
                 row = next(reader, None)
+                print(f"Header Domain: {header_domain}")
                 if row:
                     for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
                         dom_l = dom.strip().lower()
