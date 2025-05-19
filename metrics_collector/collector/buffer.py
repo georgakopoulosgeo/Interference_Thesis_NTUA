@@ -18,14 +18,9 @@ class RollingBuffer:
             while self.buffer and (timestamp - self.buffer[0][0]) > self.window_size:
                 self.buffer.popleft()
 
-    def snapshot(self, window_sec: float) -> list:
+    def get_buffer(self) -> list:
         """
         Returns all metric dicts in the last `window_sec` seconds.
         """
-        cutoff = time.time() - window_sec
         with self.lock:
-            return [
-                metrics  # Return the full metrics dict
-                for timestamp, metrics in self.buffer
-                if timestamp >= cutoff and metrics  # Filter by time and non-empty
-            ]
+            return list(self.buffer)  # Return a copy for thread safety

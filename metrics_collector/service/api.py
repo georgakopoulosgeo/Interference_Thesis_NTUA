@@ -14,22 +14,32 @@ sampler.start()  # Start the background thread
 
 @app.get("/metrics")
 def get_metrics(window: int = 20):
-    """Returns metrics with PCM's native timestamps in CSV format."""
+    """
+    Returns metrics from the last `window` seconds.
+    Uses PCM's native System-Data and System-Time columns.
+    """
     try:
-        data_points = sampler.buffer.snapshot(window)
-        if not data_points:
+        # Get all data points from buffer
+        buffer_data = sampler.buffer.snapshot()
+        if not buffer_data:
             return Response("No data available", media_type="text/plain")
 
+        # Generate CSV with System-Data and System-Time
         output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=data_points[0].keys())
+        writer = csv.DictWriter(
+            output,
+            fieldnames=buffer_data[0].keys(),  # Auto-detect columns
+            extrasaction="ignore"  # Skip missing fields
+        )
         writer.writeheader()
-        writer.writerows(data_points)
+        writer.writerows(buffer_data)
 
         return Response(
             content=output.getvalue(),
             media_type="text/csv",
             headers={"Content-Disposition": "attachment;filename=pcm_metrics.csv"}
         )
+
     except Exception as e:
         raise HTTPException(500, detail=str(e))
 
