@@ -28,7 +28,7 @@ class PCMReader:
         try:
             # Run pcm for a 1s interval, write CSV to tmp_path
             cmd = [self.pcm_path, "2", f"-csv={tmp_path}"]
-            subprocess.run(cmd, timeout=duration, check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
             metrics = {}
             with open(tmp_path, newline="") as csvfile:
