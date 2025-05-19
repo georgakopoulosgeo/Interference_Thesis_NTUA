@@ -7,7 +7,7 @@ class RollingBuffer:
     Keeps a time-stamped rolling window of metric samples.
     """
     def __init__(self, window_size_sec: float):
-        self.window_size = window_size_sec
+        self.window_size = window_size_sec # 60sec
         self.buffer = deque()  # stores tuples of (timestamp, metrics_dict)
         self.lock = threading.Lock()
 

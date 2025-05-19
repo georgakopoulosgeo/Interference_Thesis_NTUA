@@ -21,7 +21,7 @@ class Sampler(threading.Thread):
             ts = time.time()
             print(f"⏱️ Collecting metrics (duration={self.collection_duration}s)...", file=sys.stderr)  # DEBUG
             metrics = self.reader.read_metrics(self.collection_duration)
-            
+            time.sleep(self.sampling_interval)  # Sleep for the sampling interval
             if metrics:  # Only log if data was captured
                 print(f"✅ Stored metrics: {metrics.keys()} at {ts}", file=sys.stderr)
             else:
@@ -29,8 +29,6 @@ class Sampler(threading.Thread):
 
             self.buffer.add(ts, metrics)
             elapsed = time.time() - ts
-            sleep_time = max(0, self.sampling_interval - elapsed)
-            time.sleep(sleep_time)
 
     def stop(self):
         self._stop_event.set()

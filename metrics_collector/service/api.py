@@ -9,9 +9,7 @@ app = FastAPI(title="Metrics Collector API")
 # - 20s collection duration
 # - 60s between samples
 # - 60s buffer retention
-sampler = Sampler(collection_duration_sec=20.0, 
-                 sampling_interval_sec=60.0,
-                 buffer_window_sec=60.0)
+sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
 @app.get("/metrics")

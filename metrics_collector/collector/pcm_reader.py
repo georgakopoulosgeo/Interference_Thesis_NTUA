@@ -23,7 +23,7 @@ class PCMReader:
 
         try:
             cmd = [self.pcm_path, "1", "-csv=" + tmp_path]
-            subprocess.run(cmd, timeout=duration + 5, check=True)  # Ensure command succeeds
+            subprocess.run(cmd, timeout=duration + 5, check=True)  # Read for 20 seconds
 
             # DEBUG: Log the raw CSV content
             with open(tmp_path, 'r') as f:
