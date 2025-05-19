@@ -16,7 +16,9 @@ sampler.start()  # Start the background thread
 def get_metrics(window: int = 20):
     """Return the last `window` seconds of PCM metrics as CSV."""
     try:
-        data = sampler.buffer.snapshot(window)
+        #data = sampler.buffer.snapshot(window)
+        with sampler.buffer.lock:  # Ensure thread-safe access
+            data = sampler.buffer.buffer
         if not data:
             return Response(content="No data available", media_type="text/plain")
 

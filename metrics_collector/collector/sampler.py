@@ -20,15 +20,14 @@ class Sampler(threading.Thread):
         while not self._stop_event.is_set():
             ts = time.time()
             print(f"⏱️ Collecting metrics (duration={self.collection_duration}s)...", file=sys.stderr)  # DEBUG
-            metrics = self.reader.read_metrics(self.collection_duration)
+            metrics_list = self.reader.read_metrics(self.collection_duration)
             time.sleep(self.sampling_interval)  # Sleep for the sampling interval
-            if metrics:  # Only log if data was captured
-                print(f"✅ Stored metrics: {metrics.keys()} at {ts}", file=sys.stderr)
-            else:
-                print("❌ No metrics collected!")
 
-            self.buffer.add(ts, metrics)
-            elapsed = time.time() - ts
+            print(f"📊 Metrics collected: {len(metrics_list)} samples.", file=sys.stderr)
+
+            for metrics in metrics_list:
+                self.buffer.add(metrics.get("timestamp", ts), metrics)
+            #self.buffer.add(ts, metrics)
 
     def stop(self):
         self._stop_event.set()
