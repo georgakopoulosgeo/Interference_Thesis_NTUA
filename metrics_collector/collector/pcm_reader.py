@@ -2,6 +2,7 @@ import subprocess
 import csv
 import tempfile
 import os
+import sys
 
 class PCMReader:
     """
@@ -27,7 +28,7 @@ class PCMReader:
             # DEBUG: Log the raw CSV content
             with open(tmp_path, 'r') as f:
                 raw_csv = f.read()
-                print(f"Raw CSV content: {raw_csv}")  # DEBUG: Verify PCM output
+                print(f"Raw CSV content: {raw_csv}", file=sys.stderr)  # DEBUG: Verify PCM output")  
 
             metrics = {}
             with open(tmp_path, newline="") as csvfile:
