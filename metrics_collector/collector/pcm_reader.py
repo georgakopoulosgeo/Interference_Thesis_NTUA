@@ -8,7 +8,7 @@ class PCMReader:
     Invokes Intel PCM and parses hardware counters, filtering only
     the 'system' domain metrics with our desired keywords.
     """
-    def __init__(self, pcm_path: str = "/usr/bin/pcm"):
+    def __init__(self, pcm_path: str = "/usr/local/bin/pcm"):
         self.pcm_path = pcm_path
         self.domain_filter = "system"
         self.desired_keywords = [
@@ -27,7 +27,7 @@ class PCMReader:
 
         try:
             # Run pcm for a 1s interval, write CSV to tmp_path
-            cmd = ["sudo", self.pcm_path, "1", f"-csv={tmp_path}"]
+            cmd = [self.pcm_path, "2", f"-csv={tmp_path}"]
             subprocess.run(cmd, check=True,
                            stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL)

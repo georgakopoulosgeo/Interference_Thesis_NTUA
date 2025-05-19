@@ -19,7 +19,7 @@ RUN git clone --recursive https://github.com/intel/pcm /opt/pcm && \
     cmake .. && \
     cmake --build . --parallel && \
     # Symlink pcm binary into PATH
-    ln -s /opt/pcm/build/pcm.x /usr/local/bin/pcm
+    ln -s /opt/pcm/build/pcm /usr/local/bin/pcm
 
 WORKDIR /app
 
