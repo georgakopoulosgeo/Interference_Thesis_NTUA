@@ -2,17 +2,16 @@ KUBERNETES ML-DRIVEN SCHEDULER ARCHITECTURE
 
 Core Components:
 ─────────────────────────────────────────────────
-1. Nginx Benchmark Pods (Workload)
-   • Multi-container pods running:
-     - Nginx server container
-     - wrk load generator container (hitting localhost)
-   • Self-contained test units generating their own load
-   • Multiple replicas possible with isolated traffic
+1. Nginx and Redis
+   • Nginx : HTTP server
+   • Redis : In-memory data structure store
+   • Used for offline training of the ML model
 
-2. Metrics Collection System
-   • PCM tool running on each node
+2. Metrics Collector Pod (each PM)
+   • PCM tool running on each PM
    • Gathers hardware metrics (CPU, memory bandwidth, cache, etc.)
    • 20-second sampling windows before scheduling decisions
+   • Cons: Overhead 
 
 3. Predictor API Service
    • Hosts pre-trained RandomForest model

@@ -16,7 +16,7 @@ class PCMReader:
             "c0res%", "c1res%", "c6res%"
         ]
 
-    def read_metrics(self) -> dict:
+    def read_metrics(self, duration) -> dict:
         """
         Runs PCM for one short sample (1s), parses the CSV output,
         and returns a dict of {metric_name: float} for system‐domain only.
@@ -28,7 +28,7 @@ class PCMReader:
         try:
             # Run pcm for a 1s interval, write CSV to tmp_path
             cmd = [self.pcm_path, "2", f"-csv={tmp_path}"]
-            subprocess.run(cmd, check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            subprocess.run(cmd, timeout=duration, check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
             metrics = {}
             with open(tmp_path, newline="") as csvfile:

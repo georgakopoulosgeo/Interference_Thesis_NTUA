@@ -7,7 +7,7 @@ app = FastAPI(title="Metrics Collector API")
 
 # Start sampling immediately
 sampler = Sampler(interval_sec=20.0, buffer_window_sec=40.0)
-sampler.start()
+sampler.run() # Start the background thread
 
 @app.get("/metrics")
 def get_metrics(window: int = 20):

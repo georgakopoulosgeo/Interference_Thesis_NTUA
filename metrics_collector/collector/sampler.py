@@ -17,7 +17,7 @@ class Sampler(threading.Thread):
     def run(self):
         while not self._stop_event.is_set():
             ts = time.time()
-            metrics = self.reader.read_metrics()
+            metrics = self.reader.read_metrics(self.interval)
             self.buffer.add(ts, metrics)
             time.sleep(self.interval)
 
