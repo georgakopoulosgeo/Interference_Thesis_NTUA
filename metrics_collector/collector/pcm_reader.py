@@ -17,26 +17,27 @@ class PCMReader:
         ]
 
     def read_metrics(self, duration) -> dict:
-        """
-        Runs PCM for one short sample (1s), parses the CSV output,
-        and returns a dict of {metric_name: float} for system‐domain only.
-        """
-        # Use a temp file for CSV output
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp_path = tmp.name
 
         try:
-            # Run pcm for a 1s interval, write CSV to tmp_path
             cmd = [self.pcm_path, "2", f"-csv={tmp_path}"]
-            subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-
+            
+            # Remove timeout or increase it significantly
+            subprocess.run(
+                cmd,
+                timeout=duration + 5,  # Give extra 5s buffer
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            
             metrics = {}
             with open(tmp_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
                 header_domain = next(reader)
                 header_metric = next(reader)
                 row = next(reader, None)
-                print(f"Header Domain: {header_domain}")
+                
                 if row:
                     for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
                         dom_l = dom.strip().lower()
@@ -46,9 +47,16 @@ class PCMReader:
                             try:
                                 metrics[name] = float(row[idx])
                             except ValueError:
-                                # skip non-numeric
                                 pass
             return metrics
+
+        except subprocess.TimeoutExpired:
+            print("⚠️ PCM timed out - returning empty metrics")
+            return {}  # Avoid crashing, return empty data
+
+        except Exception as e:
+            print(f"⚠️ PCM Error: {e}")
+            return {}
 
         finally:
             try:
