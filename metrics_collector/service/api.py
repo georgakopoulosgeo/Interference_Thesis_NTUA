@@ -6,7 +6,7 @@ from collector.sampler import Sampler
 app = FastAPI(title="Metrics Collector API")
 
 # Start sampling immediately
-sampler = Sampler(interval_sec=1.0, buffer_window_sec=30.0)
+sampler = Sampler(interval_sec=20.0, buffer_window_sec=40.0)
 sampler.start()
 
 @app.get("/metrics")
