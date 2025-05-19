@@ -5,19 +5,22 @@ from collector.sampler import Sampler
 
 app = FastAPI(title="Metrics Collector API")
 
-# Start sampling immediately
-sampler = Sampler(interval_sec=20.0, buffer_window_sec=40.0)
-sampler.run() # Start the background thread
+# Configure for:
+# - 20s collection duration
+# - 60s between samples
+# - 60s buffer retention
+sampler = Sampler(collection_duration_sec=20.0, 
+                 sampling_interval_sec=60.0,
+                 buffer_window_sec=60.0)
+sampler.start()  # Start the background thread
 
 @app.get("/metrics")
 def get_metrics(window: int = 20):
-    """
-    Return the last `window` seconds of PCM metrics (system‐domain only) as CSV.
-    """
+    """Return the last `window` seconds of PCM metrics as CSV."""
     try:
         data = sampler.buffer.snapshot(window)
         if not data:
-            return Response(content="", media_type="text/csv")
+            return Response(content="No data available", media_type="text/plain")
 
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=list(data[0].keys()))
