@@ -13,30 +13,50 @@ app = FastAPI(title="Metrics Collector API")
 sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
-def csv_streamer(buffer_data):
-    """
-    Generator that yields CSV lines (as strings) for a list of
-    (timestamp, metrics_dict) tuples.
-    """
-    # 1) Build header row from union of all metric keys
-    metric_keys = set()
-    for ts, metrics in buffer_data:
-        metric_keys.update(metrics.keys())
-    headers = ['timestamp'] + sorted(metric_keys)
+import io
+import csv
+from typing import Iterable, Tuple, Dict, Any
 
-    # 2) Write header
+def csv_streamer(
+    buffer_data: Iterable[Tuple[float, Dict[str, Any]]]
+) -> Iterable[str]:
+    """
+    Takes an iterable of (timestamp, metrics_dict) and yields CSV lines.
+    First row is the header: timestamp,date,time,<metric1>,<metric2>,...
+    """
+    # 1) Gather all possible metric keys
+    all_keys = set()
+    for _, metrics in buffer_data:
+        all_keys.update(metrics.keys())
+    # 2) Define the ordered columns: drop any duplicates of timestamp/date/time
+    metric_keys = sorted(k for k in all_keys if k not in ("timestamp", "date", "time"))
+    header = ["timestamp", "date", "time"] + metric_keys
+
+    # 3) Create a CSV writer on a StringIO buffer
     buf = io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(headers)
+    # Emit header
+    writer.writerow(header)
     yield buf.getvalue()
     buf.seek(0); buf.truncate(0)
 
-    # 3) Write each data row
+    # 4) Emit each row
     for ts, metrics in buffer_data:
-        row = [ts] + [metrics.get(k, '') for k in headers if k != 'timestamp']
+        row = [
+            # timestamp from the tuple
+            f"{ts:.6f}",
+            # raw date/time strings (or blank if missing)
+            metrics.get("date", ""),
+            metrics.get("time", ""),
+        ]
+        # then each metric in our sorted list
+        for key in metric_keys:
+            val = metrics.get(key, "")
+            row.append("" if val is None else str(val))
         writer.writerow(row)
         yield buf.getvalue()
         buf.seek(0); buf.truncate(0)
+
 
 
 @app.get("/metrics")
