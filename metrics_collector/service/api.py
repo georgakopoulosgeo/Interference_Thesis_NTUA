@@ -32,6 +32,8 @@ def csv_streamer(
 
     # Build the ordered list of metric keys, excluding 'timestamp' itself
     metric_keys = [k for k in first_metrics.keys() if k != "timestamp"]
+    if "timestamp" in metric_keys:
+        metric_keys.remove("timestamp")
 
     # 2) Any additional keys from later rows?
     for ts, metrics in it:
@@ -40,7 +42,7 @@ def csv_streamer(
                 metric_keys.append(k)
 
     # Our header is always: timestamp + the metric keys
-    header = ["timestamp"] + metric_keys
+    header = metric_keys
 
     # 3) Write header
     buf = io.StringIO()
@@ -52,10 +54,7 @@ def csv_streamer(
     # 4) Now stream every row *including* the first
     #    Re-iterate buffer_data from the top
     for ts, metrics in buffer_data:
-        row = [f"{ts:.6f}"]  # timestamp first
-        for key in metric_keys:
-            val = metrics.get(key, "")
-            row.append("" if val is None else str(val))
+        row = [ metrics.get(k, "") for k in metric_keys ]
         writer.writerow(row)
         yield buf.getvalue()
         buf.seek(0); buf.truncate(0)
