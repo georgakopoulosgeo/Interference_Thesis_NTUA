@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Response
 import csv
 import io
 from collector.sampler import Sampler
+from fastapi.responses import StreamingResponse
 
 app = FastAPI(title="Metrics Collector API")
 
@@ -12,36 +13,46 @@ app = FastAPI(title="Metrics Collector API")
 sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
+def csv_streamer(buffer_data):
+    """
+    Generator that yields CSV lines (as strings) for a list of
+    (timestamp, metrics_dict) tuples.
+    """
+    # 1) Build header row from union of all metric keys
+    metric_keys = set()
+    for ts, metrics in buffer_data:
+        metric_keys.update(metrics.keys())
+    headers = ['timestamp'] + sorted(metric_keys)
+
+    # 2) Write header
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(headers)
+    yield buf.getvalue()
+    buf.seek(0); buf.truncate(0)
+
+    # 3) Write each data row
+    for ts, metrics in buffer_data:
+        row = [ts] + [metrics.get(k, '') for k in headers if k != 'timestamp']
+        writer.writerow(row)
+        yield buf.getvalue()
+        buf.seek(0); buf.truncate(0)
+
+
 @app.get("/metrics")
-def get_metrics(window: int = 20):
-    """
-    Returns metrics from the last `window` seconds.
-    Uses PCM's native System-Data and System-Time columns.
-    """
-    try:
-        # Get all data points from buffer
-        buffer_data = sampler.buffer.get_buffer()
-        if not buffer_data:
-            return Response("No data available", media_type="text/plain")
+def get_metrics():
+    # snapshot under lock
+    with sampler.buffer.lock:
+        buffer_data = list(sampler.buffer.buffer)
 
-        # Generate CSV with System-Data and System-Time
-        output = io.StringIO()
-        writer = csv.DictWriter(
-            output,
-            fieldnames=buffer_data[0].keys(),  # Auto-detect columns
-            extrasaction="ignore"  # Skip missing fields
-        )
-        writer.writeheader()
-        writer.writerows(buffer_data)
-
-        return Response(
-            content=output.getvalue(),
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment;filename=pcm_metrics.csv"}
-        )
-
-    except Exception as e:
-        raise HTTPException(500, detail=str(e))
+    # return a streaming CSV response
+    return StreamingResponse(
+        csv_streamer(buffer_data),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=metrics.csv"
+        }
+    )
 
 @app.get("/debug/buffer")
 def debug_buffer():
