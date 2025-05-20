@@ -1,3 +1,4 @@
+from typing import Any, Dict, Iterable, Tuple
 from fastapi import FastAPI, HTTPException, Response
 import csv
 import io
@@ -13,27 +14,48 @@ app = FastAPI(title="Metrics Collector API")
 sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
-def csv_streamer(buffer_data):
+def csv_streamer(
+    buffer_data: Iterable[Tuple[float, Dict[str, Any]]]
+) -> Iterable[str]:
     """
-    Generator that yields CSV lines (as strings) for a list of
-    (timestamp, metrics_dict) tuples.
+    Generator that yields CSV lines for an iterable of (timestamp, metrics_dict).
+    Preserves the original metrics order (as inserted into the dict).
     """
-    # 1) Build header row from union of all metric keys
-    metric_keys = set()
-    for ts, metrics in buffer_data:
-        metric_keys.update(metrics.keys())
-    headers = metric_keys
+    # 1) Grab the first metrics dict to seed our column order
+    it = iter(buffer_data)
+    try:
+        first_ts, first_metrics = next(it)
+    except StopIteration:
+        # no data → no CSV
+        return
+        yield  # make this a generator
 
-    # 2) Write header
+    # Build the ordered list of metric keys, excluding 'timestamp' itself
+    metric_keys = [k for k in first_metrics.keys() if k != "timestamp"]
+
+    # 2) Any additional keys from later rows?
+    for ts, metrics in it:
+        for k in metrics.keys():
+            if k != "timestamp" and k not in metric_keys:
+                metric_keys.append(k)
+
+    # Our header is always: timestamp + the metric keys
+    header = ["timestamp"] + metric_keys
+
+    # 3) Write header
     buf = io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(headers)
+    writer.writerow(header)
     yield buf.getvalue()
     buf.seek(0); buf.truncate(0)
 
-    # 3) Write each data row
+    # 4) Now stream every row *including* the first
+    #    Re-iterate buffer_data from the top
     for ts, metrics in buffer_data:
-        row = [metrics.get(k, '') for k in headers if k != 'timestamp']
+        row = [f"{ts:.6f}"]  # timestamp first
+        for key in metric_keys:
+            val = metrics.get(key, "")
+            row.append("" if val is None else str(val))
         writer.writerow(row)
         yield buf.getvalue()
         buf.seek(0); buf.truncate(0)
