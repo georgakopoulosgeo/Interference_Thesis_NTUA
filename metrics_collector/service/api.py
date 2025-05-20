@@ -13,50 +13,30 @@ app = FastAPI(title="Metrics Collector API")
 sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
-import io
-import csv
-from typing import Iterable, Tuple, Dict, Any
-
-def csv_streamer(
-    buffer_data: Iterable[Tuple[float, Dict[str, Any]]]
-) -> Iterable[str]:
+def csv_streamer(buffer_data):
     """
-    Takes an iterable of (timestamp, metrics_dict) and yields CSV lines.
-    First row is the header: timestamp,date,time,<metric1>,<metric2>,...
+    Generator that yields CSV lines (as strings) for a list of
+    (timestamp, metrics_dict) tuples.
     """
-    # 1) Gather all possible metric keys
-    all_keys = set()
-    for _, metrics in buffer_data:
-        all_keys.update(metrics.keys())
-    # 2) Define the ordered columns: drop any duplicates of timestamp/date/time
-    metric_keys = sorted(k for k in all_keys if k not in ("timestamp", "date", "time"))
-    header = ["timestamp", "date", "time"] + metric_keys
+    # 1) Build header row from union of all metric keys
+    metric_keys = set()
+    for ts, metrics in buffer_data:
+        metric_keys.update(metrics.keys())
+    headers = metric_keys
 
-    # 3) Create a CSV writer on a StringIO buffer
+    # 2) Write header
     buf = io.StringIO()
     writer = csv.writer(buf)
-    # Emit header
-    writer.writerow(header)
+    writer.writerow(headers)
     yield buf.getvalue()
     buf.seek(0); buf.truncate(0)
 
-    # 4) Emit each row
+    # 3) Write each data row
     for ts, metrics in buffer_data:
-        row = [
-            # timestamp from the tuple
-            f"{ts:.6f}",
-            # raw date/time strings (or blank if missing)
-            metrics.get("date", ""),
-            metrics.get("time", ""),
-        ]
-        # then each metric in our sorted list
-        for key in metric_keys:
-            val = metrics.get(key, "")
-            row.append("" if val is None else str(val))
+        row = [metrics.get(k, '') for k in headers if k != 'timestamp']
         writer.writerow(row)
         yield buf.getvalue()
         buf.seek(0); buf.truncate(0)
-
 
 
 @app.get("/metrics")

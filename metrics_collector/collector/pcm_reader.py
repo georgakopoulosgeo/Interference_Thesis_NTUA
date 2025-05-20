@@ -1,4 +1,3 @@
-import datetime
 import subprocess
 import csv
 import tempfile
@@ -39,61 +38,57 @@ class PCMReader:
             metrics_series = []
             with open(tmp_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
-                header_domain = next(reader)   # e.g. ["System","Socket","Core",…]
-                header_metric = next(reader)   # e.g. ["Date","Time","IPC","L2MISS",…]
-
+                header_domain = next(reader)  # First header (domains)
+                header_metric = next(reader)  # Second header (metrics)
+                
+                # Process all rows (not just the first one)
                 for row in reader:
                     if not row:
-                        continue  # skip empty lines
+                        continue  # Skip empty rows
 
-                    # Reset per‐row
-                    date_str = None
-                    time_str = None
+                    # Extract timestamp (assuming "Date" and "Time" columns exist)
+                    timestamp = None
                     row_metrics = {}
-
-                    # Extract date/time columns and filter numeric ones
-                    for idx, dom in enumerate(header_domain):
-                        met = header_metric[idx] if idx < len(header_metric) else ""
+                    
+                    for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
                         dom_l = dom.strip().lower()
                         met_l = met.strip().lower()
-                        cell = row[idx].strip()
-
-                        # Always capture date/time
-                        if met_l == "date":
-                            date_str = cell
+                        
+                        # Always capture "Date" and "Time" for timestamps
+                        if met_l in ("date", "time"):
+                            # row_metrics[met_l] = row[idx]
+                            if met_l == "date":
+                                date_str = row[idx]
+                            elif met_l == "time":
+                                time_str = row[idx]
                             continue
-                        if met_l == "time":
-                            time_str = cell
-                            continue
-
-                        # Otherwise only keep if domain & keyword match
-                        if self.domain_filter.strip().lower() in dom_l and any(kw in met_l for kw in [kw.lower() for kw in self.desired_keywords]):
+                        
+                        # Filter other metrics
+                        if (self.domain_filter in dom_l) and any(kw in met_l for kw in self.desired_keywords):
+                            name = f"{dom.strip()}_{met.strip()}"
                             try:
-                                row_metrics[f"{dom.strip()}_{met.strip()}"] = float(cell)
+                                row_metrics[name] = float(row[idx])
                             except ValueError:
-                                pass  # skip non-numeric
-
-                    # Build timestamp
-                    if date_str:
-                        fmt = "%Y-%m-%d %H:%M:%S" if time_str else "%Y-%m-%d"
-                        dt_str = f"{date_str} {time_str}" if time_str else date_str
+                                pass
+                    
+                    # We use that?
+                    # Combine date/time into a timestamp (if available)
+                    if "date_str" in locals() and "time_str" in locals():
+                        timestamp_str = f"{date_str} {time_str}"
                         try:
-                            dt = datetime.datetime.strptime(dt_str, fmt)
+                            timestamp = time.mktime(time.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S"))
                         except ValueError:
-                            dt = datetime.datetime.now()
-                        timestamp = dt.timestamp()
-                    else:
-                        timestamp = time.time()
+                            timestamp = time.time()  # Fallback to current time
+                    
+                    if row_metrics:  # Only add non-empty metrics
+                        metrics_series.append({
+                            "timestamp": timestamp,
+                            "System - Date": date_str,
+                            "System - Time": time_str,
+                            **row_metrics
+                        })
 
-                    # Assemble the record
-                    entry = {
-                        "timestamp": timestamp,
-                        "date": date_str,
-                        "time": time_str,
-                        **row_metrics
-                    }
-                    metrics_series.append(entry)
-
+            print(f"Collected {len(metrics_series)} metric samples.", file=sys.stderr)
             return metrics_series
 
         except Exception as e:
