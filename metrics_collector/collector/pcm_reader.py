@@ -36,55 +36,45 @@ class PCMReader:
                 print(f"Raw CSV (first 100 chars):\n{raw_csv[:100]}...", file=sys.stderr)  # Debug
 
             metrics_series = []
+    
+            # Open & parse headers + decide which columns to keep
             with open(tmp_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
-                header_domain = next(reader)  # First header (domains)
-                header_metric = next(reader)  # Second header (metrics)
+                header_domain = next(reader)
+                header_metric = next(reader)
                 
-                # Process all rows (not just the first one)
+                indices_to_keep = []
+                for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
+                    dom_l = dom.strip().lower()
+                    met_l = met.strip().lower()
+                    if met_l in ("date", "time"):
+                        indices_to_keep.append(idx)
+                    elif (self.domain_filter.lower() in dom_l
+                        and any(kw.lower() in met_l for kw in self.desired_keywords)):
+                        indices_to_keep.append(idx)
+                
+                if not indices_to_keep:
+                    print(f"No columns matched for domain filter '{self.domain_filter}' "
+                        f"with keywords {self.desired_keywords}.", file=sys.stderr)
+                    return []  # or raise an exception
+                
+                # Build the combined‐header row
+                combined_header = [
+                    f"{header_domain[i]} - {header_metric[i]}"
+                    for i in indices_to_keep
+                ]
+                metrics_series.append(combined_header)
+                
+                # Process each data row
                 for row in reader:
                     if not row:
-                        continue  # Skip empty rows
-
-                    # Extract timestamp (assuming "Date" and "Time" columns exist)
-                    timestamp = None
-                    row_metrics = {}
-                    
-                    for idx, (dom, met) in enumerate(zip(header_domain, header_metric)):
-                        dom_l = dom.strip().lower()
-                        met_l = met.strip().lower()
-                        
-                        # Always capture "Date" and "Time" for timestamps
-                        if met_l in ("date", "time"):
-                            if met_l == "date":
-                                date_str = row[idx]
-                            elif met_l == "time":
-                                time_str = row[idx]
-                            continue
-                        
-                        # Filter other metrics
-                        if (self.domain_filter in dom_l) and any(kw in met_l for kw in self.desired_keywords):
-                            name = f"{dom.strip()}_{met.strip()}"
-                            try:
-                                row_metrics[name] = float(row[idx])
-                            except ValueError:
-                                pass
-                    
-                    # Combine date/time into a timestamp (if available)
-                    if "date_str" in locals() and "time_str" in locals():
-                        timestamp_str = f"{date_str} {time_str}"
-                        try:
-                            timestamp = time.mktime(time.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S"))
-                        except ValueError:
-                            timestamp = time.time()  # Fallback to current time
-                    
-                    if row_metrics:  # Only add non-empty metrics
-                        metrics_series.append({
-                            "timestamp": timestamp,
-                            **row_metrics
-                        })
-
-            print(f"Collected {len(metrics_series)} metric samples.", file=sys.stderr)
+                        continue
+                    # Simply pick out the columns we're keeping
+                    filtered_row = [row[i] for i in indices_to_keep]
+                    metrics_series.append(filtered_row)
+            
+            print(f"Collected {len(metrics_series)-1} metric samples "
+                f"(plus 1 header row).", file=sys.stderr)
             return metrics_series
 
         except Exception as e:
