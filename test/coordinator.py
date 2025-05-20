@@ -56,7 +56,7 @@ def read_test_case_parameters(test_cases_csv, test_case_id):
                 }
     raise ValueError(f"Test case ID {test_case_id} not found in {test_cases_csv}")
 
-def coordinate_test(test_case_id, interference, test_cases_csv):
+def coordinate_test(test_case_id, interference, test_cases_csv, given_duration):
     """
     Coordinates the overall test:
       1. Sets up directories and file paths.
@@ -96,12 +96,8 @@ def coordinate_test(test_case_id, interference, test_cases_csv):
         print("Coordinator: Deploying nginx workload...")
         run_nginx_script = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.sh"
         #workload_output = run_workload_single_pod(run_nginx_script, test_case_id)
-        if test_case_id == "light":
-            duration  = 60
-        elif test_case_id == "medium":
-            duration = 100
-        elif test_case_id == "heavy":   
-            duration = 140
+        duration = given_duration
+        
     else:
         params = read_test_case_parameters(test_cases_csv, test_case_id)
         threads = params["THREADS"]
@@ -172,9 +168,10 @@ def main():
     args = parse_arguments()
     test_case_id = args.test_case_id
     interference = args.interference
+    duration =  args.duration if args.duration else 60
     # Assuming the test cases CSV is located in the same directory.
     test_cases_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), "VM_Workload_Test_Cases.csv")
-    coordinate_test(test_case_id, interference, test_cases_csv)
+    coordinate_test(test_case_id, interference, test_cases_csv, duration)
 
 if __name__ == "__main__":
     main()
