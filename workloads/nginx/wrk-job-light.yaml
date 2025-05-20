@@ -1,19 +1,20 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wrk-load
+  name: wrk2-load
 spec:
   backoffLimit: 1
-  ttlSecondsAfterFinished: 30    # cleans up Job+Pods 30s after completion
+  ttlSecondsAfterFinished: 30
   template:
     spec:
       restartPolicy: Never
       containers:
-      - name: wrk
-        image: skandyla/wrk:latest
+      - name: wrk2
+        image: haydenjeune/wrk2:latest  # small (~6 MB) image containing wrk2 :contentReference[oaicite:0]{index=0}
         args:
-          - "-t1"                        # 4 worker threads
-          - "-c50"                       # 100 concurrent connections
-          - "-d60s"                      # run for 60 seconds
-          - "--latency"                  # report latency percentiles
-          - "http://nginx-service/"      # target service (ClusterDNS)
+          - "-t1"                  # 1 thread
+          - "-c50"                 # 50 concurrent connections
+          - "-d60s"                # duration 60 seconds
+          - "-R50000"              # constant 50 000 requests/sec
+          - "-L"                   # record latency histogram / percentiles
+          - "http://nginx-service/" 
