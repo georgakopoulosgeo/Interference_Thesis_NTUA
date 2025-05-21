@@ -16,21 +16,16 @@ Core Components:
 3. Predictor API Service
    • Hosts pre-trained RandomForest model
    • Accepts node metrics as input
-   • Returns "fitness" score (0-1) for scheduling
+   • Returns slowdown score (0-1) for scheduling
    • Optional: Replica-aware scoring logic
 
 4. Custom Scheduler Extender
    • Kubernetes scheduler extension
    • Intercepts pod scheduling requests
    • Queries Predictor API for node scores
-   • Implements placement logic:
-     - Spread/Pack/Balanced strategies
-     - Replica distribution awareness
+   • Implements placement logic
+   • Optional: Number of replicas per node
 
-5. Control Plane
-   • Modified kube-scheduler with extender policy
-   • Custom scheduling policies JSON config
-   • Optional: Horizontal Pod Autoscaler integration
 
 Data Flow:
 ─────────────────────────────────────────────────

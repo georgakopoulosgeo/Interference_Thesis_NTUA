@@ -91,6 +91,7 @@ def parse_workload_output_single_pod() -> dict:
     # Run the command to get the logs of the pod
     # kubectl logs -f job/wrk-load
     cmd = f"kubectl logs -f job/wrk2-load"
+    #cmd = f"kubectl logs -f job/memtier-benchmark"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     output = result.stdout.strip()
     # Parse the output / use the existing function parse_workload_output
