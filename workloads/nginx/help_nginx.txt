@@ -1,9 +1,3 @@
-minikube start \
-  --nodes=2 \
-  --driver=docker \
-  --cpus=4 \
-  --memory=3072
-
 // Allow one node to run nginx
 kubectl label node minikube-m02 nginx=true
 
@@ -11,7 +5,11 @@ kubectl get nodes --show-labels
 
 // Create a Deployment and Service for nginx
 # 1. Create both Deployment and Service:
-kubectl apply -f nginx-deployment.yaml
+kubectl apply -f nginx-deploy.yaml
+
+# Get the URL of the nginx service
+minikube service nginx-service --url 
+# Returns http://192.168.49.2:30080
 
 # 2. Wait for the Deployment to roll out:
 kubectl rollout status deployment/my-nginx
@@ -30,3 +28,7 @@ kubectl apply -f wrk-job-light.yaml
 # kubectl apply -f wrk-job-heavy.yaml
 
 kubectl logs -f job/wrk-load
+
+// From outside the cluster, you can access the nginx service using the URL provided by `minikube service nginx-service --url`.
+cd /home/george/Workspace/Interference/workloads/wrk2
+taskset -c 6,7 ./wrk -t1 -c40 -d30s -R100 -L http://192.168.49.2:30080/

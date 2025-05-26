@@ -1,0 +1,44 @@
+// Create a Minikube Cluster with 2 nodes, each node should have 3 CPUs and 3072MB of memory. 
+// Also I want to pin the CPU cores to each node
+# Delete existing cluster
+minikube delete --all
+
+# Start control plane (pinned to CPU 6)
+  minikube start \
+    --driver=docker \
+    --cpus=3 \
+    --memory=2048 \
+    --container-runtime=containerd \
+    --nodes=2 
+
+
+
+
+# Apply CPU pinning
+docker update minikube --cpus=3 --cpuset-cpus="0-2"  
+docker update minikube-m02 --cpus=3 --cpuset-cpus="3-5"
+
+
+// Now I have cores 6-7 for external workloads
+minikube ssh -n minikube
+sudo systemctl stop kubelet
+sudo rm /var/lib/kubelet/cpu_manager_state
+sudo vi /var/lib/kubelet/config.yaml
+  reservedSystemCPUs: "6-7" # maybe change more?
+  cpuManagerPolicy: static
+sudo systemctl restart kubelet
+
+///////////////// Validation
+
+1. Check Docker Container CPU Pinning
+    # List Minikube containers and their CPU pinning
+docker inspect minikube --format '{{.Name}} -> {{.HostConfig.CpusetCpus}}'
+docker inspect minikube-m02 --format '{{.Name}} -> {{.HostConfig.CpusetCpus}}'
+
+
+2. Check Inside the Nodes (via SSH)
+minikube ssh -n minikube "cat /sys/fs/cgroup/cpuset.cpus"
+minikube ssh -n minikube-m02 "cat /sys/fs/cgroup/cpuset.cpus"
+
+3. Kubernetes-Level Validation
+kubectl describe nodes | grep -A 5 "Allocatable"
