@@ -12,6 +12,8 @@ import time
 import csv
 import threading
 import subprocess
+import argparse
+import time
 from typing import List, Dict, Optional
 # Import from other files
 from system_monitor_intepcm import pcm_monitoring 
@@ -59,7 +61,7 @@ and mix scenarios
 
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
-    #{"id": 1, "name": "Baseline", "type": None},
+    {"id": 1, "name": "Baseline", "type": None},
     {"id": 2, "name": "1 iBench CPU pod", "type": "ibench-cpu", "count": 1},
     {"id": 3, "name": "2 iBench CPU pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4 iBench CPU pods", "type": "ibench-cpu", "count": 4},
@@ -235,7 +237,7 @@ def test_coordinator():
                 # Run test with monitoring
                 pcm_thread = threading.Thread(
                     target=pcm_monitoring,
-                    args=(45, 5000,
+                    args=(46, 5000,
                          os.path.join(RAW_LOG_FOLDER, f"pcm_raw_{test_id}.csv"),
                          os.path.join(BASELINE_RESULTS_DIR, f"pcm_system_{test_id}.csv"),
                          os.path.join(BASELINE_RESULTS_DIR, f"pcm_core_{test_id}.csv"))
@@ -247,6 +249,7 @@ def test_coordinator():
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")
                 # Execute workload test
                 metrics = run_wrk_test(replicas, rps, test_id)
+                time.sleep(DURATION[:-1])
                 if not metrics:
                     print(f"[Replicas={replicas}|RPS={rps}] Workload test failed, skipping metrics collection.")
                     continue

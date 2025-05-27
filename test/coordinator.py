@@ -168,7 +168,7 @@ def main():
     args = parse_arguments()
     test_case_id = args.test_case_id
     interference = args.interference
-    duration =  args.duration if args.duration else 60
+    duration = 60
     # Assuming the test cases CSV is located in the same directory.
     test_cases_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), "VM_Workload_Test_Cases.csv")
     coordinate_test(test_case_id, interference, test_cases_csv, duration)
