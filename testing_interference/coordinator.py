@@ -30,7 +30,8 @@ REPLICAS_TO_TEST = range(1, 3)  # 1-5 replicas
 RPS_STEPS = range(100, MAX_RPS + 1, 200)  # 100, 300, ..., MAX_RPS
 
 # Path configuration (add to coordinator.py)
-INTERFERENCE_SCRIPTS_DIR = "../injection_interference"
+INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
+
 
 # Directory setup
 RAW_LOG_FOLDER = "raw_logs"
