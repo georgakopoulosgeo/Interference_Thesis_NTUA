@@ -4,35 +4,42 @@ import csv
 import os
 import sys
 
-def run_pcm(duration: int, interval: int, output_csv: str) -> None:
+def run_pcm(duration: int, interval: float, output_csv: str) -> None:
     """
-    Execute the Intel PCM tool for a given duration with a given sampling interval.
-    The PCM tool is expected to output a CSV file.
-    
-    Parameters:
-      duration: Total duration in seconds for which PCM should run.
-      interval: Sampling interval in seconds (e.g., 300 for 5 minutes per sample).
-      output_csv: Filename for the raw PCM CSV output.
+    Execute PCM with guaranteed duration using subprocess.Popen
     """
-    # If output_csv does not exist, create it.
-    if not os.path.exists(output_csv):
-        with open(output_csv, 'w') as f:
-            f.write("")
-
-    # Go to the directory where the PCM tool is located.
     pcm_dir = "/home/george/Workspace/pcm/build/bin"
-    os.chdir(pcm_dir)
-    cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
-    print("Executing PCM command:", " ".join(cmd))
+    cmd = ["sudo", os.path.join(pcm_dir, "pcm"), str(interval), "-csv=" + output_csv]
+    
+    print(f"Executing PCM: {' '.join(cmd)} for {duration}s")
+    
     try:
-        subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        # Start process with explicit working directory
+        proc = subprocess.Popen(
+            cmd,
+            cwd=pcm_dir,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Wait for duration or kill
+        proc.wait(timeout=duration)
+        print(f"PCM completed successfully after {duration}s")
+        
     except subprocess.TimeoutExpired:
-        print("PCM monitoring completed: duration reached.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running PCM: {e}")
-    print("PCM monitoring finished. Output written to", output_csv)
-    # Return to the original directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+            print(f"PCM gracefully terminated after {duration}s")
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            print("PCM forcefully killed after timeout")
+    
+    except Exception as e:
+        print(f"PCM execution failed: {str(e)}")
+        if proc.poll() is None:
+            proc.kill()
 
 def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, desired_keywords: list) -> None:
     """

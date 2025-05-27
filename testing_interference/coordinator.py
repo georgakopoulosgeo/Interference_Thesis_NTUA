@@ -249,7 +249,6 @@ def test_coordinator():
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")
                 # Execute workload test
                 metrics = run_wrk_test(replicas, rps, test_id)
-                time.sleep(DURATION[:-1])
                 if not metrics:
                     print(f"[Replicas={replicas}|RPS={rps}] Workload test failed, skipping metrics collection.")
                     continue
