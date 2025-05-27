@@ -25,7 +25,7 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
     print("Executing PCM command:", " ".join(cmd))
     try:
-        subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(cmd, timeout=30, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         print("PCM monitoring completed: duration reached.")
     except subprocess.CalledProcessError as e:
