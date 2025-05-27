@@ -23,7 +23,7 @@ MAX_RPS = 500  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 15
+SLEEP_BETWEEN_TESTS = 40
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 3)  # 1-5 replicas
@@ -215,7 +215,7 @@ def test_coordinator():
 
     for replicas in REPLICAS_TO_TEST:
         # Scale NGINX once per replica count
-        subprocess.run(["kubectl", "scale", "deployment", "nginx", f"--replicas={replicas}"], check=True)
+        subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
         time.sleep(5)  # Wait for scaling
 
         for rps in RPS_STEPS:

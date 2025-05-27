@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import sys
+import time
 
 def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     """
@@ -113,6 +114,7 @@ def pcm_monitoring(duration: int, interval: int, raw_csv: str, system_csv: str, 
     
     print("Starting PCM monitoring...")
     run_pcm(duration, interval, raw_csv)
+    time.sleep(duration)  # Wait for the PCM command to finish
     print("PCM monitoring finished. Now filtering CSV data...")
 
     # Create filtered file for system-level data (domain header contains "system")
