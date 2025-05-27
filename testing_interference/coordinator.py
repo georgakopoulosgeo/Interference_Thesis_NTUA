@@ -267,8 +267,9 @@ def test_coordinator():
                         **metrics
                     })
 
-                # Cleanup
+                # Wait for PCM monitoring to finish
                 pcm_thread.join()
+                print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.")
                 if scenario["type"]:
                     cleanup_interference(scenario)
 
