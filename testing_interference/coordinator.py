@@ -217,7 +217,7 @@ def test_coordinator():
     for replicas in REPLICAS_TO_TEST:
         # Scale NGINX once per replica count
         subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
-        time.sleep(5)  # Wait for scaling
+        time.sleep(3)  # Wait for scaling
 
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
@@ -227,7 +227,7 @@ def test_coordinator():
                 if scenario["type"] and not create_interference(scenario):
                     print(f"Skipping failed scenario {scenario['name']}")
                     continue
-                time.sleep(10)  # Stabilization period
+                time.sleep(4)  # Stabilization period
 
                 # Generate unique test ID
                 test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
