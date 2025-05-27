@@ -22,11 +22,10 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     # Go to the directory where the PCM tool is located.
     pcm_dir = "/home/george/Workspace/pcm/build/bin"
     os.chdir(pcm_dir)
-    cmd = ["sudo", "timeout", str(duration), "./pcm", str(interval), "-csv=" + output_csv]
+    cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
     print("Executing PCM command:", " ".join(cmd))
     try:
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        #subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(cmd, timeout=duration, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
     except subprocess.TimeoutExpired:
         print("PCM monitoring completed: duration reached.")
     except subprocess.CalledProcessError as e:
