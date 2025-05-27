@@ -235,7 +235,7 @@ def test_coordinator():
                 # Run test with monitoring
                 pcm_thread = threading.Thread(
                     target=pcm_monitoring,
-                    args=(45, 2000,
+                    args=(45, 5000,
                          os.path.join(RAW_LOG_FOLDER, f"pcm_raw_{test_id}.csv"),
                          os.path.join(BASELINE_RESULTS_DIR, f"pcm_system_{test_id}.csv"),
                          os.path.join(BASELINE_RESULTS_DIR, f"pcm_core_{test_id}.csv"))
