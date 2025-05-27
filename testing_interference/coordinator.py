@@ -242,7 +242,7 @@ def test_coordinator():
                 pcm_thread = threading.Thread(target=pcm_monitoring, args=(46, 5000, pcm_raw_file, pcm_system_file, pcm_core_file))
                 
                 pcm_thread.start()
-                #time.sleep(1)
+                time.sleep(1)
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
                 #time.sleep(1)  # Give some time for the monitoring to start
 
