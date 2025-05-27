@@ -234,17 +234,17 @@ def test_coordinator():
                 # Generate unique test ID
                 test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
 
+                pcm_raw_file = os.path.join(RAW_LOG_FOLDER, f"pcm_raw_{test_id}.csv")
+                pcm_system_file = os.path.join(BASELINE_RESULTS_DIR, f"pcm_system_{test_id}.csv")
+                pcm_core_file = os.path.join(BASELINE_RESULTS_DIR, f"pcm_core_{test_id}.csv")
+
                 # Run test with monitoring
-                pcm_thread = threading.Thread(
-                    target=pcm_monitoring,
-                    args=(46, 5000,
-                         os.path.join(RAW_LOG_FOLDER, f"pcm_raw_{test_id}.csv"),
-                         os.path.join(BASELINE_RESULTS_DIR, f"pcm_system_{test_id}.csv"),
-                         os.path.join(BASELINE_RESULTS_DIR, f"pcm_core_{test_id}.csv"))
-                )
-                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
+                pcm_thread = threading.Thread(target=pcm_monitoring, args=(46, 5000, pcm_raw_file, pcm_system_file, pcm_core_file))
+                
                 pcm_thread.start()
-                time.sleep(1)  # Give some time for the monitoring to start
+                #time.sleep(1)
+                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
+                #time.sleep(1)  # Give some time for the monitoring to start
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")
                 # Execute workload test
