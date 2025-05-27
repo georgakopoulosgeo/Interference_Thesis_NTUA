@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import sys
+import time
 
 def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     """
@@ -26,6 +27,8 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     print("Executing PCM command:", " ".join(cmd))
     try:
         subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        # Wait for the command to complete or timeout.
+        time.sleep(duration+10)
     except subprocess.TimeoutExpired:
         print("PCM monitoring completed: duration reached.")
     except subprocess.CalledProcessError as e:
