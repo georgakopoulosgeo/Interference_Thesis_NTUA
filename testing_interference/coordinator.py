@@ -59,7 +59,7 @@ and mix scenarios
 
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
-    {"id": 1, "name": "Baseline", "type": None},
+    #{"id": 1, "name": "Baseline", "type": None},
     {"id": 2, "name": "1 iBench CPU pod", "type": "ibench-cpu", "count": 1},
     {"id": 3, "name": "2 iBench CPU pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4 iBench CPU pods", "type": "ibench-cpu", "count": 4},
@@ -235,16 +235,22 @@ def test_coordinator():
                 # Run test with monitoring
                 pcm_thread = threading.Thread(
                     target=pcm_monitoring,
-                    args=(int(DURATION[:-1])+5, 2000,
+                    args=(45, 2000,
                          os.path.join(RAW_LOG_FOLDER, f"pcm_raw_{test_id}.csv"),
                          os.path.join(BASELINE_RESULTS_DIR, f"pcm_system_{test_id}.csv"),
                          os.path.join(BASELINE_RESULTS_DIR, f"pcm_core_{test_id}.csv"))
                 )
+                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
                 pcm_thread.start()
+                time.sleep(1)  # Give some time for the monitoring to start
 
+                print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")
                 # Execute workload test
                 metrics = run_wrk_test(replicas, rps, test_id)
-
+                if not metrics:
+                    print(f"[Replicas={replicas}|RPS={rps}] Workload test failed, skipping metrics collection.")
+                    continue
+                print(f"[Replicas={replicas}|RPS={rps}] Workload test completed with metrics: {metrics}")
                 # Save results
                 with open(os.path.join(BASELINE_RESULTS_DIR, "workload_metrics.csv"), "a") as f:
                     writer = csv.DictWriter(f, fieldnames=[
