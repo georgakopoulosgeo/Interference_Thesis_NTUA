@@ -27,7 +27,7 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     print("Executing PCM command:", " ".join(cmd))
     try:
         print("Starting PCM monitoring for", duration, "seconds with interval", interval, "seconds.")
-        subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     except subprocess.TimeoutExpired:
         print("PCM monitoring completed: duration reached.")
     except subprocess.CalledProcessError as e:
@@ -115,8 +115,6 @@ def pcm_monitoring(duration: int, interval: int, raw_csv: str, system_csv: str, 
     
     print("Starting PCM monitoring...")
     run_pcm(duration, interval, raw_csv)
-    # Wait for PCM to finish
-    time.sleep(duration)  # Wait for the PCM command to finish
     print("PCM monitoring finished. Now filtering CSV data...")
 
     # Create filtered file for system-level data (domain header contains "system")
