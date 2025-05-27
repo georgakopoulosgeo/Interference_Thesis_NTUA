@@ -1,0 +1,17 @@
+    {"id": 14, "name": "2 iBench CPU + 2 stress-ng l3", "type": "mix", "components": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "stress-ng-l3", "count": 2}
+    ]},
+    {"id": 15, "name": "4 iBench CPU + 4 iBench memBW", "type": "mix", "components": [
+        {"type": "ibench-cpu", "count": 4},
+        {"type": "ibench-membw", "count": 4}
+    ]},
+    {"id": 16, "name": "2 stress-ng l3 + 2 iBench memBW", "type": "mix", "components": [
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 2}
+    ]},
+    {"id": 17, "name": "4 iBench CPU + 2 stress-ng l3 + 2 iBench memBW", "type": "mix", "components": [
+        {"type": "ibench-cpu", "count": 4},
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 2}
+    ]}

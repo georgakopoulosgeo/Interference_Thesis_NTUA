@@ -4,6 +4,8 @@ import time
 import yaml
 from kubernetes import client, config
 
+# Use: python3 deploy_ibench_membw.py <replicas> [--namespace <namespace>] [--deploy-file <path>] [--duration <seconds>]
+
 def main():
     parser = argparse.ArgumentParser(description="Deploy ibench-membw pods")
     parser.add_argument("replicas", type=int,

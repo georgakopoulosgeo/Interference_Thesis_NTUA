@@ -3,6 +3,8 @@ import argparse
 import yaml
 from kubernetes import client, config
 
+## Use: python3 deploy_ibench_cpu_v2.py <replicas> [--namespace <namespace>] [--nginx]
+
 def main():
     parser = argparse.ArgumentParser(
         description="Deploy ibench pods with optional Nginx node targeting"

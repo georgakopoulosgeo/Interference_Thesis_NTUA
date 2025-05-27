@@ -4,6 +4,8 @@ import time
 import sys
 import os
 
+# Use: # python3 deploy_stressng_l3.py [replicas]
+
 DEPLOYMENT_NAME = "stress-ng-l3-ways50"
 YAML_PATH = "stress-ng/"
 YAML_FILE = "stress-ng/stress-ng-l3-50.yaml"
