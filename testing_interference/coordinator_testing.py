@@ -213,17 +213,16 @@ def main():
                 #print("Coordinator: Container-level monitoring completed.")
 
                 #workload_metrics = parse_workload_output(workload_output)
-                workload_metrics = parse_workload_output(wrk_output_file)
-                print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
+                #workload_metrics = parse_workload_output(wrk_output_file)
+                #print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
                 
                 print("Coordinator: Store workload metrics...")
-                store_workload_metrics(workload_csv, date_str, workload_metrics)
+                #store_workload_metrics(workload_csv, replicas, test_case_id, date_str, scenario["name"], workload_metrics)
 
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
                 intelpcm_thread.join()
-
                 print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.")
                 #if scenario["type"]:
                     #cleanup_interference(scenario)
