@@ -134,7 +134,7 @@ def ensure_directories(script_dir):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "Nginx_Metrics_V05")
+    baseline_results_dir = os.path.join(script_dir, "NEW_V01")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, "raw_folder")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -167,7 +167,7 @@ def main():
 
     
     print("Coordinator: Starting system-level monitoring...")
-    duration = DURATION
+    duration = int(DURATION[:-1]) # Convert duration to seconds and add buffer
     # Run perf_monitoring and amduprof_monitoring in parallel using threads
     #perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
     #amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
@@ -191,7 +191,7 @@ def main():
     wrk_output_file = run_wrk_test(raw_log_folder, replicas=1, rps=100, test_id="baseline")
 
     #Sleep for the duration of the workload
-    time.sleep(duration)
+    #time.sleep(duration)
     print("Coordinator: Workload traffic completed.")
     print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
     end_time_str = str(int(time.time()))
