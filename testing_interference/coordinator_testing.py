@@ -30,15 +30,15 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     {"id": 1, "name": "Baseline", "type": None},
-    {"id": 2, "name": "1 iBench CPU pod", "type": "ibench-cpu", "count": 1},
-    {"id": 3, "name": "2 iBench CPU pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 2, "name": "1 iBench CPU pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 3, "name": "2 iBench CPU pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4 iBench CPU pods", "type": "ibench-cpu", "count": 4},
     #{"id": 5, "name": "8 iBench CPU pods", "type": "ibench-cpu", "count": 8},
-    {"id": 6, "name": "1 stress-ng l3 pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 7, "name": "2 stress-ng l3 pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 6, "name": "1 stress-ng l3 pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 7, "name": "2 stress-ng l3 pods", "type": "stress-ng-l3", "count": 2},
     #{"id": 8, "name": "4 stress-ng l3 pods", "type": "stress-ng-l3", "count": 4},
     #{"id": 9, "name": "8 stress-ng l3 pods", "type": "stress-ng-l3", "count": 8},
-    {"id": 10, "name": "1 iBench memBW pod", "type": "ibench-membw", "count": 1}
+    #{"id": 10, "name": "1 iBench memBW pod", "type": "ibench-membw", "count": 1}
     #{"id": 11, "name": "2 iBench memBW pods", "type": "ibench-membw", "count": 2},
     #{"id": 12, "name": "4 iBench memBW pods", "type": "ibench-membw", "count": 4},
     #{"id": 13, "name": "8 iBench memBW pods", "type": "ibench-membw", "count": 8}
@@ -140,16 +140,15 @@ def ensure_directories(script_dir):
     os.makedirs(raw_log_folder, exist_ok=True)
     return baseline_results_dir, raw_log_folder
 
+
+"""
+for replicas in REPLICAS_TO_TEST:                   # Outer loop
+    for rps in RPS_STEPS:                           # Middle loop
+        for scenario in INTERFERENCE_SCENARIOS:     # Inner loop
+"""
 def main():
-    """
-    Coordinates the overall test:
-      1. Sets up directories and file paths.
-      2. Reads workload parameters from the test cases CSV.
-      3. Starts system-level and container-level monitoring.
-      4. Starts the workload traffic.
-      5. Waits for traffic completion.
-      6. Stops monitoring, collects metrics, and stores results.
-    """
+    test_case_id = int(time.time())
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
     baseline_results_dir, raw_log_folder = ensure_directories(script_dir)
     
@@ -157,61 +156,79 @@ def main():
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
     
-    # Parse command-line arguments.
+    # Data Files
     pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{timestamp}.csv")
     pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{date_str}_{timestamp}.csv")
     pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{date_str}_{timestamp}.csv")
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
-    system_csv = os.path.join(baseline_results_dir, "system_metrics.csv")
+    # Initialize results file
+    with open(os.path.join(baseline_results_dir, "workload_metrics.csv"), "w") as f:
+        csv.DictWriter(f, fieldnames=[
+            "Replicas", "Interference", "Given_RPS", "Throughput",
+            "Avg_Latency", "P50_Latency", "P75_Latency", 
+            "P90_Latency", "P99_Latency", "Max_Latency"
+        ]).writeheader()
 
-    
-    print("Coordinator: Starting system-level monitoring...")
     duration = int(DURATION[:-1]) # Convert duration to seconds and add buffer
-    # Run perf_monitoring and amduprof_monitoring in parallel using threads
-    #perf_thread = threading.Thread(target=perf_monitoring, args=(duration+5, 5000, perf_raw_file, perf_csv))
-    #amduprof_thread = threading.Thread(target=amduprof_monitoring, args=(duration+5, 5000, amduprof_raw_file, amduprof_filtered_file))
-    intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
 
-    # ChatGPT comment:
-    # Using a thread to run a function that spawns a subprocess is perfectly acceptable.
-    # The thread will manage the lifecycle of the subprocess, and the subprocess itself runs as an independent OS process.
-    # This setup allows you to run external commands asynchronously, which is often helpful in keeping your main application responsive.
+    for replicas in REPLICAS_TO_TEST:
+        # Scale NGINX once per replica count
+        subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
+        time.sleep(3)  # Wait for scaling
 
-    # Start both threads
-    #perf_thread.start()
-    #amduprof_thread.start()
-    intelpcm_thread.start()
-    time.sleep(1)  # Give some time for the monitoring to start
+        for rps in RPS_STEPS:
+            for scenario in INTERFERENCE_SCENARIOS:
+                print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
+
+                # Setup interference
+                if scenario["type"] and not create_interference(scenario):
+                    print(f"Skipping failed scenario {scenario['name']}")
+                    continue
+                time.sleep(4) 
+                # Generate unique test ID
+                test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
+
+                print("Coordinator: Starting system-level monitoring...")
+                intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
+                intelpcm_thread.start()
+                time.sleep(1)  # Give some time for the monitoring to start
+
+                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
+                #time.sleep(1)  # Give some time for the monitoring to start
+
+                print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")    
+                print("Coordinator: Workload Starting time = ", datetime.datetime.now())
+                #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
+                wrk_output_file = run_wrk_test(raw_log_folder, replicas=1, rps=100, test_id="baseline")
+
+                #Sleep for the duration of the workload
+                #time.sleep(duration)
+                print("Coordinator: Workload traffic completed.")
+                print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
+                end_time_str = str(int(time.time()))
     
-    print("Coordinator: Starting workload traffic...")
-    start_time_str = str(int(time.time())-10)
-    print("Coordinator: Workload Starting time = ", datetime.datetime.now())
-    #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
-    wrk_output_file = run_wrk_test(raw_log_folder, replicas=1, rps=100, test_id="baseline")
+                #print("Coordinator: Starting Container-level monitoring...")
+                #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
+                #print("Coordinator: Container-level monitoring completed.")
 
-    #Sleep for the duration of the workload
-    #time.sleep(duration)
-    print("Coordinator: Workload traffic completed.")
-    print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
-    end_time_str = str(int(time.time()))
-    
-    #print("Coordinator: Starting Container-level monitoring...")
-    #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
-    #print("Coordinator: Container-level monitoring completed.")
+                #workload_metrics = parse_workload_output(workload_output)
+                workload_metrics = parse_workload_output(wrk_output_file)
+                print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
+                
+                print("Coordinator: Store workload metrics...")
+                store_workload_metrics(workload_csv, date_str, workload_metrics)
 
-    #workload_metrics = parse_workload_output(workload_output)
-    workload_metrics = parse_workload_output(wrk_output_file)
-    print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
-    
-    print("Coordinator: Store workload metrics...")
-    store_workload_metrics(workload_csv, date_str, workload_metrics)
+                # Wait for monitoring threads to finish
+                #perf_thread.join()
+                #amduprof_thread.join()
+                intelpcm_thread.join()
 
-    # Wait for monitoring threads to finish
-    #perf_thread.join()
-    #amduprof_thread.join()
-    intelpcm_thread.join()
+                print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.")
+                #if scenario["type"]:
+                    #cleanup_interference(scenario)
 
+                time.sleep(SLEEP_BETWEEN_TESTS)
 
 if __name__ == "__main__":
     main()

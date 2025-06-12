@@ -101,7 +101,7 @@ def parse_workload_output_single_pod() -> dict:
 
 
 
-def store_workload_metrics(csv_file: str, test_case_id: str, date_str: str, interference: str, workload_metrics: dict) -> None:
+def store_workload_metrics(csv_file: str, test_case_id, date_str: str, interference: str, workload_metrics: dict) -> None:
     """
     Store the workload metrics in a CSV file.
     The CSV includes columns:
