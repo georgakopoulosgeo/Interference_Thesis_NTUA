@@ -196,7 +196,7 @@ def main():
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")    
                 #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
-                wrk_output_file = run_wrk_test(raw_log_folder, replicas=1, rps=100, test_id="baseline")
+                wrk_output_file = run_wrk_test(raw_log_folder, replicas, rps, test_id="baseline")
 
                 #Sleep for the duration of the workload
                 #time.sleep(duration)

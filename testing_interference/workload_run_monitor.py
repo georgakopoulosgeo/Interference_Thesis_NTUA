@@ -125,7 +125,7 @@ def store_workload_metrics(csv_file: str, replicas: int, interference: str, work
         if not file_exists:
             writer.writeheader()
         row = {
-            "Repicas": replicas,
+            "Replicas": replicas,
             "Interference": interference,
             "Given_RPS": given_rps,
             "Throughput": workload_metrics.get("throughput", ""),
