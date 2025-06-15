@@ -101,7 +101,7 @@ def parse_workload_output_single_pod() -> dict:
 
 
 
-def store_workload_metrics(csv_file: str, replicas: int,test_case_id, date_str: str, interference: str, workload_metrics: dict) -> None:
+def store_workload_metrics(csv_file: str, replicas: int, interference: str, workload_metrics: dict, given_rps: int) -> None:
     """
     Store the workload metrics in a CSV file.
     The CSV includes columns:
@@ -110,7 +110,7 @@ def store_workload_metrics(csv_file: str, replicas: int,test_case_id, date_str: 
     header = [
         "Replicas",
         "Interference",
-        "Date",
+        "Given_RPS",
         "Throughput",
         "Avg_Latency",
         "P50_Latency",
@@ -127,7 +127,7 @@ def store_workload_metrics(csv_file: str, replicas: int,test_case_id, date_str: 
         row = {
             "Repicas": replicas,
             "Interference": interference,
-            "Date": date_str,
+            "Given_RPS": given_rps,
             "Throughput": workload_metrics.get("throughput", ""),
             "Avg_Latency": workload_metrics.get("avg_latency", ""),
             "P50_Latency": workload_metrics.get("p50_latency", ""),

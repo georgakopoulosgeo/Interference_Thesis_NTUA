@@ -14,7 +14,7 @@ import threading
 NGINX_SERVICE_URL = "http://192.168.49.2:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-MAX_RPS = 500  # Adjust based on your earlier findings
+MAX_RPS = 300  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
@@ -202,23 +202,20 @@ def main():
                 #time.sleep(duration)
                 print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed.")
                 end_time_str = str(int(time.time()))
-    
-                #print("Coordinator: Starting Container-level monitoring...")
-                #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
-                #print("Coordinator: Container-level monitoring completed.")
-
-                #workload_metrics = parse_workload_output(workload_output)
-                #workload_metrics = parse_workload_output(wrk_output_file)
-                #print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
-                
-                print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
-                #store_workload_metrics(workload_csv, replicas, test_case_id, date_str, scenario["name"], workload_metrics)
-
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
                 intelpcm_thread.join()
                 print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.")
+    
+                #print("Coordinator: Starting Container-level monitoring...")
+                #collect_container_metrics(PROMETHEUS_URL, start_time_str, end_time_str, STEP, test_case_id, interference, date_str, detail_csv_path, agg_csv_path)
+                #print("Coordinator: Container-level monitoring completed.")
+
+                print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
+                workload_metrics = parse_workload_output(wrk_output_file)
+                store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps)
+
                 #if scenario["type"]:
                     #cleanup_interference(scenario)
 
