@@ -189,23 +189,18 @@ def main():
                 # Generate unique test ID
                 test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
 
-                print("Coordinator: Starting system-level monitoring...")
-                intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv))
+                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
+                intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv), daemon=True)
                 intelpcm_thread.start()
                 time.sleep(1)  # Give some time for the monitoring to start
 
-                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
-                #time.sleep(1)  # Give some time for the monitoring to start
-
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")    
-                print("Coordinator: Workload Starting time = ", datetime.datetime.now())
                 #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
                 wrk_output_file = run_wrk_test(raw_log_folder, replicas=1, rps=100, test_id="baseline")
 
                 #Sleep for the duration of the workload
                 #time.sleep(duration)
-                print("Coordinator: Workload traffic completed.")
-                print("Coordinator: Workload Ending time = ", datetime.datetime.now()) # Indeed we are waiting for the workload to finish!
+                print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed.")
                 end_time_str = str(int(time.time()))
     
                 #print("Coordinator: Starting Container-level monitoring...")
@@ -216,7 +211,7 @@ def main():
                 #workload_metrics = parse_workload_output(wrk_output_file)
                 #print("Coordinator: Workload metrics parsed successfully.", workload_metrics)
                 
-                print("Coordinator: Store workload metrics...")
+                print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
                 #store_workload_metrics(workload_csv, replicas, test_case_id, date_str, scenario["name"], workload_metrics)
 
                 # Wait for monitoring threads to finish

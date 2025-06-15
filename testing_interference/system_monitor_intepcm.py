@@ -24,18 +24,20 @@ def run_pcm(duration: int, interval: int, output_csv: str) -> None:
     pcm_dir = "/home/george/Workspace/pcm/build/bin"
     os.chdir(pcm_dir)
     cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
-    print("Executing PCM command:", " ".join(cmd))
+    #print("Executing PCM command:", " ".join(cmd))
     try:
         subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
         # Wait for the command to complete or timeout.
         time.sleep(duration+10)
     except subprocess.TimeoutExpired:
-        print("PCM monitoring completed: duration reached.")
+        #print("PCM monitoring completed: duration reached.")
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
     except subprocess.CalledProcessError as e:
-        print(f"Error running PCM: {e}")
-    print("PCM monitoring finished. Output written to", output_csv)
+        #print(f"Error running PCM: {e}")
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    #print("PCM monitoring finished. Output written to", output_csv)
     # Return to the original directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    #os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, desired_keywords: list) -> None:
     """
@@ -75,7 +77,7 @@ def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, des
                         indices_to_keep.append(idx)
 
             if not indices_to_keep:
-                print(f"No columns matched for domain filter '{domain_filter}' with the desired keywords.")
+                #print(f"No columns matched for domain filter '{domain_filter}' with the desired keywords.")
                 return
 
             # Write filtered data: combine first two header rows and include all subsequent rows.
@@ -88,7 +90,7 @@ def filter_csv_by_domain(raw_file: str, output_csv: str, domain_filter: str, des
                 for row in reader:
                     filtered_row = [row[i] for i in indices_to_keep]
                     writer.writerow(filtered_row)
-            print(f"Filtered CSV written to {output_csv} using domain filter '{domain_filter}'.")
+            #print(f"Filtered CSV written to {output_csv} using domain filter '{domain_filter}'.")
 
 def pcm_monitoring(duration: int, interval: int, raw_csv: str, system_csv: str, core_csv: str) -> None:
     # Configuration parameters
@@ -114,9 +116,9 @@ def pcm_monitoring(duration: int, interval: int, raw_csv: str, system_csv: str, 
         "c6res%"
     ]
     
-    print("Starting PCM monitoring...")
+    #print("Starting PCM monitoring...")
     run_pcm(duration, interval, raw_csv)
-    print("PCM monitoring finished. Now filtering CSV data...")
+    #print("PCM monitoring finished. Now filtering CSV data...")
 
     # Create filtered file for system-level data (domain header contains "system")
     filter_csv_by_domain(raw_csv, system_csv, "system", desired_keywords)
@@ -124,4 +126,4 @@ def pcm_monitoring(duration: int, interval: int, raw_csv: str, system_csv: str, 
     # Create filtered file for core-level data (domain header contains "core")
     filter_csv_by_domain(raw_csv, core_csv, "core", desired_keywords)
     
-    print("Filtering complete. Check the output files for system and core metrics.")
+    #print("Filtering complete. Check the output files for system and core metrics.")

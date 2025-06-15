@@ -96,7 +96,7 @@ def parse_workload_output_single_pod() -> dict:
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     output = result.stdout.strip()
     # Parse the output / use the existing function parse_workload_output
-    print("Parsing workload output for single pod", output)
+    #print("Parsing workload output for single pod", output)
     return parse_workload_output(output)
 
 
