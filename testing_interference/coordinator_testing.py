@@ -200,7 +200,7 @@ def main():
 
                 #Sleep for the duration of the workload
                 #time.sleep(duration)
-                print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed.")
+                print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}")
                 end_time_str = str(int(time.time()))
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
@@ -214,6 +214,7 @@ def main():
 
                 print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
                 workload_metrics = parse_workload_output(wrk_output_file)
+                print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}")
                 store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps)
 
                 #if scenario["type"]:

@@ -41,15 +41,23 @@ def convert_latency_to_us(latency_str: str) -> float:
     else:
         return float(latency_str)
 
-def parse_workload_output(output: str) -> dict:
+def parse_workload_output(wrk_output_file: str) -> dict:
     """
-    Parse the workload generator output to extract throughput and latency metrics.
+    Parse the workload generator output file to extract throughput and latency metrics.
     Returns a dictionary with keys:
       - throughput: Requests/sec (float)
       - avg_latency: Average latency in microseconds (float)
       - p50_latency, p75_latency, p90_latency, p99_latency, max_latency: latency percentiles (in microseconds)
     """
     metrics = {}
+    
+    # Read the content from the file
+    try:
+        with open(wrk_output_file, 'r') as f:
+            output = f.read()
+    except IOError:
+        raise ValueError(f"Could not read file: {wrk_output_file}")
+
     # Extract throughput from a line like "Requests/sec: 1234.56"
     for line in output.splitlines():
         if "Requests/sec:" in line:
@@ -58,6 +66,8 @@ def parse_workload_output(output: str) -> dict:
                 metrics["throughput"] = throughput
             except:
                 metrics["throughput"] = None
+                break  # No need to keep looking if we found the line
+    
     # Extract average latency from the "Latency" line (ignoring Thread Stats)
     for line in output.splitlines():
         if line.strip().startswith("Latency") and "Thread Stats" not in line:
@@ -86,6 +96,7 @@ def parse_workload_output(output: str) -> dict:
                 metrics["p99_latency"] = latency_val
             elif percentile >= 100.0:
                 metrics["max_latency"] = latency_val
+    
     return metrics
 
 def parse_workload_output_single_pod() -> dict:
