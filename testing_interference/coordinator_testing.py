@@ -69,6 +69,14 @@ def create_interference(scenario: Dict) -> bool:
             print(f"Error creating interference: {e.stderr}")
             return False
     return True
+
+def cleanup_interference(scenario: Dict):
+    """Clean up using separate process"""
+    if scenario["type"] == "ibench-cpu":
+        subprocess.run([
+            "python3",
+            os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench.py")
+        ], capture_output=True)
     
 def run_wrk_test(raw_folder: str, replicas: int, rps: int, test_id: str):
     """Execute wrk test and return parsed metrics"""
@@ -188,8 +196,8 @@ def main():
                 print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}")
                 store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps)
 
-                #if scenario["type"]:
-                    #cleanup_interference(scenario)
+                if scenario["type"]:
+                    cleanup_interference(scenario)
 
                 time.sleep(SLEEP_BETWEEN_TESTS)
 

@@ -53,21 +53,5 @@ def main():
         else:
             raise
 
-    # Wait for 80 seconds
-    print("Running stress test for 60 seconds...")
-    time.sleep(60)
-
-    # Delete the Deployment
-    print(f"Deleting deployment '{name}'...")
-    apps.delete_namespaced_deployment(
-        name=name,
-        namespace=ns,
-        body=client.V1DeleteOptions(
-            propagation_policy='Foreground',
-            grace_period_seconds=0
-        )
-    )
-    print("Deployment deleted.")
-
 if __name__ == '__main__':
     main()
