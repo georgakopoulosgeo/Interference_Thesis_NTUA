@@ -54,8 +54,8 @@ def main():
             raise
 
     # Wait for 80 seconds
-    print("Running stress test for 80 seconds...")
-    time.sleep(80)
+    print("Running stress test for 60 seconds...")
+    time.sleep(60)
 
     # Delete the Deployment
     print(f"Deleting deployment '{name}'...")

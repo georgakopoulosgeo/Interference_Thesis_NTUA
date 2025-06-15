@@ -18,7 +18,7 @@ spec:
       - name: ibench
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./cpu","80"]
+        command: ["./cpu","60"]
         resources:
           requests:
             cpu: "500m"

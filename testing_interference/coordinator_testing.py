@@ -18,7 +18,7 @@ MAX_RPS = 300  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 40
+SLEEP_BETWEEN_TESTS = 20
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 3)  # 1-5 replicas
@@ -29,9 +29,9 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
-    {"id": 1, "name": "Baseline", "type": None},
-    #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 1, "name": "Baseline", "type": None},
+    {"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
     #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
@@ -45,58 +45,30 @@ INTERFERENCE_SCENARIOS = [
 ]
 
 def create_interference(scenario: Dict) -> bool:
-    """Launch interference using your dedicated scripts"""
-    try:
-        if scenario["type"] == "ibench-cpu":
-            cmd = [
-                "python3", 
-                f"{INTERFERENCE_SCRIPTS_DIR}/deploy_ibench_cpu_v2.py",
-                str(scenario["count"])
-            ]
-            # Add --nginx flag for scenarios 2-4 (same-node interference)
-            if scenario["id"] in [2, 3, 4]:
-                cmd.append("--nginx")
-        
-        elif scenario["type"] == "stressng-l3":
-            cmd = [
-                "python3",
-                f"{INTERFERENCE_SCRIPTS_DIR}/deploy_stressng_l3.py",
-                str(scenario["count"])
-            ]
-        
-        elif scenario["type"] == "ibench-membw":
-            cmd = [
-                "python3",
-                f"{INTERFERENCE_SCRIPTS_DIR}/deploy_ibench_membw.py",
-                str(scenario["count"])
-            ]
-        elif scenario["type"] == "mix":
-            # Handle mixed scenarios
-            cmd = []
-            for component in scenario["components"]:
-                if component["type"] == "ibench-cpu":
-                    cmd.append(
-                        f"python3 {INTERFERENCE_SCRIPTS_DIR}/deploy_ibench_cpu_v2.py {component['count']} --nginx"
-                    )
-                elif component["type"] == "stress-ng-l3":
-                    cmd.append(
-                        f"python3 {INTERFERENCE_SCRIPTS_DIR}/deploy_stressng_l3.py {component['count']}"
-                    )
-                elif component["type"] == "ibench-membw":
-                    cmd.append(
-                        f"python3 {INTERFERENCE_SCRIPTS_DIR}/deploy_ibench_membw.py {component['count']}"
-                    )
-            cmd = " && ".join(cmd)
-        else:  # Baseline
+    """Create interference pods based on the scenario.
+    Returns True if successful, False otherwise."""
+    if scenario["type"] == "ibench-cpu":
+        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu_v2.py")
+        try:
+            # Launch interference pods (60s total: 10s stabilization + 40s test + 10s buffer)
+            subprocess.run(
+                ["python3", script_path, str(scenario["count"]), "--nginx"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # Wait for stabilization period (10s)
+            print("Waiting 10 seconds for system stabilization...")
+            time.sleep(10)
+            
             return True
             
-        subprocess.run(cmd, check=True)
-        time.sleep(10)  # Wait for interference to stabilize
-        return True
-        
-    except subprocess.CalledProcessError as e:
-        print(f"Interference creation failed: {e}")
-        return False
+        except subprocess.CalledProcessError as e:
+            print(f"Error creating interference: {e.stderr}")
+            return False
+    return True
     
 def run_wrk_test(raw_folder: str, replicas: int, rps: int, test_id: str):
     """Execute wrk test and return parsed metrics"""
@@ -179,17 +151,16 @@ def main():
             for scenario in INTERFERENCE_SCENARIOS:
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
 
-                # Setup interference
+                # Setup interference (will handle 10s stabilization internally)
                 if scenario["type"] and not create_interference(scenario):
                     print(f"Skipping failed scenario {scenario['name']}")
                     continue
-                time.sleep(4) 
                 # Generate unique test ID
                 test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
-                pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{replicas}rep_{rps}rps_interference{scenario["id"]}.csv")
-                pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{replicas}rep_{rps}rps_interference{scenario["id"]}.csv")
+                pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{replicas}replicas_{rps}rps_interference{scenario["id"]}.csv")
+                pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{replicas}replicas_{rps}rps_interference{scenario["id"]}.csv")
                 intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv), daemon=True)
                 intelpcm_thread.start()
                 time.sleep(1)  # Give some time for the monitoring to start
