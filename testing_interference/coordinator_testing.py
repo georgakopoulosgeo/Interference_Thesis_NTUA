@@ -30,18 +30,18 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     {"id": 1, "name": "Baseline", "type": None},
-    #{"id": 2, "name": "1 iBench CPU pod", "type": "ibench-cpu", "count": 1},
-    #{"id": 3, "name": "2 iBench CPU pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 4, "name": "4 iBench CPU pods", "type": "ibench-cpu", "count": 4},
-    #{"id": 5, "name": "8 iBench CPU pods", "type": "ibench-cpu", "count": 8},
-    #{"id": 6, "name": "1 stress-ng l3 pod", "type": "stress-ng-l3", "count": 1},
-    #{"id": 7, "name": "2 stress-ng l3 pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 8, "name": "4 stress-ng l3 pods", "type": "stress-ng-l3", "count": 4},
-    #{"id": 9, "name": "8 stress-ng l3 pods", "type": "stress-ng-l3", "count": 8},
-    #{"id": 10, "name": "1 iBench memBW pod", "type": "ibench-membw", "count": 1}
-    #{"id": 11, "name": "2 iBench memBW pods", "type": "ibench-membw", "count": 2},
-    #{"id": 12, "name": "4 iBench memBW pods", "type": "ibench-membw", "count": 4},
-    #{"id": 13, "name": "8 iBench memBW pods", "type": "ibench-membw", "count": 8}
+    #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
+    #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
+    #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1}
+    #{"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    #{"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
 ]
 
 def create_interference(scenario: Dict) -> bool:
@@ -158,8 +158,6 @@ def main():
     
     # Data Files
     pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{timestamp}.csv")
-    pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{date_str}_{timestamp}.csv")
-    pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{date_str}_{timestamp}.csv")
     # Define CSV file paths for final aggregated results.
     workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
     # Initialize results file
@@ -190,6 +188,8 @@ def main():
                 test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
+                pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{replicas}rep_{rps}rps_interference{scenario["id"]}.csv")
+                pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{replicas}rep_{rps}rps_interference{scenario["id"]}.csv")
                 intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv), daemon=True)
                 intelpcm_thread.start()
                 time.sleep(1)  # Give some time for the monitoring to start
