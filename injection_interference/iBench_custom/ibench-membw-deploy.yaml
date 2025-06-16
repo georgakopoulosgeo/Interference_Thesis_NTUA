@@ -16,11 +16,11 @@ spec:
       - name: membw
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./memBw", "80"]
+        command: ["./memBw", "60"]
         resources:
           requests:
-            cpu: "1"
+            cpu: "500m"
             memory: "64Mi"
           limits:
-            cpu: "1"
+            cpu: "500m"
             memory: "64Mi"

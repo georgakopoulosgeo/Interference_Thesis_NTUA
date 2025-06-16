@@ -14,7 +14,7 @@ import threading
 NGINX_SERVICE_URL = "http://192.168.49.2:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-MAX_RPS = 300  # Adjust based on your earlier findings
+MAX_RPS = 200  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
@@ -31,15 +31,15 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     #{"id": 1, "name": "Baseline", "type": None},
     #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
-    {"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
     #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
     #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1}
-    #{"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    {"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
     #{"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
     #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
 ]
@@ -47,6 +47,9 @@ INTERFERENCE_SCENARIOS = [
 def create_interference(scenario: Dict) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
+
+    stabilation_time = 10  # seconds
+
     if scenario["type"] == "ibench-cpu":
         script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu_v2.py")
         try:
@@ -61,8 +64,7 @@ def create_interference(scenario: Dict) -> bool:
             
             # Wait for stabilization period (10s)
             print("Waiting 10 seconds for system stabilization...")
-            time.sleep(10)
-            
+            time.sleep(stabilation_time)
             return True
             
         except subprocess.CalledProcessError as e:
@@ -75,10 +77,22 @@ def create_interference(scenario: Dict) -> bool:
                 os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py"),
                 str(scenario["count"])
             ], check=True, capture_output=True)
-            time.sleep(10)  # Stabilization period
+            time.sleep(stabilation_time)
             return True
         except subprocess.CalledProcessError as e:
             print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}")
+            return False
+    elif scenario["type"] == "ibench-membw":
+        try:
+            subprocess.run([
+                "python3",
+                os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_membw.py"),
+                str(scenario["count"])
+            ], check=True, capture_output=True)
+            time.sleep(stabilation_time)
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"ibench-membw deployment failed: {e.stderr.decode()}")
             return False
     return True
 
@@ -94,10 +108,15 @@ def cleanup_interference(scenario: Dict):
             "python3",
             os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_stressng_l3.py")
         ], capture_output=True)
+    elif scenario["type"] == "ibench-membw":
+        subprocess.run([
+            "python3",
+            os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench_membw.py")
+        ], capture_output=True)
     
-def run_wrk_test(raw_folder: str, replicas: int, rps: int, test_id: str):
+def run_wrk_test(raw_folder: str, rps: int,):
     """Execute wrk test and return parsed metrics"""
-    wrk_output_file = os.path.join(raw_folder, f"wrk_output_{test_id}.txt")
+    wrk_output_file = os.path.join(raw_folder, f"wrk_output.txt")
     
     try:
         # Run wrk command
@@ -142,10 +161,10 @@ def ensure_directories(script_dir):
 for replicas in REPLICAS_TO_TEST:                   # Outer loop
     for rps in RPS_STEPS:                           # Middle loop
         for scenario in INTERFERENCE_SCENARIOS:     # Inner loop
+        
+80seconds per test case. 
 """
 def main():
-    test_case_id = int(time.time())
-
     script_dir = os.path.dirname(os.path.abspath(__file__))
     baseline_results_dir, raw_log_folder = ensure_directories(script_dir)
     
@@ -160,7 +179,7 @@ def main():
     # Initialize results file
     with open(os.path.join(baseline_results_dir, "workload_metrics.csv"), "w") as f:
         csv.DictWriter(f, fieldnames=[
-            "Replicas", "Interference", "Given_RPS", "Throughput",
+            "Test_ID","Replicas", "Interference", "Given_RPS", "Throughput",
             "Avg_Latency", "P50_Latency", "P75_Latency", 
             "P90_Latency", "P99_Latency", "Max_Latency"
         ]).writeheader()
@@ -172,8 +191,8 @@ def main():
         subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
         time.sleep(3)  # Wait for scaling
 
-        for rps in RPS_STEPS:
-            for scenario in INTERFERENCE_SCENARIOS:
+        for scenario in INTERFERENCE_SCENARIOS:
+            for rps in RPS_STEPS:
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
 
                 # Setup interference (will handle 10s stabilization internally)
@@ -181,23 +200,22 @@ def main():
                     print(f"Skipping failed scenario {scenario['name']}")
                     continue
                 # Generate unique test ID
-                test_id = f"{test_case_id}_{scenario['id']}_{replicas}_{rps}"
+                test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
-                pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{replicas}replicas_{rps}rps_interference{scenario["id"]}.csv")
-                pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{replicas}replicas_{rps}rps_interference{scenario["id"]}.csv")
+                pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{test_id}.csv")
+                pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{test_id}.csv")
                 intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv), daemon=True)
                 intelpcm_thread.start()
                 time.sleep(1)  # Give some time for the monitoring to start
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")    
                 #workload_output = run_workload(hotel_reservation_script, threads, connections, duration, reqs_per_sec, wrk2_script_path_hr)
-                wrk_output_file = run_wrk_test(raw_log_folder, replicas, rps, test_id="baseline")
+                wrk_output_file = run_wrk_test(raw_log_folder, rps)
 
                 #Sleep for the duration of the workload
                 #time.sleep(duration)
                 print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}")
-                end_time_str = str(int(time.time()))
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
@@ -211,11 +229,13 @@ def main():
                 print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
                 workload_metrics = parse_workload_output(wrk_output_file)
                 print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}")
-                store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps)
+                store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id)
 
                 if scenario["type"]:
                     cleanup_interference(scenario)
 
+                print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.")
+                print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...")
                 time.sleep(SLEEP_BETWEEN_TESTS)
 
 if __name__ == "__main__":

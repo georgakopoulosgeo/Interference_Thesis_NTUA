@@ -13,10 +13,8 @@ def main():
     parser.add_argument("--namespace", default="default",
                         help="Kubernetes namespace")
     parser.add_argument("--deploy-file",
-                        default="./iBench/ibench-membw-deploy.yaml",
+                        default="/home/george/Workspace/Interference/injection_interference/iBench_custom/ibench-membw-deploy.yaml",
                         help="Path to the membw Deployment YAML")
-    parser.add_argument("--duration", type=int, default=80,
-                        help="Seconds to wait before deleting the deployment")
     args = parser.parse_args()
 
     # Load kubeconfig and initialize API client
@@ -42,18 +40,6 @@ def main():
             print(f"Created Deployment '{name}' with {args.replicas} replicas in '{ns}'")
         else:
             raise
-
-    # Wait for the stress to run
-    print(f"Running for {args.duration} seconds…")
-    time.sleep(args.duration)
-
-    # Clean up
-    apps_v1.delete_namespaced_deployment(
-        name=name,
-        namespace=ns,
-        body=client.V1DeleteOptions(propagation_policy="Foreground")
-    )
-    print(f"Deleted Deployment '{name}'")
 
 if __name__ == "__main__":
     main()
