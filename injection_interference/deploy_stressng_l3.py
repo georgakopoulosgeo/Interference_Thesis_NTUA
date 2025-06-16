@@ -9,7 +9,7 @@ import os
 DEPLOYMENT_NAME = "stress-ng-l3-ways50"
 YAML_PATH = "stress-ng/"
 YAML_FILE = "stress-ng/stress-ng-l3-50.yaml"
-TIMEOUT_SECONDS = 80
+#TIMEOUT_SECONDS = 80
 
 def run_command(command):
     """Execute a shell command and return output."""
@@ -36,13 +36,6 @@ def scale_deployment(replicas):
     if output:
         print(f"Scaled {DEPLOYMENT_NAME} to {replicas} replicas")
 
-def delete_deployment():
-    """Delete the Kubernetes deployment."""
-    print(f"Deleting deployment {DEPLOYMENT_NAME}...")
-    output = run_command(f"kubectl delete deployment {DEPLOYMENT_NAME}")
-    if output:
-        print(output.strip())
-
 def main():
     # 1. Apply the deployment
     create_deployment()
@@ -57,14 +50,6 @@ def main():
                 print("Replica count must be positive")
         except ValueError:
             print("Invalid argument. Please provide a number for replicas.")
-    
-    # 3. Wait for the timeout period
-    print(f"Waiting {TIMEOUT_SECONDS} seconds for stress-ng to complete...")
-    time.sleep(TIMEOUT_SECONDS)
-    
-    # 4. Delete deployment
-    delete_deployment()
-    print("Operation completed.")
 
 if __name__ == "__main__":
     main()

@@ -30,12 +30,12 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     #{"id": 1, "name": "Baseline", "type": None},
-    {"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
-    #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    #{"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    {"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
     #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
     #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1}
@@ -68,6 +68,18 @@ def create_interference(scenario: Dict) -> bool:
         except subprocess.CalledProcessError as e:
             print(f"Error creating interference: {e.stderr}")
             return False
+    elif scenario["type"] == "stress-ng-l3":
+        try:
+            subprocess.run([
+                "python3",
+                os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py"),
+                str(scenario["count"])
+            ], check=True, capture_output=True)
+            time.sleep(10)  # Stabilization period
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}")
+            return False
     return True
 
 def cleanup_interference(scenario: Dict):
@@ -76,6 +88,11 @@ def cleanup_interference(scenario: Dict):
         subprocess.run([
             "python3",
             os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench.py")
+        ], capture_output=True)
+    elif scenario["type"] == "stress-ng-l3":
+        subprocess.run([
+            "python3",
+            os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_stressng_l3.py")
         ], capture_output=True)
     
 def run_wrk_test(raw_folder: str, replicas: int, rps: int, test_id: str):
