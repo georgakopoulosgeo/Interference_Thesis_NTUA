@@ -14,7 +14,7 @@ import threading
 NGINX_SERVICE_URL = "http://192.168.49.2:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-MAX_RPS = 200  # Adjust based on your earlier findings
+MAX_RPS = 2500  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
@@ -23,8 +23,10 @@ STABILATION_TIME = 10  # Time to wait for system stabilization after interferenc
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
 # Test matrix
-REPLICAS_TO_TEST = range(1, 5)  # 1-4 replicas
-RPS_STEPS = range(100, MAX_RPS + 1, 200)  # 100, 300, ..., MAX_RPS
+REPLICAS_TO_TEST = range(1, 6)  # 1-5 replicas
+RPS_STEPS = range(100, MAX_RPS + 1, 400)  # 100, 500, 900, 1300, 1700, 2100, 2500
+# 80seconds per test case / 22 Scenarios / 5 Replicas / 7 RPS steps
+# Program will run for 80 * 22 * 5 * 7 =  61600 seconds (approximately 17 hours) 
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -48,49 +50,9 @@ INTERFERENCE_SCENARIOS = [
     {"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
     {"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
     {"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    {"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8},
-    # Mix Scenarios
-    {"id": 14, "name": "1_CPU_1_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 1}
-    ]},
-    {"id": 15, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "ibench-membw", "count": 1}
-    ]},
-    {"id": 16, "name": "2_CPU_2_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 2},
-        {"type": "stress-ng-l3", "count": 2}
-    ]},
-    {"id": 17, "name": "1_CPU_2_L3_1_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 2},
-        {"type": "ibench-membw", "count": 1}
-    ]},
-    {"id": 18, "name": "4_CPU_1_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 4},
-        {"type": "stress-ng-l3", "count": 1}
-    ]},
-    {"id": 19, "name": "2_L3_2_MemBW", "type": "mix", "mix": [
-        {"type": "stress-ng-l3", "count": 2},
-        {"type": "ibench-membw", "count": 2}
-    ]},
-    {"id": 20, "name": "1_CPU_4_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 4}
-    ]},
-    {"id": 21, "name": "4_CPU_4_L3_2_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 4},
-        {"type": "stress-ng-l3", "count": 4},
-        {"type": "ibench-membw", "count": 2}
-    ]}
+    {"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
 ]
 
-print_lock = threading.Lock()
-
-def safe_print(*args, **kwargs):
-    with print_lock:
-        print(*args, **kwargs)
 
 def create_interference(scenario: Dict, from_mix = False) -> bool:
     """Create interference pods based on the scenario.
@@ -227,13 +189,6 @@ def ensure_directories(script_dir):
 for replicas in REPLICAS_TO_TEST:                   # Outer loop
     for rps in RPS_STEPS:                           # Middle loop
         for scenario in INTERFERENCE_SCENARIOS:     # Inner loop
-        
-80seconds per test case. 
-22 Scenarios
-4 Replicas
-10 RPS steps
-
-Program will run for 80 * 12 * 4 * 10 = 38400 seconds = 10.67 hours
 """
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -308,6 +263,12 @@ def main():
                 print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.")
                 print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...")
                 time.sleep(SLEEP_BETWEEN_TESTS)
+
+                # Clear the raw log folder for the next test
+                for file in os.listdir(raw_log_folder):
+                    file_path = os.path.join(raw_log_folder, file)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
 
 if __name__ == "__main__":
     main()
