@@ -18,7 +18,8 @@ MAX_RPS = 200  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 20
+SLEEP_BETWEEN_TESTS = 10
+STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 3)  # 1-5 replicas
@@ -48,8 +49,6 @@ def create_interference(scenario: Dict) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
 
-    stabilation_time = 10  # seconds
-
     if scenario["type"] == "ibench-cpu":
         script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu_v2.py")
         try:
@@ -64,7 +63,7 @@ def create_interference(scenario: Dict) -> bool:
             
             # Wait for stabilization period (10s)
             print("Waiting 10 seconds for system stabilization...")
-            time.sleep(stabilation_time)
+            time.sleep(STABILATION_TIME)
             return True
             
         except subprocess.CalledProcessError as e:
@@ -77,7 +76,7 @@ def create_interference(scenario: Dict) -> bool:
                 os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py"),
                 str(scenario["count"])
             ], check=True, capture_output=True)
-            time.sleep(stabilation_time)
+            time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
             print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}")
@@ -89,7 +88,7 @@ def create_interference(scenario: Dict) -> bool:
                 os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_membw.py"),
                 str(scenario["count"])
             ], check=True, capture_output=True)
-            time.sleep(stabilation_time)
+            time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
             print(f"ibench-membw deployment failed: {e.stderr.decode()}")

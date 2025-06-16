@@ -9,7 +9,7 @@ def main():
     config.load_kube_config()
     apps = client.AppsV1Api()
     
-    name = "ibench-membw-nginx" if args.nginx else "ibench-membw"
+    name = "ibench-membw"
 
     try:
         apps.delete_namespaced_deployment(
