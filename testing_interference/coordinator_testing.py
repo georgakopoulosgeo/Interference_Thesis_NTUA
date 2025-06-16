@@ -23,7 +23,7 @@ STABILATION_TIME = 10  # Time to wait for system stabilization after interferenc
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
 # Test matrix
-REPLICAS_TO_TEST = range(1, 3)  # 1-5 replicas
+REPLICAS_TO_TEST = range(1, 5)  # 1-4 replicas
 RPS_STEPS = range(100, MAX_RPS + 1, 200)  # 100, 300, ..., MAX_RPS
 
 # Path configuration (add to coordinator.py)
@@ -31,29 +31,58 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
-    #{"id": 1, "name": "Baseline", "type": None},
-    #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
-    #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
-    #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    #{"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
-    #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
-    #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1}
-    #{"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    #{"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8},
-
-    # Mix scenarios
-    {"id": 20, "name": "1_CPU_1_L3", "type": "mix", "mix": [
+    # Baseline Scenarios
+    {"id": 0, "name": "Baseline0", "type": None},
+    {"id": 1, "name": "Baseline1", "type": None},
+    # Ibench CPU Scenarios
+    {"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    {"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
+    # Stress-ng L3 Scenarios
+    {"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    {"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
+    # iBench MemBW Scenarios
+    {"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    {"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    {"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8},
+    # Mix Scenarios
+    {"id": 14, "name": "1_CPU_1_L3", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
         {"type": "stress-ng-l3", "count": 1}
     ]},
-    {"id": 23, "name": "1_CPU_1_L3_1_memBW", "type": "mix", "mix": [
+    {"id": 15, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 1},
         {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 16, "name": "2_CPU_2_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "stress-ng-l3", "count": 2}
+    ]},
+    {"id": 17, "name": "1_CPU_2_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 18, "name": "4_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 4},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 19, "name": "2_L3_2_MemBW", "type": "mix", "mix": [
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 2}
+    ]},
+    {"id": 20, "name": "1_CPU_4_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 4}
+    ]},
+    {"id": 21, "name": "4_CPU_4_L3_2_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 4},
+        {"type": "stress-ng-l3", "count": 4},
+        {"type": "ibench-membw", "count": 2}
     ]}
 ]
 
@@ -80,8 +109,8 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             )
             
             # Wait for stabilization period (10s)
-            print("Waiting 10 seconds for system stabilization...")
             if not from_mix:
+                print("[Interference Creator] Waiting 10 seconds for system stabilization...")
                 time.sleep(STABILATION_TIME)
             return True
             
@@ -96,6 +125,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
                 str(scenario["count"])
             ], check=True, capture_output=True)
             if not from_mix:
+                print("[Interference Creator] Waiting 10 seconds for system stabilization...")
                 time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
@@ -109,7 +139,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
                 str(scenario["count"])
             ], check=True, capture_output=True)
             if not from_mix:
-                print("Waiting 10 seconds for system stabilization...")
+                print("[Interference Creator] Waiting 10 seconds for system stabilization...")
                 time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
@@ -121,6 +151,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             if not create_interference(mix_scenario, True):
                 print(f"Failed to create interference for {mix_scenario['name']}")
                 return False
+        print("[Interference Creator] Waiting 20 seconds for mixed scenario stabilization...")
         time.sleep(STABILATION_TIME_MIX_SCENARIOS)
         print(f"Mixed scenario {scenario['name']} created successfully.")
     return True
@@ -156,6 +187,7 @@ def run_wrk_test(raw_folder: str, rps: int,):
         # Run wrk command
         with open(wrk_output_file, "w") as f:
             subprocess.run([
+                "taskset", "-c", "6,7",  # Use cores 0-3 for the test
                 WRK_PATH,
                 f"-t{THREADS}",
                 f"-c{CONCURRENT_CONNS}",
@@ -197,6 +229,11 @@ for replicas in REPLICAS_TO_TEST:                   # Outer loop
         for scenario in INTERFERENCE_SCENARIOS:     # Inner loop
         
 80seconds per test case. 
+22 Scenarios
+4 Replicas
+10 RPS steps
+
+Program will run for 80 * 12 * 4 * 10 = 38400 seconds = 10.67 hours
 """
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
