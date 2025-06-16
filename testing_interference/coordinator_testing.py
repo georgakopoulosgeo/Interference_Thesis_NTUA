@@ -18,7 +18,7 @@ MAX_RPS = 200  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 10
+SLEEP_BETWEEN_TESTS = 20
 STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
 
 # Test matrix
@@ -32,17 +32,28 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     #{"id": 1, "name": "Baseline", "type": None},
     #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
     #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
     #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
     #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1}
-    {"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    #{"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
     #{"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
+    #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8},
+
+    # Mix scenarios
+    {"id": 20, "name": "1_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 23, "name": "1_CPU_1_L3_1_memBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-membw", "count": 1}
+    ]}
 ]
 
 print_lock = threading.Lock()
@@ -99,6 +110,14 @@ def create_interference(scenario: Dict) -> bool:
         except subprocess.CalledProcessError as e:
             print(f"ibench-membw deployment failed: {e.stderr.decode()}")
             return False
+    elif scenario["type"] == "mix":
+        # Handle mixed scenarios
+        for mix_scenario in scenario["mix"]:
+            if not create_interference(mix_scenario):
+                print(f"Failed to create interference for {mix_scenario['name']}")
+                return False
+        time.sleep(STABILATION_TIME)
+        print(f"Mixed scenario {scenario['name']} created successfully.")
     return True
 
 def cleanup_interference(scenario: Dict):
@@ -118,6 +137,11 @@ def cleanup_interference(scenario: Dict):
             "python3",
             os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench_membw.py")
         ], capture_output=True)
+    elif scenario["type"] == "mix":
+        # Handle mixed scenarios
+        for mix_scenario in scenario["mix"]:
+            cleanup_interference(mix_scenario)
+    
     
 def run_wrk_test(raw_folder: str, rps: int,):
     """Execute wrk test and return parsed metrics"""
