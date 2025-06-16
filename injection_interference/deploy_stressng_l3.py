@@ -7,8 +7,8 @@ import os
 # Use: # python3 deploy_stressng_l3.py [replicas]
 
 DEPLOYMENT_NAME = "stress-ng-l3-ways50"
-YAML_PATH = "stress-ng/"
-YAML_FILE = "stress-ng/stress-ng-l3-50.yaml"
+YAML_PATH = "/home/george/Workspace/Interference/injection_interference/stress-ng/"
+YAML_FILE = "/home/george/Workspace/Interference/injection_interference/stress-ng/stress-ng-l3-50.yaml"
 #TIMEOUT_SECONDS = 80
 
 def run_command(command):
