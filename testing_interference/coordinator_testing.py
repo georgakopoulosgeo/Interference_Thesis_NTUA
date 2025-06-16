@@ -20,6 +20,7 @@ THREADS = 1
 CONCURRENT_CONNS = 200
 SLEEP_BETWEEN_TESTS = 20
 STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
+STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 3)  # 1-5 replicas
@@ -62,7 +63,7 @@ def safe_print(*args, **kwargs):
     with print_lock:
         print(*args, **kwargs)
 
-def create_interference(scenario: Dict) -> bool:
+def create_interference(scenario: Dict, from_mix = False) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
 
@@ -80,7 +81,8 @@ def create_interference(scenario: Dict) -> bool:
             
             # Wait for stabilization period (10s)
             print("Waiting 10 seconds for system stabilization...")
-            time.sleep(STABILATION_TIME)
+            if not from_mix:
+                time.sleep(STABILATION_TIME)
             return True
             
         except subprocess.CalledProcessError as e:
@@ -93,7 +95,8 @@ def create_interference(scenario: Dict) -> bool:
                 os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py"),
                 str(scenario["count"])
             ], check=True, capture_output=True)
-            time.sleep(STABILATION_TIME)  # Wait for stabilization
+            if not from_mix:
+                time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
             print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}")
@@ -105,7 +108,9 @@ def create_interference(scenario: Dict) -> bool:
                 os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_membw.py"),
                 str(scenario["count"])
             ], check=True, capture_output=True)
-            time.sleep(STABILATION_TIME)  # Wait for stabilization
+            if not from_mix:
+                print("Waiting 10 seconds for system stabilization...")
+                time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
             print(f"ibench-membw deployment failed: {e.stderr.decode()}")
@@ -113,10 +118,10 @@ def create_interference(scenario: Dict) -> bool:
     elif scenario["type"] == "mix":
         # Handle mixed scenarios
         for mix_scenario in scenario["mix"]:
-            if not create_interference(mix_scenario):
+            if not create_interference(mix_scenario, True):
                 print(f"Failed to create interference for {mix_scenario['name']}")
                 return False
-        time.sleep(STABILATION_TIME)
+        time.sleep(STABILATION_TIME_MIX_SCENARIOS)
         print(f"Mixed scenario {scenario['name']} created successfully.")
     return True
 
