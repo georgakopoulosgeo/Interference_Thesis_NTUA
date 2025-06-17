@@ -14,6 +14,8 @@ spec:
       labels:
         app: stress-ng-l3-ways50
     spec:
+      nodeSelector:
+        nginx: "true"
       containers:
       - name: stress-ng
         image: wdhif/stress-ng:latest     # stress-ng ≥0.11.07
@@ -28,8 +30,8 @@ spec:
           - "60s"
         resources:
           requests:
-            cpu: "500m"
+            cpu: "250m"
             memory: "128Mi"
           limits:
-            cpu: "500m"
+            cpu: "250m"
             memory: "128Mi"

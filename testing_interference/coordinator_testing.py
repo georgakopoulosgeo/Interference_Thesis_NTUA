@@ -26,7 +26,7 @@ STABILATION_TIME_MIX_SCENARIOS = 12  # Longer stabilization for mixed scenarios
 REPLICAS_TO_TEST = range(1, 6)  # 1-5 replicas
 RPS_STEPS = range(100, MAX_RPS + 1, 400)  # 100, 500, 900, 1300, 1700, 2100, 2500
 # 80seconds per test case / 22 Scenarios / 5 Replicas / 7 RPS steps
-# Program will run for 80 * 14 * 5 * 7 = 
+# Program will run for 70 * 14 * 5 * 7 = 9,5hours
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -178,7 +178,7 @@ def ensure_directories(script_dir):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "NEW_V01")
+    baseline_results_dir = os.path.join(script_dir, "NEW_V02")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, "raw_folder")
     os.makedirs(raw_log_folder, exist_ok=True)
@@ -217,8 +217,8 @@ def main():
         subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
         time.sleep(3)  # Wait for scaling
 
-        for scenario in INTERFERENCE_SCENARIOS:
-            for rps in RPS_STEPS:
+        for rps in RPS_STEPS:
+            for scenario in INTERFERENCE_SCENARIOS:
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
 
                 # Setup interference (will handle 10s stabilization internally)
@@ -245,7 +245,7 @@ def main():
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
-                intelpcm_thread.join(timeout=7)
+                intelpcm_thread.join()
                 print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.")
     
                 #print("Coordinator: Starting Container-level monitoring...")

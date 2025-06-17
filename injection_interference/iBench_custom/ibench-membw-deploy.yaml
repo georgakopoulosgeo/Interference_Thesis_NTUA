@@ -12,6 +12,8 @@ spec:
       labels:
         app: ibench-membw
     spec:
+      nodeSelector:
+        nginx: "true"
       containers:
       - name: membw
         image: ibench:latest
@@ -19,8 +21,8 @@ spec:
         command: ["./memBw", "60"]
         resources:
           requests:
-            cpu: "500m"
+            cpu: "250m"
             memory: "64Mi"
           limits:
-            cpu: "500m"
+            cpu: "250m"
             memory: "64Mi"
