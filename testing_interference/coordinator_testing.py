@@ -34,7 +34,7 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
-    #{"id": 0, "name": "Baseline0", "type": None},
+    {"id": 0, "name": "Baseline0", "type": None},
     #{"id": 1, "name": "Baseline1", "type": None},
     # Ibench CPU Scenarios
     #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
