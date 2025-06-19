@@ -17,7 +17,7 @@ def main():
         help='Kubernetes namespace'
     )
     parser.add_argument(
-        '--file', default='/home/george/Workspace/injection_interference/iBench_custom/ibench-l3-deploy.yaml',
+        '--file', default='/home/george/Workspace/Interference/injection_interference/iBench_custom/ibench-l3-deploy.yaml',
         help='Path to the ibench-l3 Deployment YAML'
     )
     args = parser.parse_args()
