@@ -19,7 +19,7 @@ DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
 SLEEP_BETWEEN_TESTS = 20  # Sleep time between tests to allow system to stabilize
-SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 5  # Sleep time between different RPS scenarios
+SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 30  # Sleep time between different RPS scenarios
 STABILATION_TIME = 15  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
@@ -72,7 +72,6 @@ def run_warmup(rps: int):
     print(f"Starting warmup at {rps} RPS...")
     try:
         subprocess.run([
-            "taskset", "-c", "6,7",
             WRK_PATH,
             f"-t{WARMUP_THREADS}",
             f"-c{WARMUP_CONNECTIONS}",
@@ -189,7 +188,6 @@ def run_wrk_test(raw_folder: str, rps: int,):
         # Run wrk command
         with open(wrk_output_file, "w") as f:
             subprocess.run([
-                "taskset", "-c", "6,7",  # Use cores 0-3 for the test
                 WRK_PATH,
                 f"-t{THREADS}",
                 f"-c{CONCURRENT_CONNS}",
