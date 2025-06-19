@@ -30,7 +30,7 @@ RPS_STEPS = range(100, MAX_RPS + 1, 400)  # 100, 500, 900, 1300, 1700, 2100, 250
 # Program will run for 70 * 14 * 5 * 7 = 9,5hours
 
 # Warmup configuration
-WARMUP_DURATION = "30s"
+WARMUP_DURATION = "20s"
 WARMUP_RPS = 500
 WARMUP_THREADS = 1
 WARMUP_CONNECTIONS = 200
@@ -269,6 +269,7 @@ def main():
                 # Smart interference warmup
                 if scenario["type"] != prev_interference_type and scenario["type"] is not None:
                     warmup_with_interference(scenario["type"])
+                    time.sleep(STABILATION_TIME)  # Wait for stabilization after warmup
                 prev_interference_type = scenario["type"]
                 
 
