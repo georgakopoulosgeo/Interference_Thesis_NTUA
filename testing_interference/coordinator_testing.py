@@ -19,6 +19,7 @@ DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
 SLEEP_BETWEEN_TESTS = 20  # Sleep time between tests to allow system to stabilize
+SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 20  # Sleep time between different RPS scenarios
 STABILATION_TIME = 15  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
@@ -27,6 +28,12 @@ REPLICAS_TO_TEST = range(1, 6)  # 1-5 replicas
 RPS_STEPS = range(100, MAX_RPS + 1, 400)  # 100, 500, 900, 1300, 1700, 2100, 2500
 # 80seconds per test case / 22 Scenarios / 5 Replicas / 7 RPS steps
 # Program will run for 70 * 14 * 5 * 7 = 9,5hours
+
+# Warmup configuration
+WARMUP_DURATION = "30s"
+WARMUP_RPS = 500
+WARMUP_THREADS = 1
+WARMUP_CONNECTIONS = 100
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -52,6 +59,39 @@ INTERFERENCE_SCENARIOS = [
     {"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
     {"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
 ]
+
+# Warmup interference scenarios
+WARMUP_SCENARIOS = {
+    "ibench-cpu": {"id": -1, "name": "WARMUP_CPU", "type": "ibench-cpu", "count": 1},
+    "stress-ng-l3": {"id": -2, "name": "WARMUP_L3", "type": "stress-ng-l3", "count": 1},
+    "ibench-membw": {"id": -3, "name": "WARMUP_MEMBW", "type": "ibench-membw", "count": 1}
+}
+
+def run_warmup(rps: int):
+    """Run warmup workload without PCM monitoring"""
+    print(f"Starting warmup at {rps} RPS...")
+    try:
+        subprocess.run([
+            "taskset", "-c", "6,7",
+            WRK_PATH,
+            f"-t{WARMUP_THREADS}",
+            f"-c{WARMUP_CONNECTIONS}",
+            f"-d{WARMUP_DURATION}",
+            f"-R{rps}",
+            NGINX_SERVICE_URL
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
+        print("Warmup completed")
+    except subprocess.CalledProcessError as e:
+        print(f"Warmup failed: {e.stderr}")
+
+def warmup_with_interference(interference_type: str):
+    """Run warmup with specific interference type"""
+    if interference_type in WARMUP_SCENARIOS:
+        print(f"Starting {interference_type} warmup...")
+        create_interference(WARMUP_SCENARIOS[interference_type])
+        run_warmup(WARMUP_RPS)
+        cleanup_interference(WARMUP_SCENARIOS[interference_type])
+        time.sleep(STABILATION_TIME)
 
 
 def create_interference(scenario: Dict, from_mix = False) -> bool:
@@ -211,15 +251,29 @@ def main():
         ]).writeheader()
 
     duration = int(DURATION[:-1]) # Convert duration to seconds and add buffer
+    prev_interference_type = None
 
     for replicas in REPLICAS_TO_TEST:
         # Scale NGINX once per replica count
         subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
-        time.sleep(3)  # Wait for scaling
+        time.sleep(5)  # Wait for scaling
+        # Warm up after scaling
+        print(f"\n=== Warming up for {replicas} replicas ===")
+        run_warmup(WARMUP_RPS)
 
         for rps in RPS_STEPS:
+            # Warm up when RPS changes significantly
+            if rps != RPS_STEPS[0]:  # Not first RPS
+                run_warmup(max(rps, WARMUP_RPS))
             for scenario in INTERFERENCE_SCENARIOS:
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
+
+                # Smart interference warmup
+                if scenario["type"] != prev_interference_type and scenario["type"] is not None:
+                    warmup_with_interference(scenario["type"])
+                prev_interference_type = scenario["type"]
+                
+
 
                 # Setup interference (will handle 10s stabilization internally)
                 if scenario["type"] and not create_interference(scenario):
@@ -269,6 +323,7 @@ def main():
                     file_path = os.path.join(raw_log_folder, file)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
+            time.sleep(SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS)
 
 if __name__ == "__main__":
     main()
