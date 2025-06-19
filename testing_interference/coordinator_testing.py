@@ -18,9 +18,9 @@ MAX_RPS = 2500  # Adjust based on your earlier findings
 DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 15  # Sleep time between tests to allow system to stabilize
-STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
-STABILATION_TIME_MIX_SCENARIOS = 12  # Longer stabilization for mixed scenarios
+SLEEP_BETWEEN_TESTS = 20  # Sleep time between tests to allow system to stabilize
+STABILATION_TIME = 15  # Time to wait for system stabilization after interference deployment
+STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 6)  # 1-5 replicas

@@ -27,11 +27,11 @@ spec:
           - "--cache-ways"
           - "4"
           - "--timeout"
-          - "60s"
+          - "80s"
         resources:
           requests:
-            cpu: "250m"
+            cpu: "500m"
             memory: "128Mi"
           limits:
-            cpu: "250m"
+            cpu: "500m"
             memory: "128Mi"
