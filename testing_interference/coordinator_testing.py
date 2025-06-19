@@ -19,7 +19,7 @@ DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
 SLEEP_BETWEEN_TESTS = 20  # Sleep time between tests to allow system to stabilize
-SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 20  # Sleep time between different RPS scenarios
+SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 5  # Sleep time between different RPS scenarios
 STABILATION_TIME = 15  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
@@ -33,7 +33,7 @@ RPS_STEPS = range(100, MAX_RPS + 1, 400)  # 100, 500, 900, 1300, 1700, 2100, 250
 WARMUP_DURATION = "30s"
 WARMUP_RPS = 500
 WARMUP_THREADS = 1
-WARMUP_CONNECTIONS = 100
+WARMUP_CONNECTIONS = 200
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -45,19 +45,19 @@ INTERFERENCE_SCENARIOS = [
     #{"id": 1, "name": "Baseline1", "type": None},
     # Ibench CPU Scenarios
     #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
     #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
     # Stress-ng L3 Scenarios
-    {"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
-    {"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
+    #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
     # iBench MemBW Scenarios
-    {"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
     {"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    {"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
+    #{"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
 ]
 
 # Warmup interference scenarios
@@ -263,8 +263,8 @@ def main():
 
         for rps in RPS_STEPS:
             # Warm up when RPS changes significantly
-            if rps != RPS_STEPS[0]:  # Not first RPS
-                run_warmup(max(rps, WARMUP_RPS))
+            run_warmup(rps)
+            time.sleep(SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS)  # Sleep between different RPS scenarios
             for scenario in INTERFERENCE_SCENARIOS:
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
 
@@ -323,7 +323,6 @@ def main():
                     file_path = os.path.join(raw_log_folder, file)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
-            time.sleep(SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS)
 
 if __name__ == "__main__":
     main()
