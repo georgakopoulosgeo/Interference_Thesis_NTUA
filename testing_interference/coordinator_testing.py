@@ -14,20 +14,18 @@ import threading
 NGINX_SERVICE_URL = "http://192.168.49.2:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-MAX_RPS = 2500  # Adjust based on your earlier findings
-DURATION = "40s"  # Test duration per run
+MAX_RPS = 2600  # Adjust based on your earlier findings
+DURATION = "50s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 20  # Sleep time between tests to allow system to stabilize
+SLEEP_BETWEEN_TESTS = 25  # Sleep time between tests to allow system to stabilize
 SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 30  # Sleep time between different RPS scenarios
 STABILATION_TIME = 15  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 
 # Test matrix
-REPLICAS_TO_TEST = range(1, 6)  # 1-5 replicas
-RPS_STEPS = range(100, MAX_RPS + 1, 400)  # 100, 500, 900, 1300, 1700, 2100, 2500
-# 80seconds per test case / 22 Scenarios / 5 Replicas / 7 RPS steps
-# Program will run for 70 * 14 * 5 * 7 = 9,5hours
+REPLICAS_TO_TEST = range(1, 5)  # 1-5 replicas
+RPS_STEPS = range(100, MAX_RPS + 1, 500)  # 100, 600, 1100, 1600, 2100, 2600
 
 # Warmup configuration
 WARMUP_DURATION = "20s"
@@ -259,21 +257,16 @@ def main():
         print(f"\n=== Warming up for {replicas} replicas ===")
         run_warmup(WARMUP_RPS)
 
-        for rps in RPS_STEPS:
-            # Warm up when RPS changes significantly
-            run_warmup(rps)
-            time.sleep(SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS)  # Sleep between different RPS scenarios
-            for scenario in INTERFERENCE_SCENARIOS:
+        for scenario in INTERFERENCE_SCENARIOS:
+            # Smart interference warmup
+            if scenario["type"] != prev_interference_type and scenario["type"] is not None:
+                warmup_with_interference(scenario["type"])
+                time.sleep(STABILATION_TIME/2)  # Wait for stabilization after warmup
+            prev_interference_type = scenario["type"]
+
+            for rps in RPS_STEPS:
+
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
-
-                # Smart interference warmup
-                if scenario["type"] != prev_interference_type and scenario["type"] is not None:
-                    warmup_with_interference(scenario["type"])
-                    time.sleep(STABILATION_TIME)  # Wait for stabilization after warmup
-                prev_interference_type = scenario["type"]
-                
-
-
                 # Setup interference (will handle 10s stabilization internally)
                 if scenario["type"] and not create_interference(scenario):
                     print(f"Skipping failed scenario {scenario['name']}")
