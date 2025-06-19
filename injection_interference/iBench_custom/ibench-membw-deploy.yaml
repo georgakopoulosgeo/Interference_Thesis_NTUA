@@ -21,8 +21,8 @@ spec:
         command: ["./memBw", "60"]
         resources:
           requests:
-            cpu: "250m"
+            cpu: "1"
             memory: "64Mi"
           limits:
-            cpu: "250m"
+            cpu: "1"
             memory: "64Mi"

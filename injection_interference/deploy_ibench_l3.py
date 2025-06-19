@@ -17,7 +17,7 @@ def main():
         help='Kubernetes namespace'
     )
     parser.add_argument(
-        '--file', default='/home/george/Workspace/iBench/ibench-l3-deploy.yaml',
+        '--file', default='/home/george/Workspace/iBench_custom/ibench-l3-deploy.yaml',
         help='Path to the ibench-l3 Deployment YAML'
     )
     args = parser.parse_args()
@@ -48,22 +48,6 @@ def main():
             )
         else:
             raise
-
-    # Wait for 80 seconds
-    print("Stressing L3 cache for 80 seconds...")
-    time.sleep(80)
-
-    # Delete the Deployment
-    print(f"Deleting deployment '{name}'...")
-    apps.delete_namespaced_deployment(
-        name=name,
-        namespace=ns,
-        body=client.V1DeleteOptions(
-            propagation_policy='Foreground',
-            grace_period_seconds=0
-        )
-    )
-    print("Deployment deleted.")
 
 
 if __name__ == '__main__':

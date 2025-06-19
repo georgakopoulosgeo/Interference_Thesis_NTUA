@@ -19,7 +19,7 @@ DURATION = "40s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
 SLEEP_BETWEEN_TESTS = 15  # Sleep time between tests to allow system to stabilize
-STABILATION_TIME = 8  # Time to wait for system stabilization after interference deployment
+STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 12  # Longer stabilization for mixed scenarios
 
 # Test matrix
@@ -34,13 +34,13 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
-    {"id": 0, "name": "Baseline0", "type": None},
-    {"id": 1, "name": "Baseline1", "type": None},
+    #{"id": 0, "name": "Baseline0", "type": None},
+    #{"id": 1, "name": "Baseline1", "type": None},
     # Ibench CPU Scenarios
-    {"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
-    {"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
+    #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
     # Stress-ng L3 Scenarios
     {"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
@@ -83,7 +83,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
         try:
             subprocess.run([
                 "python3",
-                os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py"),
+                os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_l3.py"),
                 str(scenario["count"])
             ], check=True, capture_output=True)
             if not from_mix:
@@ -128,7 +128,7 @@ def cleanup_interference(scenario: Dict):
     elif scenario["type"] == "stress-ng-l3":
         subprocess.run([
             "python3",
-            os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_stressng_l3.py")
+            os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench_l3.py")
         ], capture_output=True)
     elif scenario["type"] == "ibench-membw":
         subprocess.run([
@@ -178,7 +178,7 @@ def ensure_directories(script_dir):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "NEW_V02")
+    baseline_results_dir = os.path.join(script_dir, "NEW_V03")
     os.makedirs(baseline_results_dir, exist_ok=True)
     raw_log_folder = os.path.join(baseline_results_dir, "raw_folder")
     os.makedirs(raw_log_folder, exist_ok=True)

@@ -12,6 +12,8 @@ spec:
       labels:
         app: ibench-l3
     spec:
+      nodeSelector:
+        nginx: "true"
       containers:
       - name: ibench-l3
         image: ibench:latest
