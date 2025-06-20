@@ -1,39 +1,30 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
   labels:
     app: redis
 spec:
-  # If you’ve enabled the kubelet CPU Manager with "static" policy on your nodes,
-  # this Pod will be pinned to a dedicated core when you request & limit exactly 1 CPU.
-  containers:
-  - name: redis
-    image: redis:7.0
-    imagePullPolicy: IfNotPresent
-    ports:
-      - containerPort: 6379
-        name: redis
-    # disable data persistence (in-memory only)
-    args: ["redis-server", "--save", ""]
-    resources:
-      requests:
-        cpu: "1"
-        memory: "2Gi"
-      limits:
-        cpu: "1"
-        memory: "2Gi"
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-external
-spec:
-  type: NodePort
+  replicas: 1
   selector:
-    app: redis  # Matches your Redis Deployment's labels
-  ports:
-    - port: 6379
-      targetPort: 6379
-      nodePort: 31000  # Manually chosen (range: 30000-32767)
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      nodeSelector:  # Ensures Pod runs only on labeled nodes
+        redis: "true"
+      containers:
+      - name: redis
+        image: redis:7.0
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            cpu: "1"    # Pinned to 1 core (if using CPU Manager static policy)
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"

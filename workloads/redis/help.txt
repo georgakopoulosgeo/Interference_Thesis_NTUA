@@ -6,6 +6,13 @@ Interference on CPU (e.g. iBench CPU stress) will drive up request queuing and c
 inflating P99/P99.9 latencies; memory-bandwidth or LLC contention can worsen cache misses, further lengthening tail latency.
 
 ////////////////////////////////////////////// REDIS WORKLOAD
+kubectl label nodes minikube-m02 redis="true"
+
+kubectl apply -f redis-pod.yaml
+kubectl apply -f redis-service.yaml
+
+
+
 
 # Add the Redis Helm repo
 helm repo add bitnami https://charts.bitnami.com/bitnami
