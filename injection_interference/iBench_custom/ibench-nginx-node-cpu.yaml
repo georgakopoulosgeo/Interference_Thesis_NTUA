@@ -12,8 +12,14 @@ spec:
       labels:
         app: ibench-cpu
     spec:
-      nodeSelector:
-        nginx: "true"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nginx
+                operator: In
+                values: ["true"]
       containers:
       - name: ibench
         image: ibench:latest
@@ -22,7 +28,7 @@ spec:
         resources:
           requests:
             cpu: "500m"
-            memory: "64Mi"
+            memory: "256Mi"  # Prevents OOM kills if memory-heavy
           limits:
             cpu: "500m"
-            memory: "64Mi"
+            memory: "256Mi" 

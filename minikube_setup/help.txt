@@ -7,16 +7,16 @@ minikube delete --all
   minikube start \
     --driver=docker \
     --cpus=3 \
-    --memory=2048 \
+    --memory=3072 \
     --container-runtime=containerd \
     --nodes=2 
-
-
-
 
 # Apply CPU pinning
 docker update minikube --cpus=3 --cpuset-cpus="0-2"  
 docker update minikube-m02 --cpus=3 --cpuset-cpus="3-5"
+
+  --extra-config=kubelet.system-reserved=cpu=500m \
+  --extra-config=kubelet.kube-reserved=cpu=500m
 
 
 // Now I have cores 6-7 for external workloads

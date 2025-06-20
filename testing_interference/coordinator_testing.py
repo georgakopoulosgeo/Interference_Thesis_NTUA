@@ -46,18 +46,18 @@ INTERFERENCE_SCENARIOS = [
     # Ibench CPU Scenarios
     {"id": 5, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
     {"id": 6, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 7, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
-    {"id": 8, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
+    {"id": 7, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    {"id": 8, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
     {"id": 9, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 10, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 11, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
-    {"id": 12, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
+    {"id": 11, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    {"id": 12, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
     {"id": 13, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
     {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 15, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    {"id": 16, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
+    {"id": 15, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    {"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
 # Warmup interference scenarios
