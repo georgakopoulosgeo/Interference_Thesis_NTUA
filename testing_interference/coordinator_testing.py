@@ -14,22 +14,21 @@ import threading
 NGINX_SERVICE_URL = "http://192.168.49.2:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-MAX_RPS = 2600  # Adjust based on your earlier findings
-DURATION = "50s"  # Test duration per run
+DURATION = "60s"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-SLEEP_BETWEEN_TESTS = 25  # Sleep time between tests to allow system to stabilize
-SLEEP_BETWEEN_DIFFERENT_RPS_SCENARIOS = 30  # Sleep time between different RPS scenarios
-STABILATION_TIME = 15  # Time to wait for system stabilization after interference deployment
+SLEEP_BETWEEN_TESTS = 30  # Sleep time between tests to allow system to stabilize
+STABILATION_TIME = 12  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
+STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization after warmup
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 5)  # 1-5 replicas
-RPS_STEPS = range(100, MAX_RPS + 1, 500)  # 100, 600, 1100, 1600, 2100, 2600
+RPS_STEPS = [500, 1000, 1500, 2000, 2500]
 
 # Warmup configuration
-WARMUP_DURATION = "20s"
-WARMUP_RPS = 500
+WARMUP_DURATION = "30s"
+WARMUP_RPS = 1000
 WARMUP_THREADS = 1
 WARMUP_CONNECTIONS = 200
 
@@ -40,22 +39,25 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
-    #{"id": 1, "name": "Baseline1", "type": None},
+    {"id": 1, "name": "Baseline1", "type": None},
+    {"id": 2, "name": "Baseline2", "type": None},
+    {"id": 3, "name": "Baseline3", "type": None},
+    {"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    #{"id": 2, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 3, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 4, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
-    #{"id": 5, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
+    {"id": 5, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 6, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    {"id": 7, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 8, "name": "8_iBench_CPU_pods", "type": "ibench-cpu", "count": 8},
     # Stress-ng L3 Scenarios
-    #{"id": 6, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 7, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 8, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
-    #{"id": 9, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
+    {"id": 9, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 10, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    {"id": 11, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 12, "name": "8_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 8},
     # iBench MemBW Scenarios
-    #{"id": 10, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 11, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    #{"id": 12, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    #{"id": 13, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
+    {"id": 13, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    {"id": 15, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    {"id": 16, "name": "8_iBench_memBW_pods", "type": "ibench-membw", "count": 8}
 ]
 
 # Warmup interference scenarios
@@ -214,11 +216,19 @@ def ensure_directories(script_dir):
     Create necessary directories for storing results and raw logs.
     Returns the paths to the baseline results directory and the raw log folder.
     """
-    baseline_results_dir = os.path.join(script_dir, "NEW_V03")
+    # Main results directory
+    main_results_dir = os.path.join(script_dir, "NEW_V03")
+    os.makedirs(main_results_dir, exist_ok=True)
+    
+    # Create separate baseline directory
+    baseline_results_dir = os.path.join(main_results_dir, "baseline_tests")
     os.makedirs(baseline_results_dir, exist_ok=True)
-    raw_log_folder = os.path.join(baseline_results_dir, "raw_folder")
+    
+    # Raw log folder (for all tests)
+    raw_log_folder = os.path.join(main_results_dir, "raw_folder")
     os.makedirs(raw_log_folder, exist_ok=True)
-    return baseline_results_dir, raw_log_folder
+    
+    return main_results_dir, baseline_results_dir, raw_log_folder
 
 
 """
@@ -228,7 +238,7 @@ for replicas in REPLICAS_TO_TEST:                   # Outer loop
 """
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    baseline_results_dir, raw_log_folder = ensure_directories(script_dir)
+    main_results_dir, raw_log_folder = ensure_directories(script_dir)
     
     # Create timestamp and date strings for file naming and logging.
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -236,10 +246,12 @@ def main():
     
     # Data Files
     pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{timestamp}.csv")
-    # Define CSV file paths for final aggregated results.
-    workload_csv = os.path.join(baseline_results_dir, "workload_metrics.csv")
-    # Initialize results file
-    with open(os.path.join(baseline_results_dir, "workload_metrics.csv"), "w") as f:
+    
+    # Define CSV file paths for final aggregated results
+    workload_csv = os.path.join(main_results_dir, "workload_metrics.csv")
+
+    # Initialize results files
+    with open(workload_csv, "w") as f:
         csv.DictWriter(f, fieldnames=[
             "Test_ID","Replicas", "Interference", "Given_RPS", "Throughput",
             "Avg_Latency", "P50_Latency", "P75_Latency", 
@@ -253,15 +265,12 @@ def main():
         # Scale NGINX once per replica count
         subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
         time.sleep(5)  # Wait for scaling
-        # Warm up after scaling
-        print(f"\n=== Warming up for {replicas} replicas ===")
-        run_warmup(WARMUP_RPS)
 
         for scenario in INTERFERENCE_SCENARIOS:
             # Smart interference warmup
-            if scenario["type"] != prev_interference_type and scenario["type"] is not None:
+            if scenario["type"] != prev_interference_type:
                 warmup_with_interference(scenario["type"])
-                time.sleep(STABILATION_TIME/2)  # Wait for stabilization after warmup
+            time.sleep(STABILATION_TIME_AFTER_WARMUP)  # Wait for stabilization after warmup
             prev_interference_type = scenario["type"]
 
             for rps in RPS_STEPS:
@@ -269,14 +278,15 @@ def main():
                 print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
                 # Setup interference (will handle 10s stabilization internally)
                 if scenario["type"] and not create_interference(scenario):
+                    # Here we have STABILATION_TIME sleep for the interference to stabilize
                     print(f"Skipping failed scenario {scenario['name']}")
                     continue
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
 
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
-                pcm_system_csv = os.path.join(baseline_results_dir, f"pcm_system_{test_id}.csv")
-                pcm_core_csv = os.path.join(baseline_results_dir, f"pcm_core_{test_id}.csv")
+                pcm_system_csv = os.path.join(main_results_dir, f"pcm_system_{test_id}.csv")
+                pcm_core_csv = os.path.join(main_results_dir, f"pcm_core_{test_id}.csv")
                 intelpcm_thread = threading.Thread(target=pcm_monitoring, args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv), daemon=True)
                 intelpcm_thread.start()
                 time.sleep(1)  # Give some time for the monitoring to start
@@ -301,6 +311,8 @@ def main():
                 print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
                 workload_metrics = parse_workload_output(wrk_output_file)
                 print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}")
+                
+                
                 store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id)
 
                 if scenario["type"]:
@@ -308,13 +320,15 @@ def main():
 
                 print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.")
                 print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...")
-                time.sleep(SLEEP_BETWEEN_TESTS)
 
+                time.sleep(1)
                 # Clear the raw log folder for the next test
                 for file in os.listdir(raw_log_folder):
                     file_path = os.path.join(raw_log_folder, file)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
+
+                time.sleep(SLEEP_BETWEEN_TESTS)
 
 if __name__ == "__main__":
     main()
