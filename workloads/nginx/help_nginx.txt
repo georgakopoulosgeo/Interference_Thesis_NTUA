@@ -31,4 +31,4 @@ kubectl logs -f job/wrk-load
 
 // From outside the cluster, you can access the nginx service using the URL provided by `minikube service nginx-service --url`.
 cd /home/george/Workspace/Interference/workloads/wrk2
-taskset -c 6,7 ./wrk -t1 -c40 -d30s -R100 -L http://192.168.49.2:30080/
+taskset -c 6,7 ./wrk -t1 -c40 -d30s -R100 -L http://192.168.49.3:30080/

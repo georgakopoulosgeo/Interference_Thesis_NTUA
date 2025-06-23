@@ -12,7 +12,7 @@ class PCMReader:
     """
     def __init__(self, pcm_path: str = "/usr/local/bin/pcm"):
         self.pcm_path = pcm_path
-        self.domain_filter = "system"
+        self.domain_filter = "core"
         self.desired_keywords = [
             "ipc", "l2miss", "l3miss", "read", "write",
             "c0res%", "c1res%", "c6res%"

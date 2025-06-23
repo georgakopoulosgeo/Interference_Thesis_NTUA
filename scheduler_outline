@@ -2,52 +2,126 @@ KUBERNETES ML-DRIVEN SCHEDULER ARCHITECTURE
 
 Core Components:
 ─────────────────────────────────────────────────
+
 1. Nginx and Redis
-   • Nginx : HTTP server
-   • Redis : In-memory data structure store
-   • Used for offline training of the ML model
+      • Nginx : HTTP server
+      • Redis : In-memory data structure store
+      • Used for offline training of the ML model
 
-2. Metrics Collector Pod (each PM)
-   • PCM tool running on each PM
-   • Gathers hardware metrics (CPU, memory bandwidth, cache, etc.)
-   • 20-second sampling windows before scheduling decisions
-   • Cons: Overhead 
+2. Azure Trace Data
+   • Source: Real-world VM/workload traces from Azure Public Dataset.
+   • Content: Timestamped RPS (requests/sec) and CPU usage over 30 minutes.
+   • Role: Provides realistic traffic patterns to replace synthetic wrk2 loads.
+   • Preprocessing: Align trace timestamps with experiment steps (e.g., map RPS to Nginx load).
 
-3. Predictor API Service
-   • Hosts pre-trained RandomForest model
-   • Accepts node metrics as input
-   • Returns slowdown score (0-1) for scheduling
-   • Optional: Replica-aware scoring logic
+2. ARIMA Forecasting Service
+   • Input: Historical RPS data from Azure traces.
+   • Output: Predicted RPS for next 2 minutes → computes desired_replicas.
+   • Formula: desired_replicas = ceil(predicted_RPS / max_RPS_per_replica).
+   • Deployment: Flask API (/forecast endpoint) running in Kubernetes.
 
-4. Custom Scheduler Extender
-   • Kubernetes scheduler extension
-   • Intercepts pod scheduling requests
-   • Queries Predictor API for node scores
-   • Implements placement logic
-   • Optional: Number of replicas per node
+3. Intel PCM Metrics Collector 
+   • Tool: Intel Performance Counter Monitor (PCM) running as a DaemonSet on each node.
+   • Metrics: IPC, L2/L3 cache misses, memory bandwidth, CPU utilization.
+   • Sampling: 20-second windows (adjustable) to balance accuracy/overhead.
+   • Output: CSV/JSON logs sent to the Predictor API.
+
+4. Replica-Aware Predictor API Service
+   • Model: RandomForest/XGBoost trained per replica count (1–4 replicas).
+   • Input Features:
+      - PCM metrics (IPC, cache misses, etc.).
+      - Current replica count on the target node.
+      - Azure RPS forecast (optional).
+   • Output: Predicted slowdown ratio (P99 / baseline_P99).
+   • Deployment: Flask API (/predict endpoint).
+
+5. Custom Scheduler
+   • Logic:
+1. Queries ARIMA for desired_replicas.
+2. Evaluates all nodes using the Predictor’s slowdown scores.
+3. Selects (node, replicas) with lowest RiskScore (slowdown + replica penalty).
+   • Integration: Kubernetes Scheduler Extender or custom scheduler binary.
+   • Cost Function:
+python RiskScore = (predicted_slowdown) + 0.1 * |actual_replicas - desired_replicas|
+
+6. Kubernetes Cluster
+   • Nodes: 2+ physical/virtual machines.
+   • Workloads:
+      - Primary: Nginx (latency-sensitive, scaled via desired_replicas).
+      - Interference: Redis + iBench (stressors for CPU/LLC/memory contention).
+   • Traffic Generator: Modified wrk2 to replay Azure trace RPS.
 
 
 Data Flow:
 ─────────────────────────────────────────────────
-1. Pod Creation Trigger → 2. Metrics Collection → 
-3. Predictor Scoring → 4. Scheduling Decision → 
-5. Pod Placement → 6. Performance Monitoring
+Azure Trace → ARIMA forecasts RPS → computes desired_replicas.
+PCM Collector → streams metrics to Predictor API.
+Predictor → evaluates slowdowns for all (node, replica) combinations.
+Scheduler → selects optimal (node, replicas) pair → deploys pods via Kubernetes API.
 
-Key Characteristics:
+
+Key Characteristics: 
 ─────────────────────────────────────────────────
-• Self-contained benchmark pods (Nginx + wrk)
-• Hardware-level metrics via PCM
-• ML model evaluating node fitness
-• Replica-aware placement decisions
-• Isolated traffic per test pod
-• Comparison against default scheduler
+   • Self-contained benchmark pods (Nginx + wrk)
+   • Hardware-level metrics via PCM
+   • ML model evaluating node fitness
+   • Replica-aware placement decisions
+   • Isolated traffic per test pod
+   • Comparison against default scheduler
+
+Key Files to Implement
+─────────────────────────────────────────────────
+- pcm-daemonset.yaml
+   Deploys PCM as a DaemonSet with privileged access to PMU.
+- arima-forecast.py
+   ARIMA training/forecasting script (containerized as Flask API).
+- predictor-api.py
+   Predictor service with pre-trained RandomForest model.
+- scheduler-extender.yaml
+   Kubernetes scheduler configuration for custom logic.
 
 Optional Extensions:
 ─────────────────────────────────────────────────
-• Scaling recommendations
-• Topology-aware placement
-• Dynamic model updating
-• Multi-metric QoS enforcement
+Multi-Trace Validation: Test on Google ClusterData2019 (beyond Azure).
+Out-of-Distribution Workloads: Add Cassandra/Spark to test generalization.
+Online Learning: Retrain predictor periodically with new PCM data.
+Fallback Mode: Revert to default scheduler if predictor fails.
+Energy-Aware: Add RAPL metrics to predictor inputs.
+Explainability: Use SHAP values to explain high RiskScores.
+
+
+┌───────────────────────┐     ┌───────────────────────┐
+│      Azure Trace      │     │    Intel PCM Metrics  │
+│ (30-min VM CPU/RPS    │     │ (IPC, Cache Misses,   │
+│  from Public Dataset) │     │  Memory Bandwidth)    │
+└──────────┬────────────┘     └──────────┬────────────┘
+           │                              │
+           ▼                              ▼
+┌───────────────────────┐     ┌───────────────────────┐
+│   ARIMA Forecast      │     │   Replica-Aware       │
+│ (Predicts future RPS  │     │   Predictor           │
+│  → computes desired   │     │ (RandomForest: maps   │
+│    replica count)     │     │  PCM+Replicas →       │
+└──────────┬────────────┘     │  Slowdown Ratio)      │
+           │                  └──────────┬────────────┘
+           │                             │
+           └───────────┐                 │
+                       ▼                 ▼
+                ┌───────────────────────────────────┐
+                │      Custom Scheduler             │
+                │ (Cost Function:                   │
+                │  1. ARIMA desired_replicas        │
+                │  2. Predictor node slowdowns      │
+                │  → Optimal (node, replicas) pair) │
+                └───────────────┬───────────────────┘
+                                │
+                                ▼
+                ┌───────────────────────────────────┐
+                │   Kubernetes Cluster              │
+                │ (Place Nginx/Redis pods           │
+                │  on selected nodes + replicas)    │
+                └───────────────────────────────────┘
+
 
 
 ┌─────────────────────────────────────────────────┐

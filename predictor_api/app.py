@@ -1,41 +1,49 @@
 from flask import Flask, request, jsonify
 import joblib
-import pandas as pd
 import numpy as np
+import os
 
 app = Flask(__name__)
 
-# Load the lite export
-predictor_data = joblib.load('slowdown_predictor_lite.pkl')
-model = predictor_data['model']
-feature_columns = predictor_data['feature_columns']
+# Load models at startup
+MODELS_DIR = "models" # Directory where models are stored // Needs Change!
+models = {}
+
+try:
+    for replicas in [1, 2, 3, 4]:
+        filename = os.path.join(MODELS_DIR, f"model_replicas_{replicas}.pkl")
+        models[replicas] = joblib.load(filename)
+    print("All models loaded successfully!")
+except Exception as e:
+    print(f"Error loading models: {str(e)}")
+    raise
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get and validate input
         data = request.json
-        if not data or 'features' not in data:
-            return jsonify({"error": "Missing features"}), 400
         
-        # Convert to DataFrame with correct column order
-        input_df = pd.DataFrame([data['features']])[feature_columns]
+        # Validate input
+        if not all(k in data for k in ["node_metrics", "replicas"]):
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        replicas = data["replicas"]
+        if replicas not in models:
+            return jsonify({"error": f"Unsupported replica count: {replicas}"}), 400
+            
+        # Convert to numpy array and ensure correct shape
+        features = np.array(data["node_metrics"]).reshape(1, -1)
         
-        # Make prediction (returns norm_perf)
-        prediction = model.predict(input_df)[0]
-        
-        # Convert to 0-1 score (adjust based on your norm_perf range)
-        # Assuming lower norm_perf is better (closer to 1.0 is no slowdown)
-        score = np.clip(2 - prediction, 0, 1)  # Example conversion
-        
+        # Predict
+        slowdown = models[replicas].predict(features)[0]
         return jsonify({
-            "score": float(score),
-            "raw_prediction": float(prediction),
-            "features_used": feature_columns
+            "replicas": replicas,
+            "slowdown": float(slowdown),  # Convert numpy float to native float
+            "status": "success"
         })
-    
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

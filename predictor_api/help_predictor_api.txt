@@ -1,36 +1,67 @@
-///////////////////////////////////// PREDICTOR API
-#################################### 1. Build the Docker image
-# Navigate to your predictor API directory
-cd predictor_api/
+PREDICTOR API
 
-# Build the Docker image (replace with your registry)
-docker build -t your-registry/predictor-api:v1 .
+################################################ FOLDER STRUCTURE
+/nginx-predictor
+│── app.py                          # Flask API (your main application)
+│── requirements.txt                # Python dependencies
+│── Dockerfile                      # Image build instructions
+│── predictor-api-deployment.yaml   # Kubernetes deployment+service
+│── /models                         # Directory for model files / Probably in a separate Folder ** 
+│   ├── model_replicas_1.pkl
+│   ├── model_replicas_2.pkl
+│   ├── model_replicas_3.pkl
+│   └── model_replicas_4.pkl
 
-# Push to container registry
-docker push your-registry/predictor-api:v1
+################################################ WORKFLOW
+1. HTTP POST Request:
+   - Endpoint: `/predict`
+   - Body: JSON with {"metrics": [list_of_values], "replicas": 1-4}
 
-#################################### 2. Deploy to Kubernetes
-# Apply the deployment
-kubectl apply -f predictor-api-deployment.yaml
+2. API Action:
+   - Selects model based on "replicas" value
+   - Runs prediction on "metrics"
+   - Returns {"slowdown": float}
 
-# Verify deployment status
+3. Example Call:
+   curl -X POST http://predictor-service/predict \
+     -d '{"metrics": [0.9,15000,500], "replicas": 2}'
+
+
+
+################################################ MINIKUBE ACCESSIBILITY
+# 1. Build and load image (no registry needed)
+docker build -t predictor-api:latest .
+minikube image load predictor-api
+
+# 2. Deploy
+kubectl apply -f predictor-deploy.yaml
+
+# 3. Access from:
+# - Other pods: http://predictor-service
+# - Host machine:
+minikube service predictor-service --url
+
+Help Commands
+- Verify deployment status
 kubectl get deployments -l app=predictor-api
-
-# Check pods
+- Check pods
 kubectl get pods -l app=predictor-api
-
-# Check service
+- Check service
 kubectl get svc predictor-api
-
-# View logs (for one of the pods)
+- View logs (for one of the pods)
 kubectl logs -f <pod-name> -c predictor
-
-#################################### 3.  Key Verification Commands 
-# Watch rollout status
-kubectl rollout status deployment/predictor-api
-
-# Check service endpoints
+- Check service endpoints
 kubectl get endpoints predictor-api
-
-# Test from within cluster
+- Test from within cluster
 kubectl run -it --rm --restart=Never test-curl --image=curlimages/curl -- curl -v http://predictor-api:5000/health
+
+
+################################################ FUTURE IMPROVEMENTS
+- Add gunicorn with multiple workers
+- Implement prediction caching
+- Request latency tracking
+- Model versioning (A/B testing)
+- Batch prediction endpoint
+- Request authentication
+- Rate limiting
+- Custom metrics for HPA

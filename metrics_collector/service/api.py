@@ -14,9 +14,7 @@ app = FastAPI(title="Metrics Collector API")
 sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
-def csv_streamer(
-    buffer_data: Iterable[Tuple[float, Dict[str, Any]]]
-) -> Iterable[str]:
+def csv_streamer( buffer_data: Iterable[Tuple[float, Dict[str, Any]]]) -> Iterable[str]:
     """
     Generator that yields CSV lines for an iterable of (timestamp, metrics_dict).
     Preserves the original metrics order (as inserted into the dict).

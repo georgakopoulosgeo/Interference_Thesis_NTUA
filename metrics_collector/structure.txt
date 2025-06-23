@@ -25,8 +25,8 @@ kubectl exec -it metrics-collector-<node-id> -- \
   curl -s localhost:8000/metrics?window_seconds=20 | jq
 
 
-  ////////////////////////////////////////////////////////////////
-  METRICS COLLECTOR ARCHITECTURE
+////////////////////////////////////////////////////////////////
+METRICS COLLECTOR ARCHITECTURE
 
 Core Design Principles:
 ─────────────────────────────────────────────────
