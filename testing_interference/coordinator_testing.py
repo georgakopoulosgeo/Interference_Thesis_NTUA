@@ -11,7 +11,7 @@ from workload_run_monitor import store_workload_metrics, parse_workload_output, 
 import threading
 
 # Which workload to test
-WORKLOAD = "redis"  # Options: "nginx", "redis"
+WORKLOAD = "nginx"  # Options: "nginx", "redis"
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -39,11 +39,11 @@ STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization afte
 
 # Test matrix
 REPLICAS_TO_TEST = range(1, 6) 
-RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000]
+RPS_STEPS = [1500]
 
 # Warmup configuration
 WARMUP_DURATION = "30s"
-WARMUP_RPS = 1000
+WARMUP_RPS = 1500
 WARMUP_THREADS = 1
 WARMUP_CONNECTIONS = 200
 WARMUP_CLIENTS = 100
@@ -85,7 +85,7 @@ WARMUP_SCENARIOS = {
 
 def run_warmup(rps: int):
     """Run warmup workload without PCM monitoring"""
-    print(f"Starting warmup at {rps} RPS equivalent...")
+    print(f"Starting warmup at {rps} RPS equivalent...", flush=True)
     try:
         if WORKLOAD == "nginx":
             subprocess.run([
@@ -109,16 +109,16 @@ def run_warmup(rps: int):
                 f"--test-time={WARMUP_DURATION[:-1]}",  # Remove 's' suffix if present
                 "--print-percentiles=50,90,99"
             ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
-        print("Warmup completed")
+        print("Warmup completed", flush=True)
     except subprocess.CalledProcessError as e:
-        print(f"Warmup failed: {e.stderr}")
+        print(f"Warmup failed: {e.stderr}", flush=True)
 
-def warmup_with_interference(interference_type: str):
+def warmup_with_interference(interference_type: str, rps: int):
     """Run warmup with specific interference type"""
     if interference_type in WARMUP_SCENARIOS:
-        print(f"Starting {interference_type} warmup...")
+        print(f"Starting {interference_type} warmup...", flush=True)
         create_interference(WARMUP_SCENARIOS[interference_type])
-        warmup_rps = WARMUP_RPS 
+        warmup_rps = rps
         run_warmup(warmup_rps)
         cleanup_interference(WARMUP_SCENARIOS[interference_type])
         time.sleep(STABILATION_TIME)
@@ -142,12 +142,12 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             
             # Wait for stabilization period (10s)
             if not from_mix:
-                print("[Interference Creator] Waiting 10 seconds for system stabilization...")
+                print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
                 time.sleep(STABILATION_TIME)
             return True
             
         except subprocess.CalledProcessError as e:
-            print(f"Error creating interference: {e.stderr}")
+            print(f"Error creating interference: {e.stderr}", flush=True)
             return False
     elif scenario["type"] == "stress-ng-l3":
         try:
@@ -157,11 +157,11 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
                 str(scenario["count"])
             ], check=True, capture_output=True)
             if not from_mix:
-                print("[Interference Creator] Waiting 10 seconds for system stabilization...")
+                print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
                 time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
-            print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}")
+            print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}", flush=True)
             return False
     elif scenario["type"] == "ibench-membw":
         try:
@@ -171,21 +171,21 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
                 str(scenario["count"])
             ], check=True, capture_output=True)
             if not from_mix:
-                print("[Interference Creator] Waiting 10 seconds for system stabilization...")
+                print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
                 time.sleep(STABILATION_TIME)  # Wait for stabilization
             return True
         except subprocess.CalledProcessError as e:
-            print(f"ibench-membw deployment failed: {e.stderr.decode()}")
+            print(f"ibench-membw deployment failed: {e.stderr.decode()}", flush=True)
             return False
     elif scenario["type"] == "mix":
         # Handle mixed scenarios
         for mix_scenario in scenario["mix"]:
             if not create_interference(mix_scenario, True):
-                print(f"Failed to create interference for {mix_scenario['name']}")
+                print(f"Failed to create interference for {mix_scenario['name']}", flush=True)
                 return False
-        print("[Interference Creator] Waiting 20 seconds for mixed scenario stabilization...")
+        print("[Interference Creator] Waiting 20 seconds for mixed scenario stabilization...", flush=True)
         time.sleep(STABILATION_TIME_MIX_SCENARIOS)
-        print(f"Mixed scenario {scenario['name']} created successfully.")
+        print(f"Mixed scenario {scenario['name']} created successfully.", flush=True)
     return True
 
 def cleanup_interference(scenario: Dict):
@@ -235,7 +235,7 @@ def run_wrk_test(raw_folder: str, rps: int,):
         return wrk_output_file
 
     except subprocess.CalledProcessError as e:
-        print(f"wrk test failed: {e.stderr}")
+        print(f"wrk test failed: {e.stderr}", flush=True)
         return {k: 0.0 for k in [
             "Throughput", "Avg_Latency", "P50_Latency",
             "P75_Latency", "P90_Latency", "P99_Latency", "Max_Latency"
@@ -264,7 +264,7 @@ def run_memtier_test(raw_folder: str):
         return memtier_output_file
 
     except subprocess.CalledProcessError as e:
-        print(f"memtier_benchmark test failed: {e.stderr}")
+        print(f"memtier_benchmark test failed: {e.stderr}", flush=True)
         return {k: 0.0 for k in [
             "Throughput", "Avg_Latency", "P50_Latency",
             "P90_Latency", "P99_Latency", "P99.9_Latency"
@@ -277,7 +277,7 @@ def ensure_directories(script_dir):
     Returns the paths to the baseline results directory and the raw log folder.
     """
     # Main results directory
-    main_results_dir = os.path.join(script_dir, "NEW_V03")
+    main_results_dir = os.path.join(script_dir, "NEW_V06")
     os.makedirs(main_results_dir, exist_ok=True)
     
     # Create separate baseline directory
@@ -288,7 +288,7 @@ def ensure_directories(script_dir):
     raw_log_folder = os.path.join(main_results_dir, "raw_folder")
     os.makedirs(raw_log_folder, exist_ok=True)
     
-    return main_results_dir, baseline_results_dir, raw_log_folder
+    return main_results_dir, raw_log_folder
 
 
 """
@@ -323,21 +323,26 @@ def run_nginx_testing():
 
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
-                if scenario["type"] != prev_interference_type:
-                    warmup_with_interference(scenario["type"])
+                if scenario["type"] == None:
+                    print(f"\n[Replicas={replicas}|RPS={rps}] Running warmup for baseline scenario ...", flush=True)
+                    run_warmup(rps)
+                    time.sleep(STABILATION_TIME_AFTER_WARMUP)
+                elif scenario["type"] != prev_interference_type:
+                    print(f"\n[Replicas={replicas}|RPS={rps}] Running warmup for {scenario['name']}...", flush=True)
+                    warmup_with_interference(scenario["type"], rps)
                     time.sleep(STABILATION_TIME_AFTER_WARMUP)
                 prev_interference_type = scenario["type"]
-                print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}")
+                print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}", flush=True)
                 # Setup interference (will handle 10s stabilization internally)
                 if scenario["type"] and not create_interference(scenario):
                     # Here we have STABILATION_TIME sleep for the interference to stabilize
-                    print(f"Skipping failed scenario {scenario['name']}")
+                    print(f"Skipping failed scenario {scenario['name']}", flush=True)
                     continue
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
                 
                 # Start monitoring
-                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...")
+                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...", flush=True)
                 pcm_system_csv = os.path.join(main_results_dir, f"pcm_system_{test_id}.csv")
                 pcm_core_csv = os.path.join(main_results_dir, f"pcm_core_{test_id}.csv")
                 intelpcm_thread = threading.Thread(
@@ -345,23 +350,22 @@ def run_nginx_testing():
                     args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv),
                     daemon=True
                 )
+                # Run workload
+                print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...", flush=True)
                 intelpcm_thread.start()
                 time.sleep(1)
-
-                # Run workload
-                print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...")
                 wrk_output_file = run_wrk_test(raw_log_folder, rps)
-                print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}")
 
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
                 intelpcm_thread.join()
-                print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.")
+                print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}", flush=True)
+                print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.", flush=True)
 
-                print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...")
+                print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...", flush=True)
                 workload_metrics = parse_workload_output(wrk_output_file)
-                print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}")
+                print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
                 
                 
                 store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id)
@@ -369,8 +373,8 @@ def run_nginx_testing():
                 if scenario["type"]:
                     cleanup_interference(scenario)
 
-                print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.")
-                print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...")
+                print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.", flush=True)
+                print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...", flush=True)
 
                 time.sleep(1)
                 # Clear the raw log folder for the next test
@@ -476,7 +480,7 @@ def run_redis_testing():
 def main():
     """Main entry point that routes to specific workload testing"""
     if WORKLOAD == "nginx":
-        print("Starting NGINX benchmarking")
+        print("Starting NGINX benchmarking", flush=True)
         run_nginx_testing()
     elif WORKLOAD == "redis":
         print("Starting Redis benchmarking")

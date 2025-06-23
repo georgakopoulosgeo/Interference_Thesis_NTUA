@@ -1,0 +1,17 @@
+Test_ID,Replicas,Interference,Given_RPS,Throughput,Avg_Latency,P50_Latency,P75_Latency,P90_Latency,P99_Latency,Max_Latency
+1replicas_scenario0_1500rps,1,Baseline0,1500,1495.4,70.0,51.0,71.0,116.0,285.0,2990.0
+1replicas_scenario1_1500rps,1,Baseline1,1500,1495.54,56.2,50.0,64.0,78.0,124.0,1870.0
+1replicas_scenario5_1500rps,1,1_iBench_CPU_pod,1500,1495.4,96.97,54.0,81.0,129.0,1240.0,3830.0
+1replicas_scenario6_1500rps,1,2_iBench_CPU_pods,1500,1495.4,162.31,72.0,110.0,188.0,2660.0,4090.0
+1replicas_scenario7_1500rps,1,3_iBench_CPU_pods,1500,1495.56,254.68,80.0,126.0,398.0,3180.0,6870.0
+1replicas_scenario8_1500rps,1,4_iBench_CPU_pods,1500,1495.55,291.57,67.0,124.0,880.0,3280.0,7490.0
+1replicas_scenario9_1500rps,1,1_stress-ng_l3_pod,1500,1495.53,73.11,64.0,80.0,105.0,188.0,2990.0
+1replicas_scenario10_1500rps,1,2_stress-ng_l3_pods,1500,1495.38,248.56,185.0,303.0,440.0,990.0,7250.0
+1replicas_scenario11_1500rps,1,3_stress-ng_l3_pods,1500,1471.64,5480.0,4270.0,7360.0,11650.0,21520.0,33220.0
+1replicas_scenario12_1500rps,1,4_stress-ng_l3_pods,1500,1471.6,6930.0,5130.0,9490.0,14820.0,27300.0,88510.0
+1replicas_scenario13_1500rps,1,1_iBench_memBW_pod,1500,1471.74,413.92,373.0,521.0,688.0,1050.0,4340.0
+1replicas_scenario14_1500rps,1,2_iBench_memBW_pods,1500,1495.53,128.02,94.0,153.0,224.0,522.0,4370.0
+1replicas_scenario15_1500rps,1,3_iBench_memBW_pods,1500,1495.51,304.16,129.0,205.0,493.0,2930.0,6750.0
+1replicas_scenario16_1500rps,1,4_iBench_memBW_pods,1500,1495.34,519.28,149.0,290.0,1640.0,4570.0,9220.0
+1replicas_scenario0_2000rps,1,Baseline0,2000,1963.28,517.38,426.0,690.0,990.0,1550.0,3720.0
+1replicas_scenario1_2000rps,1,Baseline1,2000,1994.96,67.56,57.0,73.0,107.0,236.0,2130.0
