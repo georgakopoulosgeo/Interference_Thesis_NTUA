@@ -24,11 +24,11 @@ spec:
       - name: ibench
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./cpu","60"]
+        command: ["./cpu","80"]
         resources:
           requests:
-            cpu: "500m"
+            cpu: "250m"
             memory: "64Mi"
           limits:
-            cpu: "500m"
+            cpu: "2500m"
             memory: "64Mi"

@@ -27,8 +27,8 @@ spec:
         command: ["./cpu","80"]
         resources:
           requests:
-            cpu: "500m"
-            memory: "256Mi"  # Prevents OOM kills if memory-heavy
+            cpu: "250m"
+            memory: "256Mi"
           limits:
-            cpu: "500m"
+            cpu: "250m"
             memory: "256Mi" 
