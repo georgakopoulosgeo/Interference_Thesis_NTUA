@@ -77,6 +77,7 @@ class PCMReader:
                 print(f"Raw CSV (first 100 chars):\n{raw_csv[:100]}...", file=sys.stderr)  # Debug
 
             metrics_series = []
+            print(f"Assigned cores: {self.assigned_cores}", file=sys.stderr)
             with open(tmp_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
                 header_domain = next(reader)  # First header (domains)
@@ -91,16 +92,22 @@ class PCMReader:
                     if met_lower in ("date", "time"):
                         indices_to_keep.append(idx)
                     elif "core" in dom_lower:
-                        # Match something like "Core7 (Socket 0)"
-                        core_match = re.search(r"core\s*(\d+)", dom_lower)
-                        if core_match:
-                            core_id = int(core_match.group(1))
+                        tokens = dom_lower.replace("(", "").split()
+                        try:
+                            # Example: 'core7 socket 0' -> extract '7'
+                            core_token = next(t for t in tokens if t.startswith("core"))
+                            core_id_str = core_token.replace("core", "")
+                            core_id = int(core_id_str)
                             if core_id in self.assigned_cores:
                                 if any(kw in met_lower for kw in self.desired_keywords):
                                     indices_to_keep.append(idx)
+                        except (StopIteration, ValueError, IndexError):
+                            continue  # Could not extract core ID safely
                 if not indices_to_keep:
                     print("⚠️ No matching metrics found for specified cores and keywords.", file=sys.stderr)
                     return []
+                else:
+                    print(f"Keeping {len(indices_to_keep)} metrics, indices: {indices_to_keep}", file=sys.stderr)
                         
                 for row in reader:
                     if not row:
