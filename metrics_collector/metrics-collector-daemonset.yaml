@@ -10,7 +10,6 @@ spec:
     metadata:
       labels:
         app: metrics-collector
-        assigned-cores: "" # This will be overwritten by node affinity
     spec:
       containers:
       - name: collector
@@ -20,10 +19,11 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        # Directly set ASSIGNED_CORES based on node name
         - name: ASSIGNED_CORES
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.labels['assigned-cores']
+          value: "0-2"  # Default for minikube
+        - name: NODE_SELECTOR
+          value: "minikube"
         ports:
         - containerPort: 8000
         securityContext:
@@ -36,13 +36,42 @@ spec:
               - key: kubernetes.io/hostname
                 operator: In
                 values: ["minikube"]
-              - key: assigned-cores
-                operator: In
-                values: ["0-2"]
+      # For the second node (minikube-m02)
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: metrics-collector-m02
+spec:
+  selector:
+    matchLabels:
+      app: metrics-collector-m02
+  template:
+    metadata:
+      labels:
+        app: metrics-collector-m02
+    spec:
+      containers:
+      - name: collector
+        image: metrics-collector:core-aware
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ASSIGNED_CORES
+          value: "3-5"  # For minikube-m02
+        - name: NODE_SELECTOR
+          value: "minikube-m02"
+        ports:
+        - containerPort: 8000
+        securityContext:
+          privileged: true
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
             - matchExpressions:
               - key: kubernetes.io/hostname
                 operator: In
                 values: ["minikube-m02"]
-              - key: assigned-cores
-                operator: In
-                values: ["3-5"]
