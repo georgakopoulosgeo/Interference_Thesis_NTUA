@@ -41,7 +41,7 @@ STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization after warmup
 
 # Test matrix
-REPLICAS_TO_TEST = range(3, 6) 
+REPLICAS_TO_TEST = [2]  # Number of replicas to test
 RPS_STEPS = [1500]
 
 # Warmup configuration
@@ -76,7 +76,25 @@ INTERFERENCE_SCENARIOS = [
     {"id": 13, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
     {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
     {"id": 15, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    {"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    {"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    # Mixed Scenarios
+    {"id": 17, "name": "1_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 18, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 19, "name": "2_CPU_2_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "stress-ng-l3", "count": 2}
+    ]},
+    {"id": 20, "name": "1_CPU_1_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-membw", "count": 1}
+    ]}
 ]
 
 # Warmup interference scenarios
@@ -312,7 +330,7 @@ def run_nginx_testing():
     workload_csv = os.path.join(main_results_dir, "nginx_metrics.csv")
     with open(workload_csv, "w") as f:
         csv.DictWriter(f, fieldnames=[
-            "Test_ID", "Replicas", "Interference", "Given_RPS", "Throughput",
+            "Test_ID", "Replicas", "Interference_Name", "Interference_ID", "Given_RPS", "Throughput",
             "Avg_Latency", "P50_Latency", "P75_Latency", 
             "P90_Latency", "P99_Latency", "Max_Latency"
         ]).writeheader()
@@ -372,7 +390,7 @@ def run_nginx_testing():
                 print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
                 
                 
-                store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id)
+                store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
 
                 if scenario["type"]:
                     cleanup_interference(scenario)

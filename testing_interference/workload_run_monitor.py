@@ -101,7 +101,7 @@ def parse_workload_output(wrk_output_file: str) -> dict:
 
 
 
-def store_workload_metrics(csv_file: str, replicas: int, interference: str, workload_metrics: dict, given_rps: int, test_id: str) -> None:
+def store_workload_metrics(csv_file: str, replicas: int, interference: str, workload_metrics: dict, given_rps: int, test_id: str, interference_id: int) -> None:
     """
     Store the workload metrics in a CSV file.
     The CSV includes columns:
@@ -110,7 +110,8 @@ def store_workload_metrics(csv_file: str, replicas: int, interference: str, work
     header = [
         "Test_ID",
         "Replicas",
-        "Interference",
+        "Interference_Name",
+        "Interference_ID",
         "Given_RPS",
         "Throughput",
         "Avg_Latency",
@@ -128,7 +129,8 @@ def store_workload_metrics(csv_file: str, replicas: int, interference: str, work
         row = {
             "Test_ID": test_id,
             "Replicas": replicas,
-            "Interference": interference,
+            "Interference_Name": interference,
+            "Interference_ID": interference_id,
             "Given_RPS": given_rps,
             "Throughput": workload_metrics.get("throughput", ""),
             "Avg_Latency": workload_metrics.get("avg_latency", ""),
