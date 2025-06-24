@@ -12,6 +12,19 @@ class PCMReader:
     Invokes Intel PCM and parses hardware counters, filtering only
     the 'system' domain metrics with our desired keywords.
     """
+    def _parse_core_range(self, core_str: str) -> List[int]:
+        """Convert "0-2" into [0,1,2] with validation"""
+        if not core_str:
+            raise ValueError("ASSIGNED_CORES environment variable is empty")
+        
+        try:
+            if '-' in core_str:
+                start, end = map(int, core_str.split('-'))
+                return list(range(start, end+1))
+            return [int(core_str)]
+        except ValueError as e:
+            raise ValueError(f"Invalid core range format: {core_str}") from e
+
     def __init__(self, pcm_path: str = "/usr/local/bin/pcm"):
         self.pcm_path = pcm_path
         self.domain_filter = "core"
@@ -19,15 +32,12 @@ class PCMReader:
             "ipc", "l2miss", "l3miss", "read", "write",
             "c0res%", "c1res%", "c6res%"
         ]
-        self.assigned_cores = self._parse_core_range(os.getenv("ASSIGNED_CORES", "0-2"))
+        core_str = os.getenv("ASSIGNED_CORES")
+        if not core_str:
+            raise RuntimeError("ASSIGNED_CORES environment variable not set")
+        self.assigned_cores = self._parse_core_range(core_str)
         self.node_name = os.getenv("NODE_NAME", "unknown-node")
-    
-    def _parse_core_range(self, core_str: str) -> List[int]:
-        """Convert "0-2" into [0,1,2]"""
-        if '-' in core_str:
-            start, end = map(int, core_str.split('-'))
-            return list(range(start, end+1))
-        return [int(core_str)]
+
     
     def _filter_core_metrics(self, raw_metrics: dict) -> dict:
         """Keep only metrics for our assigned cores"""
@@ -55,7 +65,7 @@ class PCMReader:
             tmp_path = tmp.name
 
         try:
-            cmd = ["sudo", self.pcm_path, "2", "-csv=" + tmp_path]
+            cmd = [self.pcm_path, "2", "-csv=" + tmp_path]
             try:
                 subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except subprocess.TimeoutExpired:
