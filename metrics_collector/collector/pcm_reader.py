@@ -91,18 +91,23 @@ class PCMReader:
                     # Always include if the metric is "date" or "time"
                     if met_lower in ("date", "time"):
                         indices_to_keep.append(idx)
-                    elif "core" in dom_lower:
-                        tokens = dom_lower.replace("(", "").split()
-                        try:
-                            # Example: 'core7 socket 0' -> extract '7'
-                            core_token = next(t for t in tokens if t.startswith("core"))
-                            core_id_str = core_token.replace("core", "")
-                            core_id = int(core_id_str)
-                            if core_id in self.assigned_cores:
-                                if any(kw in met_lower for kw in self.desired_keywords):
-                                    indices_to_keep.append(idx)
-                        except (StopIteration, ValueError, IndexError):
-                            continue  # Could not extract core ID safely
+                    if self.domain_filter == "core":
+                        if "core" in dom_lower:
+                            tokens = dom_lower.replace("(", "").split()
+                            try:
+                                core_token = next(t for t in tokens if t.startswith("core"))
+                                core_id_str = core_token.replace("core", "")
+                                core_id = int(core_id_str)
+                                if core_id in self.assigned_cores:
+                                    if any(kw in met_lower for kw in self.desired_keywords):
+                                        indices_to_keep.append(idx)
+                            except (StopIteration, ValueError, IndexError):
+                                continue  # skip bad labels
+                    elif self.domain_filter == "system":
+                        is_system = "system" in dom_lower
+                        is_core_0_to_5 = "core" in dom_lower and any(f"core{n}" in dom_lower for n in range(6))
+                        if (is_system or is_core_0_to_5) and any(kw in met_lower for kw in self.desired_keywords):
+                            indices_to_keep.append(idx)
                 if not indices_to_keep:
                     print("⚠️ No matching metrics found for specified cores and keywords.", file=sys.stderr)
                     return []
@@ -146,15 +151,16 @@ class PCMReader:
                     else:
                         timestamp = time.time()
 
-                    row_dict.update({
-                        "timestamp": timestamp,
+                    final_dict = {
                         "System - Date": date_str,
                         "System - Time": time_str,
+                        "timestamp": timestamp,
+                        **row_dict,  # includes the actual metrics
                         "node_name": self.node_name,
                         "assigned_cores": ",".join(map(str, self.assigned_cores))
-                    })
+                    }
+                    metrics_series.append(final_dict)
 
-                    metrics_series.append(row_dict)
 
             print(f"Collected {len(metrics_series)} metric samples.", file=sys.stderr)
             return metrics_series

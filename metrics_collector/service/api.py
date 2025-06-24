@@ -11,7 +11,7 @@ app = FastAPI(title="Metrics Collector API")
 # - 20s collection duration
 # - 60s between samples
 # - 60s buffer retention
-sampler = Sampler(collection_duration_sec=20.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
+sampler = Sampler(collection_duration_sec=30.0, sampling_interval_sec=60.0,buffer_window_sec=60.0)
 sampler.start()  # Start the background thread
 
 def csv_streamer( buffer_data: Iterable[Tuple[float, Dict[str, Any]]]) -> Iterable[str]:
@@ -84,3 +84,8 @@ def debug_buffer():
         "window_sec": sampler.buffer.window_size,
         "samples": buffer_data,
     }
+
+@app.get("/health")
+def health_check():
+    """Simple health check endpoint."""
+    return {"status": "ok"}
