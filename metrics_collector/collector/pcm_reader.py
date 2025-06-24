@@ -27,15 +27,19 @@ class PCMReader:
 
     def __init__(self, pcm_path: str = "/usr/local/bin/pcm"):
         self.pcm_path = pcm_path
-        self.domain_filter = "core"
+        self.domain_filter = "system"
         self.desired_keywords = [
             "ipc", "l2miss", "l3miss", "read", "write",
             "c0res%", "c1res%", "c6res%"
         ]
-        core_str = os.getenv("ASSIGNED_CORES")
-        if not core_str:
-            raise RuntimeError("ASSIGNED_CORES environment variable not set")
-        self.assigned_cores = self._parse_core_range(core_str)
+        # Only parse cores if in core-filtering mode
+        if self.domain_filter == "core":
+            core_str = os.getenv("ASSIGNED_CORES")
+            if not core_str:
+                raise RuntimeError("ASSIGNED_CORES environment variable not set")
+            self.assigned_cores = self._parse_core_range(core_str)
+        else:
+            self.assigned_cores = []  # Not used in system mode
         self.node_name = os.getenv("NODE_NAME", "unknown-node")
 
     
