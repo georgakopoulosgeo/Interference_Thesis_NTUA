@@ -113,6 +113,9 @@ class PCMReader:
                     if not row:
                         continue
 
+                    if len(row) <= max(indices_to_keep):
+                        print(f"⚠️ Skipping row with only {len(row)} columns, expected at least {max(indices_to_keep)+1}", file=sys.stderr)
+                        continue
                     filtered_row = [row[i] for i in indices_to_keep]
                     row_dict = {}
                     date_str, time_str = None, None
