@@ -13,6 +13,9 @@ import threading
 # Which workload to test
 WORKLOAD = "nginx"  # Options: "nginx", "redis"
 
+# Folder Name
+FOLDER_NAME = "NEW_V06"  # Folder to store results
+
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
@@ -38,7 +41,7 @@ STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization after warmup
 
 # Test matrix
-REPLICAS_TO_TEST = range(1, 6) 
+REPLICAS_TO_TEST = range(3, 6) 
 RPS_STEPS = [1500]
 
 # Warmup configuration
@@ -277,7 +280,7 @@ def ensure_directories(script_dir):
     Returns the paths to the baseline results directory and the raw log folder.
     """
     # Main results directory
-    main_results_dir = os.path.join(script_dir, "NEW_V06")
+    main_results_dir = os.path.join(script_dir, FOLDER_NAME)
     os.makedirs(main_results_dir, exist_ok=True)
     
     # Create separate baseline directory
@@ -319,7 +322,7 @@ def run_nginx_testing():
 
     for replicas in REPLICAS_TO_TEST:
         subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
-        time.sleep(5) # Wait for scaling
+        time.sleep(20) # Wait for scaling
 
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
@@ -360,6 +363,7 @@ def run_nginx_testing():
                 #perf_thread.join()
                 #amduprof_thread.join()
                 intelpcm_thread.join()
+                time.sleep(1)  # Ensure all threads are done before proceeding
                 print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}", flush=True)
                 print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.", flush=True)
 
