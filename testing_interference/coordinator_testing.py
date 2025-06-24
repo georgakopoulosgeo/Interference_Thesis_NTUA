@@ -14,7 +14,7 @@ import threading
 WORKLOAD = "nginx"  # Options: "nginx", "redis"
 
 # Folder Name
-FOLDER_NAME = "NEW_V06"  # Folder to store results
+FOLDER_NAME = "Replica2_1500rps"  # Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"

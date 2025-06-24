@@ -11,40 +11,35 @@ spec:
       labels:
         app: metrics-collector
     spec:
-      hostPID: true
       containers:
       - name: collector
-        image: your-registry/metrics-collector:v1
-        securityContext:
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
+        image: metrics-collector:latest
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ASSIGNED_CORES
+          value: "0-2"  # Default, overridden by node affinity
         ports:
         - containerPort: 8000
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-        volumeMounts:
-        - name: dev-msr
-          mountPath: /dev/cpu/msr
-          readOnly: true
-      volumes:
-      - name: dev-msr
-        hostPath:
-          path: /dev/cpu/msr
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: metrics-collector
-spec:
-  selector:
-    app: metrics-collector
-  ports:
-    - protocol: TCP
-      port: 8000
-      targetPort: 8000
+        securityContext:
+          privileged: true              # needed for PCM access
+          capabilities:
+            add: ["SYS_ADMIN", "IPC_LOCK"]
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values: ["minikube"]  # Node1
+              - key: ASSIGNED_CORES
+                value: "0-2"
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values: ["minikube-m02"]  # Node2
+              - key: ASSIGNED_CORES
+                value: "3-5"

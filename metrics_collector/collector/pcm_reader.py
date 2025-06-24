@@ -2,8 +2,10 @@ import subprocess
 import csv
 import tempfile
 import os
+import re
 import sys
 import time
+from typing import List
 
 class PCMReader:
     """
@@ -17,6 +19,35 @@ class PCMReader:
             "ipc", "l2miss", "l3miss", "read", "write",
             "c0res%", "c1res%", "c6res%"
         ]
+        self.assigned_cores = self._parse_core_range(os.getenv("ASSIGNED_CORES", "0-2"))
+        self.node_name = os.getenv("NODE_NAME", "unknown-node")
+    
+    def _parse_core_range(self, core_str: str) -> List[int]:
+        """Convert "0-2" into [0,1,2]"""
+        if '-' in core_str:
+            start, end = map(int, core_str.split('-'))
+            return list(range(start, end+1))
+        return [int(core_str)]
+    
+    def _filter_core_metrics(self, raw_metrics: dict) -> dict:
+        """Keep only metrics for our assigned cores"""
+        filtered = {}
+        core_pattern = re.compile(r'core_(\d+)')
+        
+        for metric, value in raw_metrics.items():
+            match = core_pattern.search(metric)
+            if match:
+                core_num = int(match.group(1))
+                if core_num in self.assigned_cores:
+                    filtered[metric] = value
+            else:
+                # Keep non-core-specific metrics
+                filtered[metric] = value
+        
+        # Add node identification
+        filtered["node_name"] = self.node_name
+        filtered["assigned_cores"] = ','.join(map(str, self.assigned_cores))
+        return filtered
 
     def read_metrics(self, duration) -> list[dict]:
         """Returns a list of metric dictionaries (one per timestamp)."""
@@ -24,7 +55,7 @@ class PCMReader:
             tmp_path = tmp.name
 
         try:
-            cmd = [self.pcm_path, "2", "-csv=" + tmp_path]
+            cmd = ["sudo", self.pcm_path, "2", "-csv=" + tmp_path]
             try:
                 subprocess.run(cmd, timeout=duration, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except subprocess.TimeoutExpired:
@@ -89,7 +120,8 @@ class PCMReader:
                         })
 
             print(f"Collected {len(metrics_series)} metric samples.", file=sys.stderr)
-            return metrics_series
+            #return metrics_series
+            return [self._filter_core_metrics(m) for m in metrics_series]
 
         except Exception as e:
             print(f"⚠️ PCM Error: {e}", file=sys.stderr)
