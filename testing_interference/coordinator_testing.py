@@ -271,8 +271,8 @@ def run_memtier_test(raw_folder: str):
         with open(memtier_output_file, "w") as f:
             subprocess.run([
                 "memtier_benchmark",
-                f"--server={REDIS_SERVER}",  # You'll need to define REDIS_SERVER
-                f"--port={REDIS_PORT}",      # You'll need to define REDIS_PORT
+                f"--server={REDIS_SERVER}",  
+                f"--port={REDIS_PORT}",     
                 "--protocol=redis",
                 f"--clients={REDIS_CLIENTS}",
                 f"--threads={REDIS_THREADS}",
