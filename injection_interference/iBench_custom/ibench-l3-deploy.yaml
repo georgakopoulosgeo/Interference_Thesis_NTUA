@@ -18,7 +18,7 @@ spec:
       - name: ibench-l3
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./l3", "80"]  # stress L3 for 80s
+        command: ["./l3", "260"]  # stress L3 for 80s
         resources:
           requests:
             cpu: "1"
