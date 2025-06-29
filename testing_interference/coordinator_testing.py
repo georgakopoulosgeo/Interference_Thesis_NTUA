@@ -5,13 +5,14 @@ import datetime
 import argparse
 import subprocess
 import time
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from system_monitor_intepcm import pcm_monitoring
 from workload_run_monitor import store_workload_metrics, parse_workload_output, parse_memtier_output, store_redis_metrics, parse_vegeta_metrics, store_vegeta_metrics
 import threading
+import json
 
-# Which workload to test
-WORKLOAD = "nginx"  # Options: "nginx", "redis"
+# Which Traffic Workload to use
+GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
 FOLDER_NAME = "Chaos_V02"  # Folder to store results
@@ -21,7 +22,7 @@ NGINX_SERVICE_URL = "http://192.168.49.3:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 VEGETA_PATH = "vegeta"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-DURATION = "4m"  # Test duration per run
+DURATION = "1m"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
 NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
@@ -31,8 +32,6 @@ NGINX_METRICS_FIELDNAMES = [
     "Throughput", "Avg_Latency", "P50_Latency", "P75_Latency",
     "P90_Latency", "P95_Latency", "P99_Latency", "Max_Latency", "Errors"
 ]
-
-
 
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
@@ -116,15 +115,14 @@ def run_warmup(rps: int):
     """Run warmup workload without PCM monitoring"""
     print(f"Starting warmup at {rps} RPS equivalent...", flush=True)
     try:
-        if WORKLOAD == "nginx":
-            subprocess.run([
-                WRK_PATH,
-                f"-t{WARMUP_THREADS}",
-                f"-c{WARMUP_CONNECTIONS}",
-                f"-d{WARMUP_DURATION}",
-                f"-R{rps}",
-                NGINX_SERVICE_URL
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
+        subprocess.run([
+            WRK_PATH,
+            f"-t{WARMUP_THREADS}",
+            f"-c{WARMUP_CONNECTIONS}",
+            f"-d{WARMUP_DURATION}",
+            f"-R{rps}",
+            NGINX_SERVICE_URL
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
         print("Warmup completed", flush=True)
     except subprocess.CalledProcessError as e:
         print(f"Warmup failed: {e.stderr}", flush=True)
@@ -251,8 +249,6 @@ def cleanup_interference(scenario: Dict):
         for mix_scenario in scenario["mix"]:
             cleanup_interference(mix_scenario)
 
-# INTERFERENCE FUNCTIONS FOR CASE B
-
 
 # WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
 def deploy_nginx_workload():
@@ -312,11 +308,6 @@ def run_wrk_test(raw_folder: str, rps: int,):
             "Throughput", "Avg_Latency", "P50_Latency",
             "P75_Latency", "P90_Latency", "P99_Latency", "Max_Latency"
         ]}
-
-import subprocess
-import os
-import json
-from typing import Dict, Any
 
 def run_vegeta_test(raw_folder: str, rps: int) -> Dict[str, Any]:
     """Execute Vegeta test and return parsed metrics"""
@@ -410,7 +401,7 @@ def run_nginx_testing():
             time.sleep(STABILATION_TIME_NEW_REPLICAS)
             prev_replicas = replicas
         for rps in RPS_STEPS:
-            for scenario in INTERFERENCE_SCENARIOS_B:
+            for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
                 
@@ -455,27 +446,28 @@ def run_nginx_testing():
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...", flush=True)
                 intelpcm_thread.start()
                 time.sleep(1)
-                #wrk_output_file = run_wrk_test(raw_log_folder, rps)
-                vegeta_report = run_vegeta_test(raw_log_folder, rps)
+                if GENERATOR == "wrk":
+                    output_file = run_wrk_test(raw_log_folder, rps)
+                elif GENERATOR == "vegeta":
+                    output_file = run_vegeta_test(raw_log_folder, rps)
 
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
                 intelpcm_thread.join()
                 time.sleep(1)  # Ensure all threads are done before proceeding
-                #print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}", flush=True)
                 print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.", flush=True)
 
+                # Parse and store workload output
                 print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...", flush=True)
-                #workload_metrics = parse_workload_output(wrk_output_file)
-                vegeta_metrics = parse_vegeta_metrics(vegeta_report)
-                print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {vegeta_metrics}", flush=True)
-                
-                
-                #store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
-                store_vegeta_metrics(
-                    workload_csv, replicas, scenario["name"], vegeta_metrics, rps, test_id, scenario["id"]
-                )
+                if GENERATOR == "wrk":
+                    workload_metrics = parse_workload_output(output_file)
+                    print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
+                    store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
+                elif GENERATOR == "vegeta": 
+                    workload_metrics = parse_vegeta_metrics(output_file)
+                    print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
+                    store_vegeta_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
 
                 if scenario["type"]:
                     cleanup_interference(scenario)
