@@ -37,11 +37,12 @@ REDIS_DATA_SIZE = 32  # Data size in bytes
 REDIS_TEST_TIME = 60  # Test duration in seconds
 
 # PCM monitoring configuration
-SLEEP_BETWEEN_TESTS = 60  # Sleep time between tests to allow system to stabilize
-STABILATION_TIME_AFTER_DEPLOYMENT = 10  # Time to wait for system stabilization after deployment
-STABILATION_TIME_AFTER_INTERFERENCE = 10  # Time to wait for system stabilization after interference deployment
-STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
-STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization after warmup
+SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
+STABILATION_TIME_AFTER_DEPLOYMENT = 12      # Time to wait for system stabilization after deployment of workloads
+STABILATION_TIME_AFTER_INTERFERENCE = 10    # Time to wait for system stabilization after interference deployment
+STABILATION_TIME_MIX_SCENARIOS = 20         # Longer stabilization for mixed scenarios
+STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
+STABILATION_TIME_NEW_REPLICAS = 60          # Time to wait before tests for new replicas
 
 # Test matrix
 REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
@@ -100,7 +101,6 @@ INTERFERENCE_SCENARIOS_B = [
 ]
 
 ## WARMUP - IGNORE
-
 # Warmup configuration
 WARMUP_DURATION = "30s"
 WARMUP_RPS = 1500
@@ -154,21 +154,29 @@ def warmup_with_interference(interference_type: str, rps: int):
         time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
 
 # INTERFERENCE FUNCTIONS
-def create_interference(scenario: Dict, from_mix = False) -> bool:
+def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
     if scenario["type"] == "ibench-cpu":
         script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu.py")
         try:
             # Launch interference pods (60s total: 10s stabilization + 40s test + 10s buffer)
-            subprocess.run(
-                ["python3", script_path, str(scenario["count"]), "--nginx"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            
+            if not all_nodes:
+                subprocess.run(
+                    ["python3", script_path, str(scenario["count"]), "--nginx"],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+            else:
+                subprocess.run(
+                    ["python3", script_path, str(scenario["count"])],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
             # Wait for stabilization period (10s)
             if not from_mix:
                 print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
@@ -179,12 +187,21 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             print(f"Error creating interference: {e.stderr}", flush=True)
             return False
     elif scenario["type"] == "stress-ng-l3":
+        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py")
         try:
-            subprocess.run([
-                "python3",
-                os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_l3.py"),
-                str(scenario["count"])
-            ], check=True, capture_output=True)
+            if not all_nodes:
+                subprocess.run([
+                    "python3",
+                    script_path,
+                    str(scenario["count"]),
+                    "--nginx"
+                ], check=True, capture_output=True)
+            else:
+                subprocess.run([
+                    "python3",
+                    script_path,
+                    str(scenario["count"])
+                ], check=True, capture_output=True)
             if not from_mix:
                 print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
                 time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
@@ -193,12 +210,21 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}", flush=True)
             return False
     elif scenario["type"] == "ibench-membw":
+        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_membw.py")
         try:
-            subprocess.run([
-                "python3",
-                os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_membw.py"),
-                str(scenario["count"])
-            ], check=True, capture_output=True)
+            if not all_nodes:
+                subprocess.run([
+                    "python3",
+                    script_path,
+                    str(scenario["count"]),
+                    "--nginx"
+                ], check=True, capture_output=True)
+            else:
+                subprocess.run([
+                    "python3",
+                    script_path,
+                    str(scenario["count"])
+                ], check=True, capture_output=True)
             if not from_mix:
                 print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
                 time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
@@ -376,8 +402,11 @@ def run_nginx_testing():
 
     duration = int(DURATION[:-1])
     prev_interference_type = None
+    prev_replicas = 1
 
     for replicas in REPLICAS_TO_TEST:
+        if replicas != prev_replicas:
+            time.sleep()
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
@@ -442,14 +471,12 @@ def run_nginx_testing():
                 print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.", flush=True)
                 print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...", flush=True)
 
-                time.sleep(1)
+                time.sleep(SLEEP_BETWEEN_TESTS)
                 # Clear the raw log folder for the next test
                 for file in os.listdir(raw_log_folder):
                     file_path = os.path.join(raw_log_folder, file)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
-
-                time.sleep(SLEEP_BETWEEN_TESTS)
 
 def run_redis_testing():
     """Execute Redis benchmarking with different workload scenarios"""
