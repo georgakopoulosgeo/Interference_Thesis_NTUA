@@ -14,15 +14,17 @@ import threading
 WORKLOAD = "nginx"  # Options: "nginx", "redis"
 
 # Folder Name
-FOLDER_NAME = "Chaos_V01"  # Folder to store results
+FOLDER_NAME = "Chaos_V02"  # Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-DURATION = "240s"  # Test duration per run
+DURATION = "4m"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
+NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
+NGINX_DEPLOYMENT_NAME = "my-nginx"
 
 # Redis server configuration (for memtier_benchmark)
 REDIS_SERVER = "192.168.49.3"
@@ -36,6 +38,7 @@ REDIS_TEST_TIME = 60  # Test duration in seconds
 
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 60  # Sleep time between tests to allow system to stabilize
+STABILATION_TIME_AFTER_DEPLOYMENT = 10  # Time to wait for system stabilization after deployment
 STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization after warmup
@@ -44,13 +47,6 @@ STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization afte
 REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
 RPS_STEPS = [500, 1500]
 
-# Warmup configuration
-WARMUP_DURATION = "30s"
-WARMUP_RPS = 1500
-WARMUP_THREADS = 1
-WARMUP_CONNECTIONS = 200
-WARMUP_CLIENTS = 100
-
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
 
@@ -58,28 +54,35 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
-    {"id": 1, "name": "Baseline1", "type": None},
-    {"id": 2, "name": "Baseline2", "type": None},
+    #{"id": 1, "name": "Baseline1", "type": None},
+    #{"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    {"id": 5, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 5, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
     {"id": 6, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 7, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    {"id": 8, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    #{"id": 7, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    #{"id": 8, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    {"id": 9, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 9, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 10, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 11, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    #{"id": 11, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
     #{"id": 12, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    {"id": 13, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 15, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    #{"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    #{"id": 13, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2}
+    #{"id": 15, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    #{"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
 ]
 
-# Warmup interference scenarios
+## WARMUP - IGNORE
+
+# Warmup configuration
+WARMUP_DURATION = "30s"
+WARMUP_RPS = 1500
+WARMUP_THREADS = 1
+WARMUP_CONNECTIONS = 200
+WARMUP_CLIENTS = 100
 WARMUP_SCENARIOS = {
     "ibench-cpu": {"id": -1, "name": "WARMUP_CPU", "type": "ibench-cpu", "count": 1},
     "stress-ng-l3": {"id": -2, "name": "WARMUP_L3", "type": "stress-ng-l3", "count": 1},
@@ -126,13 +129,13 @@ def warmup_with_interference(interference_type: str, rps: int):
         cleanup_interference(WARMUP_SCENARIOS[interference_type])
         time.sleep(STABILATION_TIME)
 
-
+# INTERFERENCE FUNCTIONS
 def create_interference(scenario: Dict, from_mix = False) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
 
     if scenario["type"] == "ibench-cpu":
-        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu_v2.py")
+        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu.py")
         try:
             # Launch interference pods (60s total: 10s stabilization + 40s test + 10s buffer)
             subprocess.run(
@@ -212,8 +215,36 @@ def cleanup_interference(scenario: Dict):
         # Handle mixed scenarios
         for mix_scenario in scenario["mix"]:
             cleanup_interference(mix_scenario)
-    
-    
+
+# WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
+def deploy_nginx_workload():
+    """Deploy NGINX workload using kubectl"""
+    try:
+        subprocess.run(["kubectl", "apply", "-f", NGINX_DEPLOY_YAML], check=True)
+        print("[DEPLOYMENT] NGINX workload deployed successfully.", flush=True)
+
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to deploy NGINX workload: {e.stderr}", flush=True)   
+
+def scale_nginx_workload(replicas: int):
+    """Scale NGINX workload to a specific number of replicas"""
+    try:
+        subprocess.run(["kubectl", "scale", "deployment", NGINX_DEPLOYMENT_NAME, f"--replicas={replicas}"], check=True)
+        print(f"NGINX workload scaled to {replicas} replicas successfully.", flush=True)
+        time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT)  # Wait for stabilization
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to scale NGINX workload: {e.stderr}", flush=True)
+
+def delete_nginx_workload():
+    """Delete NGINX workload using kubectl"""
+    try:
+        subprocess.run(["kubectl", "delete", "deployment", NGINX_DEPLOYMENT_NAME], check=True)
+        print("NGINX workload deleted successfully.", flush=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to delete NGINX workload: {e.stderr}", flush=True)
+
+
+# WORKLOAD TESTING FUNCTIONS
 def run_wrk_test(raw_folder: str, rps: int,):
     """Execute wrk test and return parsed metrics"""
     wrk_output_file = os.path.join(raw_folder, f"wrk_output.txt")
@@ -273,7 +304,7 @@ def run_memtier_test(raw_folder: str):
             "P90_Latency", "P99_Latency", "P99.9_Latency"
         ]}
 
-
+# ENSURE DIRECTORIES FUNCTION
 def ensure_directories(script_dir):
     """
     Create necessary directories for storing results and raw logs.
@@ -293,12 +324,12 @@ def ensure_directories(script_dir):
     
     return main_results_dir, raw_log_folder
 
-
 """
 for replicas in REPLICAS_TO_TEST:                   # Outer loop
     for rps in RPS_STEPS:                           # Middle loop
         for scenario in INTERFERENCE_SCENARIOS:     # Inner loop
 """
+
 def run_nginx_testing():
     """Execute full NGINX benchmarking with RPS scaling"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -321,11 +352,17 @@ def run_nginx_testing():
     prev_interference_type = None
 
     for replicas in REPLICAS_TO_TEST:
-        subprocess.run(["kubectl", "scale", "deployment", "my-nginx", f"--replicas={replicas}"], check=True)
-        time.sleep(20) # Wait for scaling
-
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
+                # Generate unique test ID
+                test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
+
+                # Deploy NGINX workload and scale it
+                print(f"\n[Replicas={replicas}|RPS={rps}] Deploying NGINX workload...", flush=True)
+                deploy_nginx_workload()
+                scale_nginx_workload(replicas)
+
+                # Warmup phase / IGNORE
                 if scenario["type"] == None:
                     print(f"\n[Replicas={replicas}|RPS={rps}] Running warmup for baseline scenario ...", flush=True)
                     #run_warmup(rps)
@@ -335,14 +372,13 @@ def run_nginx_testing():
                     #warmup_with_interference(scenario["type"], rps)
                     #time.sleep(STABILATION_TIME_AFTER_WARMUP)
                 prev_interference_type = scenario["type"]
-                print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}", flush=True)
+
                 # Setup interference (will handle 10s stabilization internally)
+                print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}", flush=True)
                 if scenario["type"] and not create_interference(scenario):
                     # Here we have STABILATION_TIME sleep for the interference to stabilize
                     print(f"Skipping failed scenario {scenario['name']}", flush=True)
                     continue
-                # Generate unique test ID
-                test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
                 
                 # Start monitoring
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...", flush=True)
@@ -477,8 +513,6 @@ def run_redis_testing():
                     if os.path.isfile(file_path):
                         os.remove(file_path)
                 time.sleep(SLEEP_BETWEEN_TESTS)
-
-
 
 
 def main():
