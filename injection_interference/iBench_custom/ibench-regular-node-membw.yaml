@@ -12,6 +12,14 @@ spec:
       labels:
         app: ibench-membw
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nginx
+                operator: NotIn
+                values: ["true"]
       containers:
       - name: membw
         image: ibench:latest

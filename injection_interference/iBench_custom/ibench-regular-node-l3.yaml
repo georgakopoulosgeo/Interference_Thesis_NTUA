@@ -12,6 +12,14 @@ spec:
       labels:
         app: ibench-l3
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nginx
+                operator: NotIn
+                values: ["true"]  # Ensure this pod does not run on nginx nodes
       containers:
       - name: ibench-l3
         image: ibench:latest

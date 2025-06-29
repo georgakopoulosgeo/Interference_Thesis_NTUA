@@ -12,6 +12,14 @@ spec:
       labels:
         app: ibench-cpu
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nginx
+                operator: NotIn
+                values: ["true"]
       containers:
       - name: ibench
         image: ibench:latest
