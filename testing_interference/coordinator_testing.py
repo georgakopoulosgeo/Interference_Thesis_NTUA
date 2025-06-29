@@ -22,7 +22,7 @@ NGINX_SERVICE_URL = "http://192.168.49.3:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 VEGETA_PATH = "vegeta"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
-DURATION = "1m"  # Test duration per run
+DURATION = "4m"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
 NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
@@ -43,8 +43,8 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 60          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
-RPS_STEPS = [1500]
+REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000]
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -53,25 +53,51 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
-    #{"id": 1, "name": "Baseline1", "type": None},
-    #{"id": 2, "name": "Baseline2", "type": None},
+    {"id": 1, "name": "Baseline1", "type": None},
+    {"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    #{"id": 5, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 6, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 7, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    #{"id": 8, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    {"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    {"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    #{"id": 9, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 10, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 11, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    #{"id": 12, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    #{"id": 13, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2}
-    #{"id": 15, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    #{"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    {"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    {"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+    # Mixed Scenarios
+    {"id": 50, "name": "1_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 51, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 52, "name": "2_CPU_2_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "stress-ng-l3", "count": 2}
+    ]},
+    {"id": 53, "name": "1_CPU_2_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 54, "name": "3_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 3},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 55, "name": "2_L3_2_MemBW", "type": "mix", "mix": [
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 2}
+    ]}
 ]
 
 # Case B Scenarios
@@ -82,20 +108,20 @@ INTERFERENCE_SCENARIOS_B = [
     #{"id": 102, "name": "BaselineB2", "type": None},
     #{"id": 103, "name": "BaselineB3", "type": None},
     # iBench CPU Scenarios
-    #{"id": 104, "name": "1_iBench_CPU_pod_B", "type": "ibench-cpu", "count": 1},
-    {"id": 105, "name": "2_iBench_CPU_pods_B", "type": "ibench-cpu", "count": 2},
-    #{"id": 106, "name": "3_iBench_CPU_pods_B", "type": "ibench-cpu", "count": 3},
-    #{"id": 107, "name": "4_iBench_CPU_pods_B", "type": "ibench-cpu", "count": 4},
+    #{"id": 111, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 112, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 113, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    #{"id": 114, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    #{"id": 108, "name": "1_stress-ng_l3_pod_B", "type": "stress-ng-l3", "count": 1},
-    {"id": 109, "name": "2_stress-ng_l3_pods_B", "type": "stress-ng-l3", "count": 2},
-    #{"id": 110, "name": "3_stress-ng_l3_pods_B", "type": "stress-ng-l3", "count": 3},
-    #{"id": 111, "name": "4_stress-ng_l3_pods_B", "type": "stress-ng-l3", "count": 4},
+    #{"id": 121, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 122, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 123, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    #{"id": 124, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    #{"id": 112, "name": "1_iBench_memBW_pod_B", "type": "ibench-membw", "count": 1},
-    {"id": 113, "name": "2_iBench_memBW_pods_B", "type": "ibench-membw", "count": 2}
-    #{"id": 114, "name": "3_iBench_memBW_pods_B", "type": "ibench-membw", "count": 3},
-    #{"id": 115, "name": "4_iBench_memBW_pods_B", "type": "ibench-membw", "count": 4},
+    #{"id": 131, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 132, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    #{"id": 133, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    #{"id": 134, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
 def calculate_duration():
@@ -105,7 +131,7 @@ def calculate_duration():
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Each test runs for DURATION + stabilization times
-                total_duration += int(DURATION[:-1]) + STABILATION_TIME_AFTER_DEPLOYMENT + STABILATION_TIME_AFTER_DELETION + STABILATION_TIME_AFTER_INTERFERENCE + SLEEP_BETWEEN_TESTS
+                total_duration += int(DURATION[:-1])*60 + STABILATION_TIME_AFTER_DEPLOYMENT + STABILATION_TIME_AFTER_DELETION + STABILATION_TIME_AFTER_INTERFERENCE + SLEEP_BETWEEN_TESTS
     print(f"Total execution duration: {total_duration} seconds", flush=True)
     print(f"Total execution duration: {total_duration / 60} minutes", flush=True)
     print(f"Total execution duration: {total_duration / 3600} hours", flush=True)
