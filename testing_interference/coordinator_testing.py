@@ -39,6 +39,7 @@ REDIS_TEST_TIME = 60  # Test duration in seconds
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
 STABILATION_TIME_AFTER_DEPLOYMENT = 12      # Time to wait for system stabilization after deployment of workloads
+STABILATION_TIME_AFTER_DELETION = 10        # Time to wait for system stabilization after deletion of workloads
 STABILATION_TIME_AFTER_INTERFERENCE = 10    # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20         # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
@@ -46,7 +47,7 @@ STABILATION_TIME_NEW_REPLICAS = 60          # Time to wait before tests for new 
 
 # Test matrix
 REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
-RPS_STEPS = [500, 1500]
+RPS_STEPS = [1500]
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -406,11 +407,16 @@ def run_nginx_testing():
 
     for replicas in REPLICAS_TO_TEST:
         if replicas != prev_replicas:
-            time.sleep()
+            time.sleep(STABILATION_TIME_NEW_REPLICAS)
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
+                
+                # Delete NGINX workload if it exists
+                print(f"[Replicas={replicas}|RPS={rps}] Deleting existing NGINX workload if any...", flush=True)
+                delete_nginx_workload()
+                time.sleep(STABILATION_TIME_AFTER_DELETION)  # Wait for deletion to stabilize
 
                 # Deploy NGINX workload and scale it
                 print(f"\n[Replicas={replicas}|RPS={rps}] Deploying NGINX workload...", flush=True)
