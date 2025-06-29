@@ -98,6 +98,19 @@ INTERFERENCE_SCENARIOS_B = [
     #{"id": 115, "name": "4_iBench_memBW_pods_B", "type": "ibench-membw", "count": 4},
 ]
 
+def calculate_duration():
+    """Calculate the total duration of the execution"""
+    total_duration = 0
+    for replicas in REPLICAS_TO_TEST:
+        for rps in RPS_STEPS:
+            for scenario in INTERFERENCE_SCENARIOS:
+                # Each test runs for DURATION + stabilization times
+                total_duration += int(DURATION[:-1]) + STABILATION_TIME_AFTER_DEPLOYMENT + STABILATION_TIME_AFTER_DELETION + STABILATION_TIME_AFTER_INTERFERENCE
+    print(f"Total execution duration: {total_duration} seconds", flush=True)
+    print(f"Total execution duration: {total_duration / 60} minutes", flush=True)
+    print(f"Total execution duration: {total_duration / 3600} hours", flush=True)
+
+
 ## WARMUP - IGNORE
 # Warmup configuration
 WARMUP_DURATION = "30s"
@@ -380,6 +393,11 @@ for replicas in REPLICAS_TO_TEST:                   # Outer loop
 
 def run_nginx_testing():
     """Execute full NGINX benchmarking with RPS scaling"""
+
+    # Calculate Duration of the whole Execution
+    calculate_duration()
+
+    # Ensure directories are set up
     script_dir = os.path.dirname(os.path.abspath(__file__))
     main_results_dir, raw_log_folder = ensure_directories(script_dir)
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
