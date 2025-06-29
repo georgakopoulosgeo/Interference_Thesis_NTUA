@@ -119,6 +119,7 @@ def store_workload_metrics(csv_file: str, replicas: int, interference: str, work
         "P50_Latency",
         "P75_Latency",
         "P90_Latency",
+        "P95_Latency", 
         "P99_Latency",
         "Max_Latency",
         "Errors"
@@ -139,6 +140,7 @@ def store_workload_metrics(csv_file: str, replicas: int, interference: str, work
             "P50_Latency": workload_metrics.get("p50_latency", ""),
             "P75_Latency": workload_metrics.get("p75_latency", ""),
             "P90_Latency": workload_metrics.get("p90_latency", ""),
+            "P95_Latency": workload_metrics.get("p95_latency", ""),
             "P99_Latency": workload_metrics.get("p99_latency", ""),
             "Max_Latency": workload_metrics.get("max_latency", ""),
             "Errors": workload_metrics.get("errors", 0)
@@ -158,11 +160,11 @@ def parse_vegeta_metrics(report: dict) -> Dict[str, float]:
         "p50_latency": nanos_to_ms(report.get("latencies", {}).get("50th", 0)),
         "p75_latency": nanos_to_ms(report.get("latencies", {}).get("75th", 0)),
         "p90_latency": nanos_to_ms(report.get("latencies", {}).get("90th", 0)),
-        #"p95_latency": nanos_to_ms(report.get("latencies", {}).get("95th", 0)),
+        "p95_latency": nanos_to_ms(report.get("latencies", {}).get("95th", 0)),
         "p99_latency": nanos_to_ms(report.get("latencies", {}).get("99th", 0)),
         "max_latency": nanos_to_ms(report.get("latencies", {}).get("max", 0)),
         "min_latency": nanos_to_ms(report.get("latencies", {}).get("min", 0)),
-        "errors": (report.get("errors", {}).values())
+        "errors": len(report.get("errors", []))
 
     }
 

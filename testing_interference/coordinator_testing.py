@@ -29,18 +29,10 @@ NGINX_DEPLOYMENT_NAME = "my-nginx"
 NGINX_METRICS_FIELDNAMES = [
     "Test_ID", "Replicas", "Interference_Name", "Interference_ID", "Given_RPS",
     "Throughput", "Avg_Latency", "P50_Latency", "P75_Latency",
-    "P90_Latency", "P99_Latency", "Max_Latency", "Errors"
+    "P90_Latency", "P95_Latency", "P99_Latency", "Max_Latency", "Errors"
 ]
 
-# Redis server configuration (for memtier_benchmark)
-REDIS_SERVER = "192.168.49.3"
-REDIS_PORT = "31020"  
-MEMTIER_PATH = "/home/george/Workspace/Interference/workloads/memtier_benchmark/memtier_benchmark"
-REDIS_CLIENTS = 100
-REDIS_THREADS = 1
-REDIS_RATIO = "2:1"  # 50% read, 50% write
-REDIS_DATA_SIZE = 32  # Data size in bytes
-REDIS_TEST_TIME = 60  # Test duration in seconds
+
 
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
@@ -132,19 +124,6 @@ def run_warmup(rps: int):
                 f"-d{WARMUP_DURATION}",
                 f"-R{rps}",
                 NGINX_SERVICE_URL
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
-        else:  # redis
-            subprocess.run([
-                "memtier_benchmark",
-                f"--server={REDIS_SERVER}",
-                f"--port={REDIS_PORT}",
-                "--protocol=redis",
-                f"--clients={WARMUP_CLIENTS}",  # Should define this constant
-                f"--threads={WARMUP_THREADS}",
-                f"--ratio={REDIS_RATIO}",  # Should define this constant
-                f"--data-size={REDIS_DATA_SIZE}",  # Should define this constant
-                f"--test-time={WARMUP_DURATION[:-1]}",  # Remove 's' suffix if present
-                "--print-percentiles=50,90,99"
             ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
         print("Warmup completed", flush=True)
     except subprocess.CalledProcessError as e:
@@ -382,36 +361,6 @@ def run_vegeta_test(raw_folder: str, rps: int) -> Dict[str, Any]:
                 os.remove(f)
 
 
-
-def run_memtier_test(raw_folder: str):
-    """Execute memtier_benchmark test and return output file path"""
-    memtier_output_file = os.path.join(raw_folder, "memtier_output.txt")
-    
-    try:
-        # Run memtier_benchmark command
-        with open(memtier_output_file, "w") as f:
-            subprocess.run([
-                "memtier_benchmark",
-                f"--server={REDIS_SERVER}",  
-                f"--port={REDIS_PORT}",     
-                "--protocol=redis",
-                f"--clients={REDIS_CLIENTS}",
-                f"--threads={REDIS_THREADS}",
-                f"--ratio={REDIS_RATIO}",
-                f"--data-size={REDIS_DATA_SIZE}",
-                f"--test-time={REDIS_TEST_TIME}",
-                "--print-percentiles=50,90,99,99.9"
-            ], stdout=f, stderr=subprocess.PIPE, check=True, text=True)
-
-        return memtier_output_file
-
-    except subprocess.CalledProcessError as e:
-        print(f"memtier_benchmark test failed: {e.stderr}", flush=True)
-        return {k: 0.0 for k in [
-            "Throughput", "Avg_Latency", "P50_Latency",
-            "P90_Latency", "P99_Latency", "P99.9_Latency"
-        ]}
-
 # ENSURE DIRECTORIES FUNCTION
 def ensure_directories(script_dir):
     """
@@ -541,106 +490,6 @@ def run_nginx_testing():
                     if os.path.isfile(file_path):
                         os.remove(file_path)
 
-def run_redis_testing():
-    """Execute Redis benchmarking with different workload scenarios"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    main_results_dir, raw_log_folder = ensure_directories(script_dir)
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # Data Files
-    pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{timestamp}.csv")
-    
-    # Redis Workload Scenarios
-    REDIS_SCENARIOS = {
-        "read_heavy": {"ratio": "9:1", "pipeline": 10, "clients": 50},
-        "write_heavy": {"ratio": "1:9", "pipeline": 1, "clients": 30},
-        "mixed": {"ratio": "1:1", "pipeline": 5, "clients": 40},
-        "large_payload": {"ratio": "1:1", "data_size": 1024, "clients": 20}
-    }
-
-    # Initialize results file
-    workload_csv = os.path.join(main_results_dir, "redis_metrics.csv")
-    with open(workload_csv, "w") as f:
-        csv.DictWriter(f, fieldnames=[
-            "Test_ID", "Replicas", "Interference", "Scenario", "Throughput",
-            "Avg_Latency", "P50_Latency", "P90_Latency",
-            "P99_Latency", "P99.9_Latency", "Clients"
-        ]).writeheader()
-
-    duration = int(REDIS_TEST_TIME)
-    prev_interference_type = None
-
-    for replicas in REPLICAS_TO_TEST:
-        subprocess.run(["kubectl", "scale", "deployment", "my-redis", f"--replicas={replicas}"], check=True)
-        time.sleep(5)
-
-        for scenario in INTERFERENCE_SCENARIOS:
-            if scenario["type"] != prev_interference_type:
-                warmup_with_interference(scenario["type"])
-                time.sleep(STABILATION_TIME_AFTER_WARMUP)
-            prev_interference_type = scenario["type"]
-
-            for workload_name, workload_params in REDIS_SCENARIOS.items():
-                test_id = f"{replicas}replicas_scenario{scenario['id']}_{workload_name}"
-                
-                print(f"\n[Replicas={replicas}|Scenario={scenario['name']}|Workload={workload_name}] Starting test {test_id}")
-                # Start monitoring
-                pcm_system_csv = os.path.join(main_results_dir, f"pcm_system_{test_id}.csv")
-                pcm_core_csv = os.path.join(main_results_dir, f"pcm_core_{test_id}.csv")
-                intelpcm_thread = threading.Thread(
-                    target=pcm_monitoring,
-                    args=(duration+6, 5000, pcm_raw_file, pcm_system_csv, pcm_core_csv),
-                    daemon=True
-                )
-                intelpcm_thread.start()
-                time.sleep(1)
-
-                # Run workload
-                memtier_output = run_memtier_test(
-                    raw_log_folder,
-                    clients=workload_params["clients"],
-                    threads=2,
-                    ratio=workload_params.get("ratio", "1:1"),
-                    data_size=workload_params.get("data_size", 32),
-                    pipeline=workload_params.get("pipeline", 1),
-                    test_time=duration
-                )
-                intelpcm_thread.join()
-
-                # Process results
-                redis_metrics = parse_memtier_output(memtier_output)
-                store_redis_metrics(
-                    workload_csv,
-                    replicas,
-                    scenario["name"],
-                    workload_name,
-                    redis_metrics,
-                    workload_params["clients"],
-                    test_id
-                )
-
-                if scenario["type"]:
-                    cleanup_interference(scenario)
-
-                time.sleep(1)
-                # Clear the raw log folder for the next test
-                for file in os.listdir(raw_log_folder):
-                    file_path = os.path.join(raw_log_folder, file)
-                    if os.path.isfile(file_path):
-                        os.remove(file_path)
-                time.sleep(SLEEP_BETWEEN_TESTS)
-
-
-def main():
-    """Main entry point that routes to specific workload testing"""
-    if WORKLOAD == "nginx":
-        print("Starting NGINX benchmarking", flush=True)
-        run_nginx_testing()
-    elif WORKLOAD == "redis":
-        print("Starting Redis benchmarking")
-        run_redis_testing()
-    else:
-        raise ValueError(f"Unknown workload type: {WORKLOAD}")
 
 if __name__ == "__main__":
-    main()
+    run_nginx_testing()
