@@ -39,7 +39,7 @@ REDIS_TEST_TIME = 60  # Test duration in seconds
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 60  # Sleep time between tests to allow system to stabilize
 STABILATION_TIME_AFTER_DEPLOYMENT = 10  # Time to wait for system stabilization after deployment
-STABILATION_TIME = 10  # Time to wait for system stabilization after interference deployment
+STABILATION_TIME_AFTER_INTERFERENCE = 10  # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20  # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10  # Time to wait for system stabilization after warmup
 
@@ -73,6 +73,30 @@ INTERFERENCE_SCENARIOS = [
     {"id": 14, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2}
     #{"id": 15, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
     #{"id": 16, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
+]
+
+# Case B Scenarios
+INTERFERENCE_SCENARIOS_B = [
+    # Baseline Scenarios
+    {"id": 100, "name": "BaselineB0", "type": None},
+    #{"id": 101, "name": "BaselineB1", "type": None},
+    #{"id": 102, "name": "BaselineB2", "type": None},
+    #{"id": 103, "name": "BaselineB3", "type": None},
+    # iBench CPU Scenarios
+    #{"id": 104, "name": "1_iBench_CPU_pod_B", "type": "ibench-cpu", "count": 1},
+    {"id": 105, "name": "2_iBench_CPU_pods_B", "type": "ibench-cpu", "count": 2},
+    #{"id": 106, "name": "3_iBench_CPU_pods_B", "type": "ibench-cpu", "count": 3},
+    #{"id": 107, "name": "4_iBench_CPU_pods_B", "type": "ibench-cpu", "count": 4},
+    # Stress-ng L3 Scenarios
+    #{"id": 108, "name": "1_stress-ng_l3_pod_B", "type": "stress-ng-l3", "count": 1},
+    {"id": 109, "name": "2_stress-ng_l3_pods_B", "type": "stress-ng-l3", "count": 2},
+    #{"id": 110, "name": "3_stress-ng_l3_pods_B", "type": "stress-ng-l3", "count": 3},
+    #{"id": 111, "name": "4_stress-ng_l3_pods_B", "type": "stress-ng-l3", "count": 4},
+    # iBench MemBW Scenarios
+    #{"id": 112, "name": "1_iBench_memBW_pod_B", "type": "ibench-membw", "count": 1},
+    {"id": 113, "name": "2_iBench_memBW_pods_B", "type": "ibench-membw", "count": 2}
+    #{"id": 114, "name": "3_iBench_memBW_pods_B", "type": "ibench-membw", "count": 3},
+    #{"id": 115, "name": "4_iBench_memBW_pods_B", "type": "ibench-membw", "count": 4},
 ]
 
 ## WARMUP - IGNORE
@@ -127,13 +151,12 @@ def warmup_with_interference(interference_type: str, rps: int):
         warmup_rps = rps
         run_warmup(warmup_rps)
         cleanup_interference(WARMUP_SCENARIOS[interference_type])
-        time.sleep(STABILATION_TIME)
+        time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
 
 # INTERFERENCE FUNCTIONS
 def create_interference(scenario: Dict, from_mix = False) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
-
     if scenario["type"] == "ibench-cpu":
         script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_cpu.py")
         try:
@@ -149,7 +172,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             # Wait for stabilization period (10s)
             if not from_mix:
                 print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
-                time.sleep(STABILATION_TIME)
+                time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
             return True
             
         except subprocess.CalledProcessError as e:
@@ -164,7 +187,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             ], check=True, capture_output=True)
             if not from_mix:
                 print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
-                time.sleep(STABILATION_TIME)  # Wait for stabilization
+                time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
             return True
         except subprocess.CalledProcessError as e:
             print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}", flush=True)
@@ -178,7 +201,7 @@ def create_interference(scenario: Dict, from_mix = False) -> bool:
             ], check=True, capture_output=True)
             if not from_mix:
                 print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
-                time.sleep(STABILATION_TIME)  # Wait for stabilization
+                time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
             return True
         except subprocess.CalledProcessError as e:
             print(f"ibench-membw deployment failed: {e.stderr.decode()}", flush=True)
@@ -215,6 +238,9 @@ def cleanup_interference(scenario: Dict):
         # Handle mixed scenarios
         for mix_scenario in scenario["mix"]:
             cleanup_interference(mix_scenario)
+
+# INTERFERENCE FUNCTIONS FOR CASE B
+
 
 # WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
 def deploy_nginx_workload():

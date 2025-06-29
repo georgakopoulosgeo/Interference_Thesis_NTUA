@@ -21,8 +21,8 @@ spec:
         command: ["./l3", "260"]  # stress L3 for 80s
         resources:
           requests:
-            cpu: "1"
-            memory: "256Mi"
+            cpu: "500m"
+            memory: "512Mi"
           limits:
-            cpu: "1"
+            cpu: "500m"
             memory: "512Mi"  # Adjust memory limits as needed
