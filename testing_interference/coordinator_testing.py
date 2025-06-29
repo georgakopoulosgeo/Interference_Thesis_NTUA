@@ -26,6 +26,11 @@ THREADS = 1
 CONCURRENT_CONNS = 200
 NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
 NGINX_DEPLOYMENT_NAME = "my-nginx"
+NGINX_METRICS_FIELDNAMES = [
+    "Test_ID", "Replicas", "Interference_Name", "Interference_ID", "Given_RPS",
+    "Throughput", "Avg_Latency", "P50_Latency", "P75_Latency",
+    "P90_Latency", "P99_Latency", "Max_Latency", "Errors"
+]
 
 # Redis server configuration (for memtier_benchmark)
 REDIS_SERVER = "192.168.49.3"
@@ -339,11 +344,15 @@ def run_vegeta_test(raw_folder: str, rps: int) -> Dict[str, Any]:
     targets_path = os.path.join(raw_folder, "vegeta_targets.txt")
     results_path = os.path.join(raw_folder, "vegeta_results.bin")
     report_path = os.path.join(raw_folder, "vegeta_report.json")
+    post_body_path = os.path.join(raw_folder, "post_body.json")
     
     try:
         # Write target
         with open(targets_path, "w") as f:
             f.write(f"GET {NGINX_SERVICE_URL}")
+            f.write(f"POST {NGINX_SERVICE_URL}\n")
+            f.write(f"@{post_body_path}\n")
+            f.write("Content-Type: application/json\n")
 
         # Run vegeta attack
         subprocess.run([
@@ -444,11 +453,7 @@ def run_nginx_testing():
     # Initialize results file
     workload_csv = os.path.join(main_results_dir, "nginx_metrics.csv")
     with open(workload_csv, "w") as f:
-        csv.DictWriter(f, fieldnames=[
-            "Test_ID", "Replicas", "Interference_Name", "Interference_ID", "Given_RPS", "Throughput",
-            "Avg_Latency", "P50_Latency", "P75_Latency", 
-            "P90_Latency", "P99_Latency", "Max_Latency"
-        ]).writeheader()
+        csv.DictWriter(f, fieldnames=NGINX_METRICS_FIELDNAMES).writeheader()
 
     duration = int(DURATION[:-1])
     prev_interference_type = None
