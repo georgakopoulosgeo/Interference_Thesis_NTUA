@@ -35,7 +35,7 @@ NGINX_METRICS_FIELDNAMES = [
 
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
-STABILATION_TIME_AFTER_DEPLOYMENT = 12      # Time to wait for system stabilization after deployment of workloads
+STABILATION_TIME_AFTER_DEPLOYMENT = 5      # Time to wait for system stabilization after deployment of workloads
 STABILATION_TIME_AFTER_DELETION = 10        # Time to wait for system stabilization after deletion of workloads
 STABILATION_TIME_AFTER_INTERFERENCE = 10    # Time to wait for system stabilization after interference deployment
 STABILATION_TIME_MIX_SCENARIOS = 20         # Longer stabilization for mixed scenarios
@@ -105,7 +105,7 @@ def calculate_duration():
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Each test runs for DURATION + stabilization times
-                total_duration += int(DURATION[:-1]) + STABILATION_TIME_AFTER_DEPLOYMENT + STABILATION_TIME_AFTER_DELETION + STABILATION_TIME_AFTER_INTERFERENCE
+                total_duration += int(DURATION[:-1]) + STABILATION_TIME_AFTER_DEPLOYMENT + STABILATION_TIME_AFTER_DELETION + STABILATION_TIME_AFTER_INTERFERENCE + SLEEP_BETWEEN_TESTS
     print(f"Total execution duration: {total_duration} seconds", flush=True)
     print(f"Total execution duration: {total_duration / 60} minutes", flush=True)
     print(f"Total execution duration: {total_duration / 3600} hours", flush=True)
@@ -278,7 +278,6 @@ def scale_nginx_workload(replicas: int):
     try:
         subprocess.run(["kubectl", "scale", "deployment", NGINX_DEPLOYMENT_NAME, f"--replicas={replicas}"], check=True)
         print(f"NGINX workload scaled to {replicas} replicas successfully.", flush=True)
-        #time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT)  # Wait for stabilization
     except subprocess.CalledProcessError as e:
         print(f"Failed to scale NGINX workload: {e.stderr}", flush=True)
 
@@ -432,6 +431,7 @@ def run_nginx_testing():
                 print(f"\n[Replicas={replicas}|RPS={rps}] Deploying NGINX workload...", flush=True)
                 deploy_nginx_workload()
                 scale_nginx_workload(replicas)
+                time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT) 
 
                 # Warmup phase / IGNORE
                 if scenario["type"] == None:
