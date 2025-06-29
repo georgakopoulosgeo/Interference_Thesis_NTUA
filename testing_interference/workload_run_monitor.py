@@ -4,6 +4,7 @@ import csv
 import os
 import re
 import time
+from typing import Dict, Any
 
 def run_workload(script: str, threads: int, connections: int, duration: int, reqs_per_sec: int, wrk2_script_path: str) -> str:
     """
@@ -141,6 +142,43 @@ def store_workload_metrics(csv_file: str, replicas: int, interference: str, work
             "Max_Latency": workload_metrics.get("max_latency", "")
         }
         writer.writerow(row)
+
+
+################ VEGETA METRICS PARSING AND STORAGE ################
+def parse_vegeta_metrics(report: dict) -> Dict[str, float]:
+    """Parse Vegeta JSON report and extract key latency metrics"""
+    def nanos_to_ms(ns):
+        return round(ns / 1_000_000, 3)
+
+    return {
+        "throughput": report.get("throughput", 0.0),  # req/s
+        "avg_latency": nanos_to_ms(report.get("latencies", {}).get("mean", 0)),
+        "p50_latency": nanos_to_ms(report.get("latencies", {}).get("50th", 0)),
+        "p75_latency": nanos_to_ms(report.get("latencies", {}).get("75th", 0)),
+        "p90_latency": nanos_to_ms(report.get("latencies", {}).get("90th", 0)),
+        "p99_latency": nanos_to_ms(report.get("latencies", {}).get("99th", 0)),
+        "max_latency": nanos_to_ms(report.get("latencies", {}).get("max", 0)),
+    }
+
+def store_vegeta_metrics(
+    csv_file: str,
+    replicas: int,
+    interference: str,
+    vegeta_metrics: dict,
+    given_rps: int,
+    test_id: str,
+    interference_id: int
+) -> None:
+    """Store Vegeta metrics in the CSV format expected by the benchmark framework"""
+    store_workload_metrics(
+        csv_file,
+        replicas,
+        interference,
+        vegeta_metrics,
+        given_rps,
+        test_id,
+        interference_id
+    )
 
 
 ################ REDIS METRICS PARSING AND STORAGE ################

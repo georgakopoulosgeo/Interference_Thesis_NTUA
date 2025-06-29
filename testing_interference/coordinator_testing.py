@@ -7,7 +7,7 @@ import subprocess
 import time
 from typing import List, Dict, Optional
 from system_monitor_intepcm import pcm_monitoring
-from workload_run_monitor import store_workload_metrics, parse_workload_output, parse_memtier_output, store_redis_metrics
+from workload_run_monitor import store_workload_metrics, parse_workload_output, parse_memtier_output, store_redis_metrics, parse_vegeta_metrics, store_vegeta_metrics
 import threading
 
 # Which workload to test
@@ -19,6 +19,7 @@ FOLDER_NAME = "Chaos_V02"  # Folder to store results
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
+VEGETA_PATH = "vegeta"
 NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
 DURATION = "4m"  # Test duration per run
 THREADS = 1
@@ -188,7 +189,7 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> 
             print(f"Error creating interference: {e.stderr}", flush=True)
             return False
     elif scenario["type"] == "stress-ng-l3":
-        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_stressng_l3.py")
+        script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_l3.py")
         try:
             if not all_nodes:
                 subprocess.run([
@@ -284,7 +285,7 @@ def scale_nginx_workload(replicas: int):
     try:
         subprocess.run(["kubectl", "scale", "deployment", NGINX_DEPLOYMENT_NAME, f"--replicas={replicas}"], check=True)
         print(f"NGINX workload scaled to {replicas} replicas successfully.", flush=True)
-        time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT)  # Wait for stabilization
+        #time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT)  # Wait for stabilization
     except subprocess.CalledProcessError as e:
         print(f"Failed to scale NGINX workload: {e.stderr}", flush=True)
 
@@ -327,6 +328,54 @@ def run_wrk_test(raw_folder: str, rps: int,):
             "Throughput", "Avg_Latency", "P50_Latency",
             "P75_Latency", "P90_Latency", "P99_Latency", "Max_Latency"
         ]}
+
+import subprocess
+import os
+import json
+from typing import Dict, Any
+
+def run_vegeta_test(raw_folder: str, rps: int) -> Dict[str, Any]:
+    """Execute Vegeta test and return parsed metrics"""
+    targets_path = os.path.join(raw_folder, "vegeta_targets.txt")
+    results_path = os.path.join(raw_folder, "vegeta_results.bin")
+    report_path = os.path.join(raw_folder, "vegeta_report.json")
+    
+    try:
+        # Write target
+        with open(targets_path, "w") as f:
+            f.write(f"GET {NGINX_SERVICE_URL}")
+
+        # Run vegeta attack
+        subprocess.run([
+            VEGETA_PATH, "attack",
+            "-rate", str(rps),
+            "-duration", DURATION,
+            "-targets", targets_path,
+            "-output", results_path
+        ], check=True)
+
+        # Run vegeta report
+        with open(report_path, "w") as f:
+            subprocess.run([
+                VEGETA_PATH, "report",
+                "-type=json",
+                results_path
+            ], stdout=f, check=True)
+
+        # Load report
+        with open(report_path) as f:
+            return json.load(f)
+
+    except subprocess.CalledProcessError as e:
+        print(f"vegeta test failed: {e}", flush=True)
+        return {}
+
+    finally:
+        for f in [targets_path, results_path, report_path]:
+            if os.path.exists(f):
+                os.remove(f)
+
+
 
 def run_memtier_test(raw_folder: str):
     """Execute memtier_benchmark test and return output file path"""
@@ -408,6 +457,7 @@ def run_nginx_testing():
     for replicas in REPLICAS_TO_TEST:
         if replicas != prev_replicas:
             time.sleep(STABILATION_TIME_NEW_REPLICAS)
+            prev_replicas = replicas
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
@@ -454,22 +504,27 @@ def run_nginx_testing():
                 print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...", flush=True)
                 intelpcm_thread.start()
                 time.sleep(1)
-                wrk_output_file = run_wrk_test(raw_log_folder, rps)
+                #wrk_output_file = run_wrk_test(raw_log_folder, rps)
+                vegeta_report = run_vegeta_test(raw_log_folder, rps)
 
                 # Wait for monitoring threads to finish
                 #perf_thread.join()
                 #amduprof_thread.join()
                 intelpcm_thread.join()
                 time.sleep(1)  # Ensure all threads are done before proceeding
-                print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}", flush=True)
+                #print(f"[Replicas={replicas}|RPS={rps}] Workload traffic completed. File: {wrk_output_file}", flush=True)
                 print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.", flush=True)
 
                 print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...", flush=True)
-                workload_metrics = parse_workload_output(wrk_output_file)
-                print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
+                #workload_metrics = parse_workload_output(wrk_output_file)
+                vegeta_metrics = parse_vegeta_metrics(vegeta_report)
+                print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {vegeta_metrics}", flush=True)
                 
                 
-                store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
+                #store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
+                store_vegeta_metrics(
+                    workload_csv, replicas, scenario["name"], vegeta_metrics, rps, test_id, scenario["id"]
+                )
 
                 if scenario["type"]:
                     cleanup_interference(scenario)
