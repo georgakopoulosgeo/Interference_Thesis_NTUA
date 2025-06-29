@@ -350,9 +350,6 @@ def run_vegeta_test(raw_folder: str, rps: int) -> Dict[str, Any]:
         # Write target
         with open(targets_path, "w") as f:
             f.write(f"GET {NGINX_SERVICE_URL}")
-            f.write(f"POST {NGINX_SERVICE_URL}\n")
-            f.write(f"@{post_body_path}\n")
-            f.write("Content-Type: application/json\n")
 
         # Run vegeta attack
         subprocess.run([
@@ -464,7 +461,7 @@ def run_nginx_testing():
             time.sleep(STABILATION_TIME_NEW_REPLICAS)
             prev_replicas = replicas
         for rps in RPS_STEPS:
-            for scenario in INTERFERENCE_SCENARIOS:
+            for scenario in INTERFERENCE_SCENARIOS_B:
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
                 
