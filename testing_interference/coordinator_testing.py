@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "Vegeta_PCM_Testing"  # Folder to store results
+FOLDER_NAME = "Replicas_vs_RPS"  # Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -34,17 +34,18 @@ NGINX_METRICS_FIELDNAMES = [
 ]
 
 # PCM monitoring configuration
-SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
-STABILATION_TIME_AFTER_DEPLOYMENT = 5      # Time to wait for system stabilization after deployment of workloads
-STABILATION_TIME_AFTER_DELETION = 10        # Time to wait for system stabilization after deletion of workloads
-STABILATION_TIME_AFTER_INTERFERENCE = 10    # Time to wait for system stabilization after interference deployment
-STABILATION_TIME_MIX_SCENARIOS = 20         # Longer stabilization for mixed scenarios
+STABILATION_TIME_AFTER_DELETION = 10       # Time to wait for system stabilization after deletion of workloads
+STABILATION_TIME_AFTER_DEPLOYMENT = 6      # Time to wait for system stabilization after deployment of workloads
+STABILATION_TIME_AFTER_INTERFERENCE = 8    # Time to wait for system stabilization after interference deployment
+SLEEP_BETWEEN_TESTS = 24                   # Sleep time between tests to allow system to stabilize
+
+STABILATION_TIME_MIX_SCENARIOS = 10         # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
-STABILATION_TIME_NEW_REPLICAS = 60          # Time to wait before tests for new replicas
+STABILATION_TIME_NEW_REPLICAS = 20          # Time to wait before tests for new replicas
 
 # Test matrix
 REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
-RPS_STEPS = [500, 1000, 2000, 3000, 4000, 5000]  # RPS steps to test
+RPS_STEPS = [200, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -53,25 +54,25 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
-    {"id": 1, "name": "Baseline1", "type": None},
-    {"id": 2, "name": "Baseline2", "type": None},
+    #{"id": 1, "name": "Baseline1", "type": None},
+    #{"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    {"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    #{"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    #{"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    #{"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    #{"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    {"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    #{"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    #{"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    #{"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
 # Case B Scenarios
@@ -173,11 +174,7 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> 
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True
-                )
-            # Wait for stabilization period (10s)
-            if not from_mix:
-                print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
-                time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
+                )                
             return True
             
         except subprocess.CalledProcessError as e:
@@ -199,9 +196,6 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> 
                     script_path,
                     str(scenario["count"])
                 ], check=True, capture_output=True)
-            if not from_mix:
-                print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
-                time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
             return True
         except subprocess.CalledProcessError as e:
             print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}", flush=True)
@@ -222,9 +216,6 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> 
                     script_path,
                     str(scenario["count"])
                 ], check=True, capture_output=True)
-            if not from_mix:
-                print("[Interference Creator] Waiting 10 seconds for system stabilization...", flush=True)
-                time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
             return True
         except subprocess.CalledProcessError as e:
             print(f"ibench-membw deployment failed: {e.stderr.decode()}", flush=True)
@@ -235,8 +226,6 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> 
             if not create_interference(mix_scenario, True):
                 print(f"Failed to create interference for {mix_scenario['name']}", flush=True)
                 return False
-        print("[Interference Creator] Waiting 20 seconds for mixed scenario stabilization...", flush=True)
-        time.sleep(STABILATION_TIME_MIX_SCENARIOS)
         print(f"Mixed scenario {scenario['name']} created successfully.", flush=True)
     return True
 
@@ -386,8 +375,14 @@ def ensure_directories(script_dir):
 
 """
 for replicas in REPLICAS_TO_TEST:                   # Outer loop
+    time.sleep(STABILATION_TIME_NEW_REPLICAS)                           # Wait for new replicas to stabilize
     for rps in RPS_STEPS:                           # Middle loop
         for scenario in INTERFERENCE_SCENARIOS:     # Inner loop
+            time.sleep(STABILATION_TIME_AFTER_DELETION)                 # Wait for deletion to stabilize         
+            time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT)               # Wait for deployment to stabilize
+            time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)             # Wait for interference to stabilize
+            workload duration                                           # Duration of the workload test
+            time.sleep(SLEEPBETWEEN_TESTS)                              # Sleep between tests
 """
 
 def run_nginx_testing():
@@ -451,7 +446,12 @@ def run_nginx_testing():
                     # Here we have STABILATION_TIME sleep for the interference to stabilize
                     print(f"Skipping failed scenario {scenario['name']}", flush=True)
                     continue
-                
+                print(f"[Replicas={replicas}|RPS={rps}] Interference {scenario['name']} created successfully.", flush=True)
+                if scenario["type"] == "mix":
+                    time.sleep(STABILATION_TIME_MIX_SCENARIOS)  # Longer stabilization for mixed scenarios
+                else:
+                    time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
+
                 # Start monitoring
                 print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...", flush=True)
                 pcm_system_csv = os.path.join(main_results_dir, f"pcm_system_{test_id}.csv")
