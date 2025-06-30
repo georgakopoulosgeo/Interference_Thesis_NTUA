@@ -1,0 +1,2 @@
+System - Date,System - Time,System - IPC,System - L3MISS,System - L2MISS,System - READ,System - WRITE,System - PhysIPC,System - PhysIPC%,System Core C-States - C0res%,System Core C-States - C1res%,System Core C-States - C6res%,System Pack C-States - C0res%,System Pack C-States - C6res%
+2025-06-30,10:37:59.591,2.80,0.61,3.65,8.30,9.50,5.60,112.06,3.26,91.07,0.00,100.00,0.00
