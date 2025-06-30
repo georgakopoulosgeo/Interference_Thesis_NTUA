@@ -2,8 +2,8 @@ import subprocess
 import os
 
 # User-defined variables
-name_of_local_folder = "Test"
-name_of_server_folder = "NewTesting"
+name_of_local_folder = "Replicas_vs_RPS"
+name_of_server_folder = "Replicas_vs_RPS"
 
 # Remote and local paths
 remote_user = "george@147.102.13.77"

@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "Replicas_vs_RPS"  # Folder to store results
+FOLDER_NAME = "Memento_V01"  # Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -34,18 +34,18 @@ NGINX_METRICS_FIELDNAMES = [
 ]
 
 # PCM monitoring configuration
-STABILATION_TIME_AFTER_DELETION = 10       # Time to wait for system stabilization after deletion of workloads
+STABILATION_TIME_AFTER_DELETION = 10        # Time to wait for system stabilization after deletion of workloads
 STABILATION_TIME_AFTER_DEPLOYMENT = 10      # Time to wait for system stabilization after deployment of workloads
-STABILATION_TIME_AFTER_INTERFERENCE = 8    # Time to wait for system stabilization of interference pods
-SLEEP_BETWEEN_TESTS = 25                  # Sleep time between tests to allow system to stabilize
+STABILATION_TIME_AFTER_INTERFERENCE = 10     # Time to wait for system stabilization of interference pods
+SLEEP_BETWEEN_TESTS = 35                    # Sleep time between tests to allow system to stabilize
 
 STABILATION_TIME_MIX_SCENARIOS = 12         # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
 STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2, 3, 4, 5]  # Number of replicas to test
-RPS_STEPS = [100, 500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 15000]  # RPS steps to test
+REPLICAS_TO_TEST = [1]  # Number of replicas to test
+RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -53,26 +53,26 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
-    {"id": 0, "name": "Baseline0", "type": None}
-    #{"id": 1, "name": "Baseline1", "type": None},
-    #{"id": 2, "name": "Baseline2", "type": None},
+    {"id": 0, "name": "Baseline0", "type": None},
+    {"id": 1, "name": "Baseline1", "type": None},
+    {"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    #{"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    #{"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    #{"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    {"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    {"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    #{"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    #{"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    #{"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    #{"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    #{"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    #{"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    {"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    {"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
 # Case B Scenarios
@@ -417,11 +417,6 @@ def run_nginx_testing():
             for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
-                
-                # Delete NGINX workload if it exists
-                print(f"[Replicas={replicas}|RPS={rps}] Deleting existing NGINX workload if any...", flush=True)
-                delete_nginx_workload()
-                time.sleep(STABILATION_TIME_AFTER_DELETION)  # Wait for deletion to stabilize
 
                 # Deploy NGINX workload and scale it
                 print(f"\n[Replicas={replicas}|RPS={rps}] Deploying NGINX workload...", flush=True)
@@ -493,6 +488,11 @@ def run_nginx_testing():
 
                 print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.", flush=True)
                 print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...", flush=True)
+
+                # Delete NGINX workload if it exists
+                print(f"[Replicas={replicas}|RPS={rps}] Deleting existing NGINX workload if any...", flush=True)
+                delete_nginx_workload()
+                #time.sleep(STABILATION_TIME_AFTER_DELETION)  # Wait for deletion to stabilize
 
                 time.sleep(SLEEP_BETWEEN_TESTS)
                 # Clear the raw log folder for the next test
