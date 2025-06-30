@@ -1,19 +1,19 @@
 import math
 
 DURATION = "3m"  # Test duration per run
-REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
-RPS_STEPS = [500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]  # RPS steps to test
-INTERFERENCE_SCENARIOS = [1]  # Interference scenarios to test
+REPLICAS_TO_TEST = [1, 2, 3, 4, 5]  # Number of replicas to test
+RPS_STEPS = [200, 600, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]  # RPS steps to test
+INTERFERENCE_SCENARIOS = range(1, 2)
 
 # PCM monitoring configuration
 STABILATION_TIME_AFTER_DELETION = 10       # Time to wait for system stabilization after deletion of workloads
-STABILATION_TIME_AFTER_DEPLOYMENT = 6      # Time to wait for system stabilization after deployment of workloads
-STABILATION_TIME_AFTER_INTERFERENCE = 8    # Time to wait for system stabilization after interference deployment
-SLEEP_BETWEEN_TESTS = 24                   # Sleep time between tests to allow system to stabilize
+STABILATION_TIME_AFTER_DEPLOYMENT = 10      # Time to wait for system stabilization after deployment of workloads
+STABILATION_TIME_AFTER_INTERFERENCE = 8    # Time to wait for system stabilization of interference pods
+SLEEP_BETWEEN_TESTS = 25                  # Sleep time between tests to allow system to stabilize
 
-STABILATION_TIME_MIX_SCENARIOS = 10         # Longer stabilization for mixed scenarios
+STABILATION_TIME_MIX_SCENARIOS = 12         # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
-STABILATION_TIME_NEW_REPLICAS = 20          # Time to wait before tests for new replicas
+STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 def calculate_time_of_tests():
     total_duration = 0

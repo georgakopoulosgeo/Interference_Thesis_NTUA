@@ -35,17 +35,17 @@ NGINX_METRICS_FIELDNAMES = [
 
 # PCM monitoring configuration
 STABILATION_TIME_AFTER_DELETION = 10       # Time to wait for system stabilization after deletion of workloads
-STABILATION_TIME_AFTER_DEPLOYMENT = 6      # Time to wait for system stabilization after deployment of workloads
-STABILATION_TIME_AFTER_INTERFERENCE = 8    # Time to wait for system stabilization after interference deployment
-SLEEP_BETWEEN_TESTS = 24                   # Sleep time between tests to allow system to stabilize
+STABILATION_TIME_AFTER_DEPLOYMENT = 10      # Time to wait for system stabilization after deployment of workloads
+STABILATION_TIME_AFTER_INTERFERENCE = 8    # Time to wait for system stabilization of interference pods
+SLEEP_BETWEEN_TESTS = 25                  # Sleep time between tests to allow system to stabilize
 
-STABILATION_TIME_MIX_SCENARIOS = 10         # Longer stabilization for mixed scenarios
+STABILATION_TIME_MIX_SCENARIOS = 12         # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
-STABILATION_TIME_NEW_REPLICAS = 20          # Time to wait before tests for new replicas
+STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
-RPS_STEPS = [200, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]  # RPS steps to test
+REPLICAS_TO_TEST = [1, 2, 3, 4, 5]  # Number of replicas to test
+RPS_STEPS = [100, 500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 15000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -53,7 +53,7 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 # Interference scenarios (to be implemented)
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
-    {"id": 0, "name": "Baseline0", "type": None},
+    {"id": 0, "name": "Baseline0", "type": None}
     #{"id": 1, "name": "Baseline1", "type": None},
     #{"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
@@ -174,7 +174,7 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> 
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True
-                )                
+                )               
             return True
             
         except subprocess.CalledProcessError as e:
@@ -449,7 +449,7 @@ def run_nginx_testing():
                 print(f"[Replicas={replicas}|RPS={rps}] Interference {scenario['name']} created successfully.", flush=True)
                 if scenario["type"] == "mix":
                     time.sleep(STABILATION_TIME_MIX_SCENARIOS)  # Longer stabilization for mixed scenarios
-                else:
+                elif scenario["type"]:
                     time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
 
                 # Start monitoring
