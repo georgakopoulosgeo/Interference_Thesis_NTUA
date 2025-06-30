@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "Chaos_V02"  # Folder to store results
+FOLDER_NAME = "Vegeta_PCM_Testing"  # Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -43,8 +43,8 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 60          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
-RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000]
+REPLICAS_TO_TEST = [2]  # Number of replicas to test
+RPS_STEPS = [2000]
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -53,51 +53,25 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
-    {"id": 1, "name": "Baseline1", "type": None},
-    {"id": 2, "name": "Baseline2", "type": None},
+    #{"id": 1, "name": "Baseline1", "type": None},
+    #{"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    {"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1}
+    #{"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
+    #{"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    #{"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    #{"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    #{"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    #{"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    {"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
-    # Mixed Scenarios
-    {"id": 50, "name": "1_CPU_1_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 1}
-    ]},
-    {"id": 51, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "ibench-membw", "count": 1}
-    ]},
-    {"id": 52, "name": "2_CPU_2_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 2},
-        {"type": "stress-ng-l3", "count": 2}
-    ]},
-    {"id": 53, "name": "1_CPU_2_L3_1_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 2},
-        {"type": "ibench-membw", "count": 1}
-    ]},
-    {"id": 54, "name": "3_CPU_1_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 3},
-        {"type": "stress-ng-l3", "count": 1}
-    ]},
-    {"id": 55, "name": "2_L3_2_MemBW", "type": "mix", "mix": [
-        {"type": "stress-ng-l3", "count": 2},
-        {"type": "ibench-membw", "count": 2}
-    ]}
+    #{"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    #{"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    #{"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4},
 ]
 
 # Case B Scenarios
@@ -435,7 +409,8 @@ def run_nginx_testing():
     with open(workload_csv, "w") as f:
         csv.DictWriter(f, fieldnames=NGINX_METRICS_FIELDNAMES).writeheader()
 
-    duration = int(DURATION[:-1])
+    duration = int(DURATION[:-1])* 60  # Convert duration to seconds
+    print(f"Total test duration: {duration} seconds", flush=True)
     prev_interference_type = None
     prev_replicas = 1
 
