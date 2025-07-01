@@ -44,7 +44,7 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1]  # Number of replicas to test
+REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
 RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)

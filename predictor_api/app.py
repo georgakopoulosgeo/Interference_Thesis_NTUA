@@ -1,49 +1,45 @@
+# app.py
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
 import os
 
+# Load model at startup
+MODEL_PATH = os.path.join("models", "slowdown_predictor.pkl")
+model = joblib.load(MODEL_PATH)
+
 app = Flask(__name__)
 
-# Load models at startup
-MODELS_DIR = "models" # Directory where models are stored // Needs Change!
-models = {}
-
-try:
-    for replicas in [1, 2, 3, 4]:
-        filename = os.path.join(MODELS_DIR, f"model_replicas_{replicas}.pkl")
-        models[replicas] = joblib.load(filename)
-    print("All models loaded successfully!")
-except Exception as e:
-    print(f"Error loading models: {str(e)}")
-    raise
+@app.route('/')
+def index():
+    return "📡 Predictor API is running."
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        data = request.json
+        data = request.get_json()
         
-        # Validate input
-        if not all(k in data for k in ["node_metrics", "replicas"]):
-            return jsonify({"error": "Missing required fields"}), 400
-            
+        if "metrics" not in data or "replicas" not in data or "rps" not in data:
+            return jsonify({"error": "Missing required fields: metrics, replicas, rps"}), 400
+
+        # Prepare input
+        metrics = data["metrics"]
         replicas = data["replicas"]
-        if replicas not in models:
-            return jsonify({"error": f"Unsupported replica count: {replicas}"}), 400
-            
-        # Convert to numpy array and ensure correct shape
-        features = np.array(data["node_metrics"]).reshape(1, -1)
-        
+        rps = data["rps"]
+
+        if not isinstance(metrics, list) or not isinstance(replicas, int) or not isinstance(rps, int):
+            return jsonify({"error": "Incorrect types. Expected list + int + int"}), 400
+
+        input_vector = metrics + [rps, replicas]
+        input_array = np.array(input_vector).reshape(1, -1)
+
         # Predict
-        slowdown = models[replicas].predict(features)[0]
-        return jsonify({
-            "replicas": replicas,
-            "slowdown": float(slowdown),  # Convert numpy float to native float
-            "status": "success"
-        })
-        
+        predicted = model.predict(input_array)[0]
+
+        return jsonify({"slowdown": round(float(predicted), 4)})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)

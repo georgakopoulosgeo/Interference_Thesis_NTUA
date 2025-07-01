@@ -37,9 +37,9 @@ Core Components:
 
 5. Custom Scheduler
    • Logic:
-1. Queries ARIMA for desired_replicas.
-2. Evaluates all nodes using the Predictor’s slowdown scores.
-3. Selects (node, replicas) with lowest RiskScore (slowdown + replica penalty).
+      1. Queries ARIMA for desired_replicas.
+      2. Evaluates all nodes using the Predictor’s slowdown scores.
+      3. Selects (node, replicas) with lowest RiskScore (slowdown + replica penalty).
    • Integration: Kubernetes Scheduler Extender or custom scheduler binary.
    • Cost Function:
 python RiskScore = (predicted_slowdown) + 0.1 * |actual_replicas - desired_replicas|

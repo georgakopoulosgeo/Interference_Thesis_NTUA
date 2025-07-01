@@ -1,4 +1,3 @@
-# predictor-service.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,14 +24,6 @@ spec:
           requests:
             memory: "512Mi"
             cpu: "500m"
-        volumeMounts:
-        - name: models
-          mountPath: /app/models
-      volumes:
-      - name: models
-        configMap:
-          name: model-config
-
 ---
 apiVersion: v1
 kind: Service
