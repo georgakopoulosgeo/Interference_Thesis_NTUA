@@ -1,22 +1,31 @@
-# Use official lightweight Python image
+# Stage 1: Builder stage
+FROM python:3.10-slim as builder
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+# Copy all necessary files
+COPY . .
+
+# Stage 2: Runtime stage
 FROM python:3.10-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy only the necessary files from builder
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /app /app
 
-# Copy the app code and model
-COPY app.py .
-COPY models/slowdown_predictor_clean.pkl ./models/slowdown_predictor.pkl
+# Ensure Python can find user-installed packages
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app
 
+# Make sure the pickle file is accessible
+RUN chmod +r /app/models/slowdown_predictor.pkl
 
-RUN ls -lh models/
-
-# Expose port
+# Expose the port your app runs on
 EXPOSE 5000
 
-# Run the app
+# Command to run your application
 CMD ["python", "app.py"]
