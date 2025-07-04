@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 # Load single model at startup
 MODEL_PATH = os.path.join("models", "slowdown_predictor.pkl")
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
 model = joblib.load(MODEL_PATH)
 logger.info("Loaded slowdown predictor model")
 
