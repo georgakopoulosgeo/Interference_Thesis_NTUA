@@ -1,7 +1,7 @@
-flask==2.0.1
-joblib==1.0.1
-numpy==1.21.2
-pandas==1.3.3
-gunicorn==20.1.0
-scikit-learn==1.0.0
-werkzeug==2.0.3c
+flask==3.0.2
+joblib==1.3.2
+numpy==1.26.4
+pandas==2.1.4
+gunicorn==21.2.0
+scikit-learn==1.4.0
+werkzeug==3.0.1
