@@ -2,8 +2,8 @@ import subprocess
 import os
 
 # User-defined variables
-name_of_local_folder = "Memento_V01"
-name_of_server_folder = "Memento_V01"
+name_of_local_folder = "profiling/Memento_V02_3_MixedScenarios"
+name_of_server_folder = "Memento_V02_3_MixedScenarios"
 
 # Remote and local paths
 remote_user = "george@147.102.13.77"
