@@ -10,7 +10,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the app code and model
 COPY app.py .
-COPY models/ ./models/
+COPY models/slowdown_predictor_clean.pkl ./models/slowdown_predictor.pkl
+
 
 RUN ls -lh models/
 
