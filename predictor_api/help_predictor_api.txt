@@ -34,12 +34,14 @@ docker build -t predictor-api:v1 .
 minikube image load predictor-api
 
 # 2. Deploy
-kubectl apply -f predictor-deploy.yaml
+kubectl apply -f predictor-api-deployment.yaml
 
 # 3. Access from:
 # - Other pods: http://predictor-service
 # - Host machine:
 minikube service predictor-service --url
+
+kubectl port-forward svc/predictor-service 8080:80
 
 Help Commands
 - Verify deployment status

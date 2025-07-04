@@ -34,5 +34,5 @@ spec:
     app: predictor
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 5000
+      port: 5000  # Changed from 80 to 5000
+      targetPort: 5000  # Matches container port
