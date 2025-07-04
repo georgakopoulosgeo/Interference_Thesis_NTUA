@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "Memento_V02" #Folder to store results
+FOLDER_NAME = "ShutterIsland_V01" #Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -44,8 +44,8 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [2, 3]  # Number of replicas to test
-RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
+RPS_STEPS = [500, 1500, 2500, 3500]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -118,20 +118,20 @@ INTERFERENCE_SCENARIOS_B = [
     #{"id": 102, "name": "BaselineB2", "type": None},
     #{"id": 103, "name": "BaselineB3", "type": None},
     # iBench CPU Scenarios
-    #{"id": 111, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 111, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
     {"id": 112, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 113, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    #{"id": 114, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 113, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    {"id": 114, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    #{"id": 121, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 121, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 122, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 123, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    #{"id": 124, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 123, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    {"id": 124, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     # iBench MemBW Scenarios
-    #{"id": 131, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 131, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
     {"id": 132, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    #{"id": 133, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    #{"id": 134, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    {"id": 133, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    {"id": 134, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
 def calculate_duration():
@@ -187,7 +187,7 @@ def warmup_with_interference(interference_type: str, rps: int):
         time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
 
 # INTERFERENCE FUNCTIONS
-def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> bool:
+def create_interference(scenario: Dict, from_mix = False, all_nodes = True) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
     if scenario["type"] == "ibench-cpu":
@@ -449,7 +449,7 @@ def run_nginx_testing():
             time.sleep(STABILATION_TIME_NEW_REPLICAS)
             prev_replicas = replicas
         for rps in RPS_STEPS:
-            for scenario in INTERFERENCE_SCENARIOS:
+            for scenario in INTERFERENCE_SCENARIOS_B:
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
 

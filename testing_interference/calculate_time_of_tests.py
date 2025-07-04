@@ -1,15 +1,15 @@
 import math
 
 DURATION = "3m"  # Test duration per run
-REPLICAS_TO_TEST = [1,2]  # Number of replicas to test
-RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
-INTERFERENCE_SCENARIOS = range(1, 10)
+REPLICAS_TO_TEST = [1,2,3,4]  # Number of replicas to test
+RPS_STEPS = [100, 500, 1000, 1500]  # RPS steps to test
+INTERFERENCE_SCENARIOS = range(1, 14)
 
 # PCM monitoring configuration
 STABILATION_TIME_AFTER_DELETION = 10       # Time to wait for system stabilization after deletion of workloads
 STABILATION_TIME_AFTER_DEPLOYMENT = 10      # Time to wait for system stabilization after deployment of workloads
 STABILATION_TIME_AFTER_INTERFERENCE = 10    # Time to wait for system stabilization of interference pods
-SLEEP_BETWEEN_TESTS = 35                  # Sleep time between tests to allow system to stabilize
+SLEEP_BETWEEN_TESTS = 30                  # Sleep time between tests to allow system to stabilize
 
 STABILATION_TIME_MIX_SCENARIOS = 12         # Longer stabilization for mixed scenarios
 STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilization after warmup / IGNORE
