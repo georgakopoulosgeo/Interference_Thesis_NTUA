@@ -16,26 +16,10 @@ spec:
       - name: predictor
         image: predictor-api:v1
         ports:
-        - containerPort: 5000
-        startupProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          failureThreshold: 30  # Give more time to initialize
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 5
-          periodSeconds: 10
+          - containerPort: 5000
+        env:
+          - name: METRICS_COLLECTOR_URL
+            value: "http://metrics-collector:8000"
         resources:
           limits:
             memory: "512Mi"
