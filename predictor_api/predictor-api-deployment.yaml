@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: predictor-api
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: predictor
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: predictor
-        image: your-registry/predictor-api:v1
+        image: predictor-api:v1
         ports:
         - containerPort: 5000
         resources:
