@@ -30,7 +30,7 @@ PREDICTOR API
 
 ################################################ MINIKUBE ACCESSIBILITY
 # 1. Build and load image (no registry needed)
-docker build -t predictor-api:latest .
+docker build -t predictor-api:v1 .
 minikube image load predictor-api
 
 # 2. Deploy
