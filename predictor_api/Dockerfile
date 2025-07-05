@@ -16,5 +16,8 @@ COPY slowdown_predictor.pkl /model/
 # Expose the port the app runs on
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Add PYTHONUNBUFFERED and FLASK_DEBUG environment variables
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_DEBUG=1
+
+CMD ["python", "-u", "app.py"] 

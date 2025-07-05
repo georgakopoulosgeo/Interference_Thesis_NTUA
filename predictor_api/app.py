@@ -6,7 +6,21 @@ import pandas as pd
 from typing import Dict, List
 from io import StringIO
 
+import logging
+import sys
+
+# Configure basic logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # Output to stdout
+    ]
+)
+
 app = Flask(__name__)
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.DEBUG)
 
 # Load the model at startup
 MODEL_PATH = '/model/slowdown_predictor.pkl'
@@ -25,6 +39,7 @@ REQUEST_TIMEOUT = 5  # seconds
 
 @app.route('/health')
 def health():
+    app.logger.info("Health check endpoint called")
     if model_loaded:
         return {"status": "healthy", "model": "loaded"}, 200
     else:
@@ -87,7 +102,7 @@ def fetch_metrics() -> pd.DataFrame:
         csv_data = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_data))
 
-        print(f"[DEBUG] Initial DataFrame shape: {df.shape}")
+        app.logger.debug(f"Fetched metrics data: {df.shape()}")  # Debug log
         
         # Convert date and time to datetime if needed
         if 'System - Date' in df.columns and 'System - Time' in df.columns:
