@@ -57,10 +57,10 @@ kubectl get endpoints predictor-api
 - Test from within cluster
 kubectl run -it --rm --restart=Never test-curl --image=curlimages/curl -- curl -v http://predictor-api:5000/health
 
-curl -X POST \
-  http://192.168.49.2:32124/predict \
-  -H "Content-Type: application/json" \
-  -d '{"replicas": 2, "rps": 1500}'
+    curl -X POST \
+    http://192.168.49.2:32124/predict \
+    -H "Content-Type: application/json" \
+    -d '{"replicas": 2, "rps": 1500}'
 
 curl http://192.168.49.2:32124/health
 

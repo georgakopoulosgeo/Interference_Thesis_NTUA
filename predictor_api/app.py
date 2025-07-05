@@ -117,53 +117,40 @@ def fetch_metrics() -> pd.DataFrame:
 
 def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
     """
-    Split metrics by node and rename core columns for node1 (cores 0-2 → 3-5)
+    Split metrics by node and rename core columns for node1 (cores 0-2 → 3-5).
+    Keep only per-core metrics and system Date/Time.
     """
-    # Make a copy to avoid warnings
     df = metrics_df.copy()
-    
-    # Define core mapping: {original_core: (node_name, new_core_name)}
+    app.logger.debug(f"Processing metrics for {len(df)} rows")
+
+    # Mapping of core column prefixes to target node and renamed core
     core_mapping = {
         'Core0 (Socket-1)': ('node1', 'Core3'),
-        'Core1 (Socket-1)': ('node1', 'Core4'), 
+        'Core1 (Socket-1)': ('node1', 'Core4'),
         'Core2 (Socket-1)': ('node1', 'Core5'),
         'Core3 (Socket 0)': ('node2', 'Core3'),
         'Core4 (Socket 0)': ('node2', 'Core4'),
-        'Core5 (Socket 0)': ('node2', 'Core5')
+        'Core5 (Socket 0)': ('node2', 'Core5'),
     }
-    
-    # Initialize node DataFrames
-    node_data = {'node1': [], 'node2': []}
-    
-    # Process system-wide columns (non-core specific)
-    system_cols = [col for col in df.columns 
-                  if not any(col.startswith(f'Core{i}') for i in range(6))]
-    
-    # Process each core's columns separately
-    for core_prefix, (node_name, new_prefix) in core_mapping.items():
-        # Get columns for this core
-        core_cols = [col for col in df.columns if col.startswith(core_prefix)]
-        
-        # Create node-specific DataFrame
-        node_df = df[system_cols + core_cols].copy()
-        
-        # Rename core columns (e.g., "Core0 (Socket-1)_IPC" → "Core3_IPC")
-        rename_dict = {
-            col: col.replace(core_prefix, new_prefix) 
-            for col in core_cols
-        }
-        node_df = node_df.rename(columns=rename_dict)
-        
-        node_data[node_name].append(node_df)
-    
-    # Debug - print length of each node's data
-    print(f"[DEBUG] Node1 data chunks: {len(node_data['node1'])}, Node2 data chunks: {len(node_data['node2'])}")
 
-    # Concatenate all chunks for each node
-    return {
-        'node1': pd.concat(node_data['node1'], axis=0),
-        'node2': pd.concat(node_data['node2'], axis=0)
-    }
+    # Always retain System Date and Time
+    base_columns = ['System - Date', 'System - Time']
+
+    # Initialize container
+    node_data = {'node1': df[base_columns].copy(), 'node2': df[base_columns].copy()}
+
+    # Loop through mapping and assign columns
+    for original_prefix, (node, new_prefix) in core_mapping.items():
+        core_cols = [col for col in df.columns if col.startswith(original_prefix)]
+        renamed_cols = [col.replace(original_prefix, new_prefix) for col in core_cols]
+        node_data[node][renamed_cols] = df[core_cols].values
+
+    app.logger.debug(f"Processed metrics for nodes: {list(node_data.keys())}")
+    # Length of each node's DataFrame
+    for node, data in node_data.items():
+        app.logger.debug(f"{node} has {len(data)} rows of metrics data")
+    return node_data
+
 
 def compute_windowed_stats(series, window_size, stats):
     """Compute rolling-window-based stats for a Series."""
