@@ -30,17 +30,18 @@ def health():
     else:
         return {"status": "unhealthy", "model": "not loaded"}, 500
 
-# Add this to your health check
 @app.route('/model_info')
 def model_info():
     if not model_loaded:
         return {"error": "Model not loaded"}, 500
     
-    return {
-        "n_features": model.n_features_in_ if hasattr(model, 'n_features_in_') else "Unknown",
-        "expected_features": len(EXPECTED_FEATURES),
-        "feature_match": len(EXPECTED_FEATURES) == model.n_features_in_
-    }
+    try:
+        return {
+            "status": "model loaded",
+            "n_features": len(EXPECTED_FEATURES)  # Simple confirmation
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -90,12 +91,11 @@ def fetch_metrics() -> pd.DataFrame:
         if 'System - Date' in df.columns and 'System - Time' in df.columns:
             df['timestamp'] = pd.to_datetime(
                 df['System - Date'] + ' ' + df['System - Time'],
-                format='%Y-%m-%d %H:%M:%S'
+                format='%Y-%m-%d %H:%M:%S.%f'  # Handles milliseconds
             )
             df.drop(['System - Date', 'System - Time'], axis=1, inplace=True)
         
         print(f"Fetched {len(df)} rows of metrics data")
-        
         return df
     
     except requests.exceptions.RequestException as e:
