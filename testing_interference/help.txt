@@ -6,3 +6,11 @@ V01:
 REPLICAS_TO_TEST = [1,2,3,4]  # Number of replicas to test
 RPS_STEPS = [100, 500, 1000, 1500]  # RPS steps to test
 All 14 scenarios but everything deployed in the 1st node (nginx_label=false)
+
+
+===============================
+GREEN BOOK
+6 more mixed scenarios
+V01: 
+REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test

@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "ShutterIsland_V01" #Folder to store results
+FOLDER_NAME = "Green_Book_V01" #Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -44,8 +44,8 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
-RPS_STEPS = [500, 1500, 2500, 3500]  # RPS steps to test
+REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -73,40 +73,31 @@ INTERFERENCE_SCENARIOS = [
     #{"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
     #{"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
     #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
-        # Mixed Scenarios
-    {"id": 51, "name": "1_CPU_1_L3", "type": "mix", "mix": [
+    # Mixed Scenarios
+    {"id": 59, "name": "1_CPU_2_MemBW", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 1}
+        {"type": "ibench-membw", "count": 2}
     ]},
-    {"id": 52, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
+    {"id": 60, "name": "2_CPU_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
         {"type": "ibench-membw", "count": 1}
     ]},
-    {"id": 53, "name": "2_CPU_2_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 2},
-        {"type": "stress-ng-l3", "count": 2}
+    {"id": 61, "name": "3_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "stress-ng-l3", "count": 3},
+        {"type": "ibench-membw", "count": 1}
     ]},
-    {"id": 54, "name": "1_CPU_1_L3_1_MemBW", "type": "mix", "mix": [
+    {"id": 62, "name": "1_CPU_3_MemBW", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 3}
+    ]},
+    {"id": 63, "name": "1_CPU_2_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 64, "name": "1_L3_3_MemBW", "type": "mix", "mix": [
         {"type": "stress-ng-l3", "count": 1},
-        {"type": "ibench-membw", "count": 1}
-    ]},
-    {"id": 55, "name": "3_CPU_1_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 3},
-        {"type": "stress-ng-l3", "count": 1}
-    ]},
-    {"id": 56, "name": "2_L3_2_MemBW", "type": "mix", "mix": [
-        {"type": "stress-ng-l3", "count": 2},
-        {"type": "ibench-membw", "count": 2}
-    ]},
-    {"id": 57, "name": "1_CPU_2_L3", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 2}
-    ]},
-    {"id": 58, "name": "2_CPU_2_L3_2_MemBW", "type": "mix", "mix": [
-        {"type": "ibench-cpu", "count": 2},
-        {"type": "stress-ng-l3", "count": 2},
-        {"type": "ibench-membw", "count": 2}
+        {"type": "ibench-membw", "count": 3}
     ]}
 ]
 
@@ -449,7 +440,7 @@ def run_nginx_testing():
             time.sleep(STABILATION_TIME_NEW_REPLICAS)
             prev_replicas = replicas
         for rps in RPS_STEPS:
-            for scenario in INTERFERENCE_SCENARIOS_B:
+            for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
 
