@@ -53,4 +53,33 @@ INTERFERENCE_SCENARIOS = [
         {"type": "stress-ng-l3", "count": 2},
         {"type": "ibench-membw", "count": 2}
     ]}
+
+    {"id": 59, "name": "1_CPU_2_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 2}
+    ]},
+    {"id": 60, "name": "2_CPU_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 61, "name": "3_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "stress-ng-l3", "count": 3},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 62, "name": "1_CPU_3_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 3}
+    ]},
+    {"id": 63, "name": "1_CPU_2_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 2},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 64, "name": "1_L3_3_MemBW", "type": "mix", "mix": [
+        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-membw", "count": 3}
+    ]}
+
+
+
 ]
