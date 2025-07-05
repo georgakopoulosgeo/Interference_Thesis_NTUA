@@ -6,6 +6,8 @@ import pandas as pd
 from typing import Dict, List
 from io import StringIO
 from collections import defaultdict
+import numpy as np
+from sklearn.externals import joblib  # or import joblib directly
 
 import logging
 import sys
@@ -27,8 +29,7 @@ app.logger.setLevel(logging.DEBUG)
 MODEL_PATH = '/model/slowdown_predictor.pkl'
 
 try:
-    with open(MODEL_PATH, 'rb') as f:
-        model = pickle.load(f)
+    model = joblib.load('/model/slowdown_predictor.pkl')
     model_loaded = True
 except Exception as e:
     model_loaded = False
@@ -150,7 +151,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     # Length of each node's DataFrame
     for node, data in node_data.items():
         app.logger.debug(f"{node} has {len(data)} rows of metrics data")
-        app.logger.debug(f"{node} columns: {data.head(5)}")
+        app.logger.debug(f"{node} columns: {data.head(6)}")
     return node_data
 
 
@@ -256,22 +257,21 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
     return features
 
 def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
-    """
-    Make predictions using the loaded model.
-    Returns: Dictionary of {node_name: prediction}
-    """
+    """Make predictions using the full pipeline"""
     predictions = {}
     try:
         for node_name, feature_vector in features.items():
-            # Ensure the feature vector is in the correct shape (2D array)
-            prediction = model.predict([feature_vector])[0]
-            predictions[node_name] = round(float(prediction), 4)  # Round to 4 decimal places
-        
-        print(f"Made predictions: {predictions}")  # Debug log
+            # Ensure features are in right shape (2D array)
+            X = np.array(feature_vector).reshape(1, -1)
+            
+            # Full pipeline transformation + prediction
+            prediction = model.predict(X)[0]  
+            predictions[node_name] = float(prediction)
+            
+        app.logger.debug(f"Predictions made: {predictions}")
         return predictions
-    
     except Exception as e:
-        print(f"Prediction failed: {str(e)}")
+        app.logger.error(f"Prediction failed: {str(e)}")
         raise Exception(f"Prediction error: {str(e)}")
 
 if __name__ == '__main__':
