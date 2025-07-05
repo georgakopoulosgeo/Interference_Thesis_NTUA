@@ -7,7 +7,7 @@ from typing import Dict, List
 from io import StringIO
 from collections import defaultdict
 import numpy as np
-from sklearn.externals import joblib  # or import joblib directly
+import joblib
 
 import logging
 import sys
