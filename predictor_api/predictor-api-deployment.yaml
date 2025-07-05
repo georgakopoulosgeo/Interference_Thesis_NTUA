@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: slowdown-predictor
-        image: slowdown-predictor:latest
+        image: slowdown-predictor:v1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000

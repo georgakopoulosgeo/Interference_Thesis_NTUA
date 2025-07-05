@@ -4,6 +4,7 @@ import pickle
 import requests
 import pandas as pd
 from typing import Dict, List
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -83,7 +84,7 @@ def fetch_metrics() -> pd.DataFrame:
         
         # Convert streaming CSV response to DataFrame
         csv_data = response.content.decode('utf-8')
-        df = pd.read_csv(pd.compat.StringIO(csv_data))
+        df = pd.read_csv(StringIO(csv_data))
         
         # Convert date and time to datetime if needed
         if 'System - Date' in df.columns and 'System - Time' in df.columns:

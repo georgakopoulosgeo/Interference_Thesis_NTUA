@@ -4,7 +4,7 @@ FROM python:3.10.12-slim
 WORKDIR /app
 
 # Install dependencies
-RUN pip install flask scikit-learn pandas numpy requests typing 
+RUN pip install flask scikit-learn pandas numpy requests typing io
 
 # Copy the application code
 COPY app.py .

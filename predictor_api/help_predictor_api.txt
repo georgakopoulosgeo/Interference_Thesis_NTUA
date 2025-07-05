@@ -58,6 +58,12 @@ kubectl get endpoints predictor-api
 kubectl run -it --rm --restart=Never test-curl --image=curlimages/curl -- curl -v http://predictor-api:5000/health
 
 
+
+curl -X POST \
+  http://192.168.49.2:31802/predict \
+  -H "Content-Type: application/json" \
+  -d '{"replicas": 3, "rps": 1000}'
+
 ################################################ FUTURE IMPROVEMENTS
 - Add gunicorn with multiple workers
 - Implement prediction caching
