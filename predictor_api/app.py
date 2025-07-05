@@ -150,7 +150,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     
     # Debug - print length of each node's data
     print(f"[DEBUG] Node1 data chunks: {len(node_data['node1'])}, Node2 data chunks: {len(node_data['node2'])}")
-    
+
     # Concatenate all chunks for each node
     return {
         'node1': pd.concat(node_data['node1'], axis=0),
@@ -271,4 +271,4 @@ def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
         raise Exception(f"Prediction error: {str(e)}")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
