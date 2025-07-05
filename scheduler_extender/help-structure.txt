@@ -1,12 +1,52 @@
-scheduler-extender/
-├── app/
-│   ├── __init__.py
-│   ├── predictor.py       # Predictor API client
-│   ├── metrics.py         # Metrics Collector client
-│   ├── scheduler.py       # Core scheduling logic
-│   └── api.py             # HTTP endpoints
-├── config/
-│   └── config.yaml        # Configuration
-├── Dockerfile
-└── requirements.txt
+┌───────────────────────────────────────────────────────┐
+│                   Kubernetes Cluster                  │
+└───────────────┬───────────────────────┬───────────────┘
+                │                       │
+┌───────────────▼───────┐   ┌───────────▼───────────────┐
+│  Predictor Service    │   │  Scheduler Extender       │
+│  - Exposes /predict   │   │  - Implements Filter/Prioritize
+│  - Runs your ML model │   │  - Calls predictor service
+└───────────────┬───────┘   └───────────┬───────────────┘
+                │                       │
+┌───────────────▼───────┐   ┌───────────▼───────────────┐
+│  Metrics Collector    │   │  Kubernetes Scheduler     │
+│  - Provides PCM data  │   │  - Main scheduling loop   │ 
+└───────────────────────┘   └───────────────────────────┘
 
+===============================================================
+
+scheduler-extender/
+│
+├── app/                        # Python application
+│   ├── main.py                 # Flask app (your extender logic)
+│   ├── predictor_client.py     # Helper for calling predictor service
+│   └── scoring.py              # Scoring algorithms
+│
+├── config/
+│   ├── extender-config.yaml    # ConfigMap definition
+│   └── scheduler-policy.json   # Scheduler policy config
+│
+├── deployments/
+│   ├── deployment.yaml         # Extender Deployment+Service
+│   └── rbac.yaml               # Optional RBAC rules
+│
+├── Dockerfile                  # Extender container build
+├── requirements.txt            # Python dependencies
+
+
+
+===============================================================
+
+docker build -t scheduler-extender -f Dockerfile.extender .
+minikube image load scheduler-extender
+
+kubectl apply -f extender-config.yaml
+kubectl apply -f extender-deployment.yaml
+
+# For Minikube
+minikube stop
+minikube start --extra-config=scheduler.policy-config-file=/etc/kubernetes/scheduler-policy.json
+
+# Copy policy file to master
+kubectl cp scheduler-policy.json kube-system/$(kubectl get pods -n kube-system -l component=kube-scheduler -o jsonpath='{.items[0].metadata.name}'):/etc/kubernetes/
+minikube ssh sudo systemctl restart kube-scheduler
