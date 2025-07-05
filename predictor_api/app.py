@@ -86,6 +86,8 @@ def fetch_metrics() -> pd.DataFrame:
         # Convert streaming CSV response to DataFrame
         csv_data = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_data))
+
+        print(f"[DEBUG] Initial DataFrame shape: {df.shape}")
         
         # Convert date and time to datetime if needed
         if 'System - Date' in df.columns and 'System - Time' in df.columns:
@@ -107,49 +109,53 @@ def fetch_metrics() -> pd.DataFrame:
 
 def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
     """
-    Split metrics data per node and rename columns to match training data format
+    Split metrics by node and rename core columns for node1 (cores 0-2 → 3-5)
     """
+    # Make a copy to avoid warnings
     df = metrics_df.copy()
-    core_to_node = {
+    
+    # Define core mapping: {original_core: (node_name, new_core_name)}
+    core_mapping = {
         'Core0 (Socket-1)': ('node1', 'Core3'),
-        'Core1 (Socket-1)': ('node1', 'Core4'),
+        'Core1 (Socket-1)': ('node1', 'Core4'), 
         'Core2 (Socket-1)': ('node1', 'Core5'),
         'Core3 (Socket 0)': ('node2', 'Core3'),
         'Core4 (Socket 0)': ('node2', 'Core4'),
         'Core5 (Socket 0)': ('node2', 'Core5')
     }
-
-    node_dfs = {'node1': pd.DataFrame(), 'node2': pd.DataFrame()}
     
-    for core_prefix, (node_name, new_core_prefix) in core_to_node.items():
+    # Initialize node DataFrames
+    node_data = {'node1': [], 'node2': []}
+    
+    # Process system-wide columns (non-core specific)
+    system_cols = [col for col in df.columns 
+                  if not any(col.startswith(f'Core{i}') for i in range(6))]
+    
+    # Process each core's columns separately
+    for core_prefix, (node_name, new_prefix) in core_mapping.items():
+        # Get columns for this core
         core_cols = [col for col in df.columns if col.startswith(core_prefix)]
-        system_cols = [col for col in df.columns if not any(col.startswith(f'Core{i}') for i in range(6))]
         
+        # Create node-specific DataFrame
         node_df = df[system_cols + core_cols].copy()
-        # Rename core columns to match training data format
-        node_df.columns = [
-            col.split('_')[-1] if not col.startswith(core_prefix) 
-            else f"{new_core_prefix}_{col.split('_')[-1]}"
-            for col in node_df.columns
-        ]
         
-        node_dfs[node_name] = pd.concat([node_dfs[node_name], node_df], ignore_index=True)
+        # Rename core columns (e.g., "Core0 (Socket-1)_IPC" → "Core3_IPC")
+        rename_dict = {
+            col: col.replace(core_prefix, new_prefix) 
+            for col in core_cols
+        }
+        node_df = node_df.rename(columns=rename_dict)
+        
+        node_data[node_name].append(node_df)
     
-    # Drop unnecessary columns
-    columns_to_drop = ['node_name', 'assigned_cores']
-    for node_name in node_dfs:
-        node_dfs[node_name] = node_dfs[node_name].drop(
-            columns=[col for col in columns_to_drop if col in node_dfs[node_name].columns],
-            errors='ignore'
-        )
+    # Debug - print length of each node's data
+    print(f"[DEBUG] Node1 data chunks: {len(node_data['node1'])}, Node2 data chunks: {len(node_data['node2'])}")
     
-    # Debug print columns
-    print("\nDebug: Columns in each node DataFrame:")
-    for node_name, node_df in node_dfs.items():
-        print(f"{node_name} columns ({len(node_df.columns)}):")
-        print(sorted(node_df.columns.tolist()))
-        print(f"Sample rows: {len(node_df)}\n")
-    return node_dfs
+    # Concatenate all chunks for each node
+    return {
+        'node1': pd.concat(node_data['node1'], axis=0),
+        'node2': pd.concat(node_data['node2'], axis=0)
+    }
 
 def compute_windowed_stats(series, window_size, stats):
     """Compute rolling-window-based stats for a Series."""
