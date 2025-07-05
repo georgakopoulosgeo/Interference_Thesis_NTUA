@@ -5,6 +5,7 @@ import requests
 import pandas as pd
 from typing import Dict, List
 from io import StringIO
+from collections import defaultdict
 
 import logging
 import sys
@@ -149,6 +150,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     # Length of each node's DataFrame
     for node, data in node_data.items():
         app.logger.debug(f"{node} has {len(data)} rows of metrics data")
+        app.logger.debug(f"{node} columns: {data.head(5)}")
     return node_data
 
 
@@ -201,48 +203,55 @@ EXPECTED_FEATURES = [
 
 def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps: int) -> Dict[str, List[float]]:
     """
-    Calculate all required features for each node
+    Calculate features matching the training notebook's approach
     Returns: Dictionary of {node_name: feature_vector}
     """
     features = {}
-    window_size = 2  # Adjust based on your time window needs
+    window_size = 5  # Same as training
+    stats = ['mean', 'std', 'p95']  # Same as training
+    target_cores = [3, 4, 5]  # Since we renamed cores 0-2 to 3-5
     
     for node_name, df in node_metrics.items():
-        # Calculate AvgCore metrics (average across all cores in node)
-        avg_core_metrics = {}
-        core_cols = [c for c in df.columns if c.startswith('Core')]
-        base_metrics = ['C0res', 'C1res', 'C6res', 'IPC', 'L2MISS', 'L3MISS', 'PhysIPC']
+        features_dict = defaultdict(dict)
+        core_metrics_group = defaultdict(list)
         
-        for metric in base_metrics:
-            # Calculate across all cores for this metric
-            metric_cols = [c for c in core_cols if c.endswith(metric)]
-            combined_series = pd.concat([df[col] for col in metric_cols], axis=0)
+        # Process each target core
+        for core in target_cores:
+            core_prefix = f'Core{core}_'
+            core_cols = [col for col in df.columns if col.startswith(core_prefix)]
             
-            stats = compute_windowed_stats(combined_series, window_size, ['mean', 'p95', 'std'])
-            for stat, value in stats.items():
-                avg_core_metrics[f'{stat}_AvgCore_{metric}'] = value
+            # Filter to metrics we care about
+            keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%', 'PhysIPC']
+            core_cols = [col for col in core_cols if any(m in col for m in keep_metrics)]
+            
+            for col in core_cols:
+                metric = col.replace(core_prefix, '').replace('%', '')
+                s = df[col]
+                
+                # Compute statistics
+                stats_results = compute_windowed_stats(s, window_size, stats)
+                for stat, value in stats_results.items():
+                    features_dict[f'{stat}_{core_prefix}{metric}'] = value
+                
+                # Store for aggregation
+                core_metrics_group[metric].append(s)
         
-        # Calculate per-core metrics
-        core_metrics = {}
-        for core in ['Core3', 'Core4', 'Core5']:
-            for metric in base_metrics:
-                col_name = f"{core}_{metric}"
-                if col_name in df.columns:
-                    stats = compute_windowed_stats(df[col_name], window_size, ['mean', 'p95', 'std'])
-                    for stat, value in stats.items():
-                        core_metrics[f'{stat}_{col_name}'] = value
+        # Compute aggregated stats across cores
+        for metric, series_list in core_metrics_group.items():
+            if series_list:  # Only if we have data
+                agg_series = pd.concat(series_list, axis=1).mean(axis=1)
+                agg_stats = compute_windowed_stats(agg_series, window_size, stats)
+                for stat, value in agg_stats.items():
+                    features_dict[f'{stat}_AvgCore_{metric}'] = value
         
-        # Combine all features in the expected order
+        # Build feature vector in expected order
         feature_vector = [rps, replicas]
         for feature in EXPECTED_FEATURES[2:]:  # Skip RPS and Replicas
-            if feature in avg_core_metrics:
-                feature_vector.append(avg_core_metrics[feature])
-            elif feature in core_metrics:
-                feature_vector.append(core_metrics[feature])
-            else:
-                feature_vector.append(0.0)  # Default value if missing
+            feature_vector.append(features_dict.get(feature, 0.0))
         
         features[node_name] = feature_vector
+        
+        app.logger.debug(f"Generated {len(feature_vector)} features for {node_name}")
     
     return features
 
