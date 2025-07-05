@@ -95,6 +95,7 @@ def fetch_metrics() -> pd.DataFrame:
     """
     try:
         # Fetch CSV data from metrics collector
+        app.logger.debug(f"Fetching metrics from {METRICS_SERVICE_URL}")
         response = requests.get(f"{METRICS_SERVICE_URL}", timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         
@@ -102,17 +103,9 @@ def fetch_metrics() -> pd.DataFrame:
         csv_data = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_data))
 
-        app.logger.debug(f"Fetched metrics data: {df.shape()}")  # Debug log
+        app.logger.debug(f"Fetched {len(df)} rows of metrics data")
         
-        # Convert date and time to datetime if needed
-        if 'System - Date' in df.columns and 'System - Time' in df.columns:
-            df['timestamp'] = pd.to_datetime(
-                df['System - Date'] + ' ' + df['System - Time'],
-                format='%Y-%m-%d %H:%M:%S.%f'  # Handles milliseconds
-            )
-            df.drop(['System - Date', 'System - Time'], axis=1, inplace=True)
-        
-        print(f"Fetched {len(df)} rows of metrics data")
+        #print(f"Fetched {len(df)} rows of metrics data")
         return df
     
     except requests.exceptions.RequestException as e:
