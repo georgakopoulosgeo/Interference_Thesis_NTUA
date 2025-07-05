@@ -1,18 +1,20 @@
-FROM python:3.9-slim
+# Use the same Python version that was used to train the model
+FROM python:3.10.12-slim
 
-# Set work directory
 WORKDIR /app
 
 # Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install flask scikit-learn
 
-# Copy app and model
+# Copy the application code
 COPY app.py .
-COPY models/ models/
 
-# Expose FastAPI's default port
-EXPOSE 8000
+# Create directory for model and copy the model file
+RUN mkdir /model
+COPY slowdown_predictor.pkl /model/
 
-# Start the FastAPI app with Uvicorn
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Expose the port the app runs on
+EXPOSE 5000
+
+# Run the application
+CMD ["python", "app.py"]

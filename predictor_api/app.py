@@ -1,24 +1,26 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-import joblib
+from flask import Flask
 import os
+import pickle
 
-app = FastAPI()
-model = None
-model_path = os.path.join("models", "slowdown_predictor.pkl")
+app = Flask(__name__)
 
-@app.on_event("startup")
-def load_model():
-    global model
-    try:
-        model = joblib.load(model_path)
-    except Exception as e:
-        print(f"Failed to load model: {e}")
-        raise RuntimeError("Model loading failed.")
+# Load the model at startup
+MODEL_PATH = '/model/slowdown_predictor.pkl'
 
-@app.get("/healthz")
-def health_check():
-    if model is not None:
-        return JSONResponse(content={"status": "ok", "message": "Model loaded."}, status_code=200)
+try:
+    with open(MODEL_PATH, 'rb') as f:
+        model = pickle.load(f)
+    model_loaded = True
+except Exception as e:
+    model_loaded = False
+    print(f"Error loading model: {e}")
+
+@app.route('/health')
+def health():
+    if model_loaded:
+        return {"status": "healthy", "model": "loaded"}, 200
     else:
-        return JSONResponse(content={"status": "error", "message": "Model not loaded."}, status_code=500)
+        return {"status": "unhealthy", "model": "not loaded"}, 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
