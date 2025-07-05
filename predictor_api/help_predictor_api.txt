@@ -60,6 +60,35 @@ curl -X POST \
 
 curl http://192.168.49.2:32124/health
 
+
+
+
+
+kubectl delete deployment slowdown-predictor
+kubectl delete service slowdown-predictor-service
+
+minikube image rm slowdown-predictor:v1
+
+minikube image load slowdown-predictor:v1
+
+docker build -t slowdown-predictor:v1 .
+
+minikube service slowdown-predictor-service --url
+
+curl -X POST \
+  http://192.168.49.2:31619/predict \
+  -H "Content-Type: application/json" \
+  -d '{"replicas": 2, "rps": 1500}'
+  
+  
+curl http://192.168.49.2:32463/model_info
+
+
+
+
+
+
+
 ################################################ FUTURE IMPROVEMENTS
 - Add gunicorn with multiple workers
 - Implement prediction caching
