@@ -29,7 +29,8 @@ app.logger.setLevel(logging.DEBUG)
 MODEL_PATH = '/model/slowdown_predictor.pkl'
 
 try:
-    model = joblib.load('/model/slowdown_predictor.pkl')
+    with open(MODEL_PATH, 'rb') as f:
+        model = joblib.load(f)
     model_loaded = True
 except Exception as e:
     model_loaded = False

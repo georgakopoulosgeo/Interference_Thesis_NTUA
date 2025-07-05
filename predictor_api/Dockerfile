@@ -4,7 +4,7 @@ FROM python:3.10.12-slim
 WORKDIR /app
 
 # Install dependencies
-RUN pip install flask scikit-learn pandas numpy requests jsonify joblib
+RUN pip install flask scikit-learn pandas numpy requests jsonify joblib pickle
 
 # Copy the application code
 COPY app.py .
