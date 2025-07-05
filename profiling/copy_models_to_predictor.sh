@@ -2,11 +2,9 @@
 
 # Absolute or relative paths
 SRC_MODEL="./models/slowdown_predictor.pkl"
-DEST_DIR="../predictor_api/models"
+DEST_DIR="../predictor_api"
 DEST_MODEL="$DEST_DIR/slowdown_predictor.pkl"
 
-# Ensure destination directory exists
-mkdir -p "$DEST_DIR"
 
 # Copy the model file
 if [ -f "$SRC_MODEL" ]; then
