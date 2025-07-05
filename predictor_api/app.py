@@ -7,7 +7,6 @@ from typing import Dict, List
 from io import StringIO
 from collections import defaultdict
 import numpy as np
-import joblib
 
 import logging
 import sys
@@ -30,7 +29,7 @@ MODEL_PATH = '/model/slowdown_predictor.pkl'
 
 try:
     with open(MODEL_PATH, 'rb') as f:
-        model = joblib.load(f)
+        model = pickle.load(f)
     model_loaded = True
 except Exception as e:
     model_loaded = False
