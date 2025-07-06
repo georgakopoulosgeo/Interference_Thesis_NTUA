@@ -12,6 +12,8 @@ spec:
       labels:
         app: pcm-api
     spec:
+      nodeSelector:
+        slo_scheduler: "true"
       containers:
         - name: api
           image: pcm-api:v1
