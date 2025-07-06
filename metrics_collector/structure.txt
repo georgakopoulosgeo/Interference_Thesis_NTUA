@@ -110,12 +110,8 @@ Example API Response:
 # Build
 docker build -t metrics-collector:v1 .
 
-# Run locally for testing
-docker run -it --rm \
-  --privileged \
-  -p 8000:8000 \
-  -v /dev/cpu:/dev/cpu \
-  metrics-collector:v1
-
 # Test endpoint
-curl "http://localhost:8000/metrics?window_sec=20"
+kubectl port-forward service/metrics-collector 8000:8000
+
+curl "http://localhost:8000/metrics"
+

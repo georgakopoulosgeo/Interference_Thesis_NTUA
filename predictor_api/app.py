@@ -262,6 +262,11 @@ def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
     predictions = {}
     try:
         for node_name, feature_vector in features.items():
+
+            # DEBUG: test only for node2
+            if node_name != 'node2':
+                continue
+
             # Ensure features are in right shape (2D array)
             input_data = np.array(feature_vector).reshape(1, -1)
             
