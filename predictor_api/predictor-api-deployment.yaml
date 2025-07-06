@@ -14,6 +14,8 @@ spec:
       labels:
         app: slowdown-predictor
     spec:
+      nodeSelector:
+          slo_scheduler: "true"
       containers:
       - name: slowdown-predictor
         image: slowdown-predictor:v2

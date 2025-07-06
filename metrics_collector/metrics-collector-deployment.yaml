@@ -12,6 +12,8 @@ spec:
       labels:
         app: metrics-collector
     spec:
+      nodeSelector:
+        slo_scheduler: "true"
       containers:
       - name: metrics-collector
         image: metrics-collector:system
