@@ -1,9 +1,7 @@
-flask>=2.0.0
+Flask==2.3.3
+requests==2.31.0
+pandas==2.2.2
+numpy==1.26.4
 scikit-learn==1.2.2
-numpy>=1.21.0  # Minimum version required by scikit-learn 1.2.2
-scipy>=1.7.0   # Minimum version required by scikit-learn 1.2.2
-joblib>=1.1.0  # Minimum version required by scikit-learn 1.2.2
-threadpoolctl>=2.0.0  # Minimum version required by scikit-learn 1.2.2
-requests>=2.25.0  # For making HTTP requests
-pandas>=1.1.0  # For data manipulation
-jsonify>=0.5.7  # For JSON serialization
+#For the model
+joblib==1.3.2
