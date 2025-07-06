@@ -1,10 +1,12 @@
 # Use the same Python version that was used to train the model
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
 # Install dependencies
-RUN pip install flask scikit-learn pandas numpy requests jsonify joblib 
+COPY app/requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt && rm -rf /root/.cache/pip
 
 # Copy the application code
 COPY app.py .
