@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: metrics-collector
+spec:
+  selector:
+    matchLabels:
+      app: metrics-collector
+  template:
+    metadata:
+      labels:
+        app: metrics-collector
+    spec:
+      hostPID: true
+      hostNetwork: true  # Optional: For lower latency
+      containers:
+      - name: collector
+        image: metrics-collector:v2
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ASSIGNED_CORES
+          valueFrom:
+            configMapKeyRef:
+              name: node-cores
+              key: cores
+        ports:
+        - containerPort: 8000
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN", "IPC_LOCK"]
+          readOnlyRootFilesystem: true  # Security best practice
+        volumeMounts:
+        - name: pcm-data
+          mountPath: /var/pcm
+        - name: dev-msr
+          mountPath: /dev/cpu/msr
+          readOnly: true
+      volumes:
+      - name: pcm-data
+        hostPath:
+          path: /var/pcm
+          type: DirectoryOrCreate
+      - name: dev-msr
+        hostPath:
+          path: /dev/cpu
+          type: Directory
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
