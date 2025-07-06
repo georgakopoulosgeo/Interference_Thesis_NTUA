@@ -11,7 +11,7 @@ SAMPLE_RATE = 2  # seconds
 
 def pcm_collector():
     cores = os.getenv("ASSIGNED_CORES", "0-2")
-    cmd = f"pcm.x -r -csv={PCM_CSV} -cores={cores}"
+    cmd = f"pcm -r -csv={PCM_CSV} -cores={cores}"
     subprocess.run(cmd.split(), check=True)
 
 @app.on_event("startup")

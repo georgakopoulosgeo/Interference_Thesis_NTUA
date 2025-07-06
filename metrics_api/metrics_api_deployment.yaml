@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pcm-api-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pcm-api
+  template:
+    metadata:
+      labels:
+        app: pcm-api
+    spec:
+      containers:
+        - name: api
+          image: pcm-api:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: pcm-metrics
+              mountPath: /opt/pcm_metrics
+              readOnly: true
+      volumes:
+        - name: pcm-metrics
+          hostPath:
+            path: /opt/pcm_metrics
+            type: Directory
