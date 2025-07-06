@@ -27,3 +27,17 @@ spec:
           hostPath:
             path: /opt/pcm_metrics
             type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pcm-api-service
+spec:
+  selector:
+    app: pcm-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 30080
+  type: NodePort
