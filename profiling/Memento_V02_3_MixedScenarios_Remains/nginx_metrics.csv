@@ -1,0 +1,5 @@
+Test_ID,Replicas,Interference_Name,Interference_ID,Given_RPS,Throughput,Avg_Latency,P50_Latency,P75_Latency,P90_Latency,P95_Latency,P99_Latency,Max_Latency,Errors
+3replicas_scenario55_4000rps,3,3_CPU_1_L3,55,4000,3999.99797313436,0.236,0.156,0.0,0.389,0.593,1.822,7.551,0
+3replicas_scenario56_4000rps,3,2_L3_2_MemBW,56,4000,3999.9990176197343,0.337,0.204,0.0,0.698,0.955,2.017,8.198,0
+3replicas_scenario57_4000rps,3,1_CPU_2_L3,57,4000,4000.0019045866206,0.245,0.151,0.0,0.496,0.735,1.533,6.433,0
+3replicas_scenario58_4000rps,3,2_CPU_2_L3_2_MemBW,58,4000,3999.997532220317,0.432,0.251,0.0,0.866,1.465,3.088,11.703,0

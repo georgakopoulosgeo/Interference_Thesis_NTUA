@@ -262,10 +262,10 @@ def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
     try:
         for node_name, feature_vector in features.items():
             # Ensure features are in right shape (2D array)
-            X = np.array(feature_vector).reshape(1, -1)
+            input_data = np.array(feature_vector).reshape(1, -1)
             
             # Full pipeline transformation + prediction
-            prediction = model.predict(X)[0]  
+            prediction = model.predict(input_data)[0]  
             predictions[node_name] = float(prediction)
             
         app.logger.debug(f"Predictions made: {predictions}")

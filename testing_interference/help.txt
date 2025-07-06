@@ -1,4 +1,22 @@
-TESTS 
+NGINX TESTS 
+
+===============================
+MEMENTO
+V01:
+REPLICAS_TO_TEST = [1]
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  
+All 14 scenarios
+
+V02, V03, V04: Same but with replicas 2, 3, and 4 respectively
+
+V01_mix_scenarios:
+Replicas = 1
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000] 
+mixed scenarios from 51 to 58
+
+V02_3_MixedScenarios
+Same but with replicas 2 and 3 respectively + We also want Memento_V02_3_MixedScenarios_Remains
+
 
 ===============================
 SHUTTER ISLAND

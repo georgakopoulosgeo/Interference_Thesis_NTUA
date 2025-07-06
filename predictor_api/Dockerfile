@@ -1,5 +1,5 @@
 # Use the same Python version that was used to train the model
-FROM python:3.10.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
