@@ -14,6 +14,9 @@ import json
 # Which Traffic Workload to use
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
+# Control whether to use colocation scenarios
+TEST_COLOCATION = True  # Set to False to use original scenarios
+
 # Folder Name
 FOLDER_NAME = "The_Substance_V01" #Folder to store results
 
@@ -50,12 +53,17 @@ STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new 
 # Test matrix
 # Test scenarios
 REPLICAS_SCENARIOS_TO_TEST = [
-    #{"node1": 1, "node2": 0, "name": "node1_only"},
-    #{"node1": 0, "node2": 1, "name": "node2_only"},
-    {"node1": 1, "node2": 1, "name": "balanced"},
-    {"node1": 2, "node2": 2, "name": "scaled_balanced"},
-    #{"node1": 3, "node2": 1, "name": "weighted_node1"},
-    #{"node1": 1, "node2": 3, "name": "weighted_node2"}
+    # Balanced Scenarios
+    {"node1": 1, "node2": 1, "name": "balanced_1"},
+    {"node1": 2, "node2": 2, "name": "balanced_2"},
+    {"node1": 3, "node2": 3, "name": "balanced_3"}, 
+    # Weighted Scenarios
+    {"node1": 1, "node2": 2, "name": "weighted_1_2"},
+    {"node1": 2, "node2": 1, "name": "weighted_2_1"},
+    {"node1": 3, "node2": 1, "name": "weighted_3_1"},
+    {"node1": 1, "node2": 3, "name": "weighted_1_3"},
+    {"node1": 2, "node2": 3, "name": "weighted_2_3"},
+    {"node1": 3, "node2": 2, "name": "weighted_3_2"},
 ]
 RPS_STEPS = [1500]  # RPS steps to test
 
@@ -66,49 +74,54 @@ INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interf
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
-    #{"id": 1, "name": "Baseline1", "type": None},
-    #{"id": 2, "name": "Baseline2", "type": None},
+    {"id": 1, "name": "Baseline1", "type": None},
+    {"id": 2, "name": "Baseline2", "type": None},
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    #{"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
     {"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    #{"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    #{"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
+    {"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
+    {"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    #{"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
     {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    #{"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    #{"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
+    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     #iBench MemBW Scenarios
-    #{"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2}
-    #{"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    {"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
+    {"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
-# Case B Scenarios
-INTERFERENCE_SCENARIOS_B = [
+# Add this alongside your existing INTERFERENCE_SCENARIOS
+INTERFERENCE_SCENARIOS_COLOCATION = [
     # Baseline Scenarios
-    {"id": 100, "name": "BaselineB0", "type": None},
-    #{"id": 101, "name": "BaselineB1", "type": None},
-    #{"id": 102, "name": "BaselineB2", "type": None},
-    #{"id": 103, "name": "BaselineB3", "type": None},
-    # iBench CPU Scenarios
-    {"id": 111, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 112, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 113, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    {"id": 114, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
-    # Stress-ng L3 Scenarios
-    {"id": 121, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 122, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 123, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    {"id": 124, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
-    # iBench MemBW Scenarios
-    {"id": 131, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 132, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 133, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    {"id": 134, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
+    {"id": 200, "name": "Baseline0", "type": None},
+    {"id": 201, "name": "Baseline1", "type": None},
+    {"id": 202, "name": "Baseline2", "type": None},
+
+    # Both nodes / CPU
+    {"id": 212, "name": "2_iBench_CPU_both", "type": "ibench-cpu", "count": 2, "all_nodes": "both"},
+    {"id": 213, "name": "3_iBench_CPU_both", "type": "ibench-cpu", "count": 3, "all_nodes": "both"},
+    {"id": 214, "name": "4_iBench_CPU_both", "type": "ibench-cpu", "count": 4, "all_nodes": "both"},
+    {"id": 215, "name": "5_iBench_CPU_both", "type": "ibench-cpu", "count": 5, "all_nodes": "both"},
+    {"id": 216, "name": "6_iBench_CPU_both", "type": "ibench-cpu", "count": 6, "all_nodes": "both"},
+    
+    # Both nodes / L3
+    {"id": 222, "name": "2_stress-ng_l3_both", "type": "stress-ng-l3", "count": 2, "all_nodes": "both"},
+    {"id": 223, "name": "3_stress-ng_l3_both", "type": "stress-ng-l3", "count": 3, "all_nodes": "both"},
+    {"id": 224, "name": "4_stress-ng_l3_both", "type": "stress-ng-l3", "count": 4, "all_nodes": "both"},
+    {"id": 225, "name": "5_stress-ng_l3_both", "type": "stress-ng-l3", "count": 5, "all_nodes": "both"},
+    {"id": 226, "name": "6_stress-ng_l3_both", "type": "stress-ng-l3", "count": 6, "all_nodes": "both"},
+
+    # Both nodes / MemBW
+    {"id": 232, "name": "2_iBench_memBW_both", "type": "ibench-membw", "count": 2, "all_nodes": "both"},
+    {"id": 233, "name": "3_iBench_memBW_both", "type": "ibench-membw", "count": 3, "all_nodes": "both"},
+    {"id": 234, "name": "4_iBench_memBW_both", "type": "ibench-membw", "count": 4, "all_nodes": "both"},
+    {"id": 235, "name": "5_iBench_memBW_both", "type": "ibench-membw", "count": 5, "all_nodes": "both"},
+    {"id": 236, "name": "6_iBench_memBW_both", "type": "ibench-membw", "count": 6, "all_nodes": "both"}
 ]
 
 def calculate_duration():
@@ -146,7 +159,7 @@ def ensure_directories(script_dir):
 
 
 # INTERFERENCE FUNCTIONS
-def create_interference(scenario: Dict, from_mix = False, all_nodes = True) -> bool:
+def create_interference(scenario: Dict, from_mix = False, all_nodes = False) -> bool:
     """Create interference pods based on the scenario.
     Returns True if successful, False otherwise."""
     if scenario["type"] == "ibench-cpu":
@@ -245,8 +258,32 @@ def cleanup_interference(scenario: Dict):
         for mix_scenario in scenario["mix"]:
             cleanup_interference(mix_scenario)
 
+def create_interference_with_colocation(scenario: Dict) -> bool:
+    """Handle interference creation with node colocation options"""
+    if scenario["type"] is None:
+        return True  # Baseline scenario
+    
+    # Handle "both" case by creating half on each node
+    if scenario.get("all_nodes") == "both":
+        half_count = max(1, scenario["count"] // 2)
+        
+        # Create first half on node1
+        node1_scenario = scenario.copy()
+        node1_scenario["count"] = half_count
+        node1_scenario["all_nodes"] = True
+        
+        # Create remaining on node2
+        node2_scenario = scenario.copy()
+        node2_scenario["count"] = scenario["count"] - half_count
+        node2_scenario["all_nodes"] = False
+        
+        return (create_interference(node1_scenario) and 
+                create_interference(node2_scenario))
+    
+    # Use existing function for single-node cases
+    return create_interference(scenario)
 
-# WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
+
 # WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
 def deploy_workload(yaml_file: str):
     """Generic workload deployment using kubectl"""
@@ -406,7 +443,14 @@ def run_nginx_testing():
         if node1_replicas == 0 and node2_replicas == 0:
             continue
         for rps in RPS_STEPS:
-            for scenario in INTERFERENCE_SCENARIOS:
+                        # Determine which interference scenarios to use
+            interference_scenarios = (
+                INTERFERENCE_SCENARIOS_COLOCATION 
+                if TEST_COLOCATION 
+                else INTERFERENCE_SCENARIOS
+            )
+            
+            for scenario in interference_scenarios:
                 # Generate unique test ID
                 test_id = f"{scenario_name}replicas_scenario{scenario['id']}_{rps}rps"
 

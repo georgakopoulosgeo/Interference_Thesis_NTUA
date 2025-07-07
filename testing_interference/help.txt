@@ -32,3 +32,23 @@ GREEN BOOK
 V01: 
 REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
 RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+
+
+===============================
+# The Substance
+V01: 
+REPLICAS_SCENARIOS_TO_TEST = [
+    # Balanced Scenarios
+    {"node1": 1, "node2": 1, "name": "balanced_1"},
+    {"node1": 2, "node2": 2, "name": "balanced_2"},
+    {"node1": 3, "node2": 3, "name": "balanced_3"}, 
+    # Weighted Scenarios
+    {"node1": 1, "node2": 2, "name": "weighted_1_2"},
+    {"node1": 2, "node2": 1, "name": "weighted_2_1"},
+    {"node1": 3, "node2": 1, "name": "weighted_3_1"},
+    {"node1": 1, "node2": 3, "name": "weighted_1_3"},
+    {"node1": 2, "node2": 3, "name": "weighted_2_3"},
+    {"node1": 3, "node2": 2, "name": "weighted_3_2"},
+]
+RPS_STEPS = [1500]  # RPS steps to test
+# INTERFERENCE_SCENARIOS = range(1, 19)  #1 to 5 pods to all nodes 

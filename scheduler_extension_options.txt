@@ -1,0 +1,77 @@
+===============================
+SCHEDULER EXTENSION OPTIONS
+===============================
+
+1. PERIODIC REBALANCING / AUTO-REPACKING
+----------------------------------------
+Goal:
+Continuously monitor deployed pods and reassign them to lower-risk nodes when interference or traffic causes SLO risk.
+
+Concept:
+- Periodically evaluate RiskScore = predicted_P99 / SLO_threshold for each node.
+- If any node has RiskScore > 1, identify replicas that can be safely evicted.
+- Move replicas to nodes with lower predicted risk.
+
+Academic Value:
+Mimics VM live migration but in a containerized context. Introduces continuous placement optimization beyond static schedulers.
+
+Implementation:
+- Run as a CronJob or controller.
+- Use Kubernetes eviction API or `kubectl drain` logic.
+- Combine with node tainting to prevent pods from re-landing on degraded nodes.
+
+
+2. SMART SCALING (REPLICA COUNT OPTIMIZER)
+------------------------------------------
+Goal:
+Proactively determine the minimum number of replicas needed to avoid SLO violations, using traffic forecasts and latency prediction.
+
+Concept:
+- Predict future RPS using ARIMA (or other methods).
+- For each replica count (1 to N), estimate P99 using your ML predictor.
+- Pick the smallest replica count where RiskScore < 1.
+
+Academic Value:
+Moves beyond CPU-based HPA. Combines prediction, interference awareness, and cost-efficient scaling into a proactive controller.
+
+Implementation:
+- Deploy as microservice or scheduled scaler.
+- Integrate with K8s scaling API or create a custom controller.
+- Use your trained predictor model as backend.
+
+
+3. GLOBAL MULTI-REPLICA OPTIMIZATION
+-------------------------------------
+Goal:
+Jointly optimize placement for a group of replicas, not one-by-one, to minimize cluster-wide SLO risk.
+
+Concept:
+- Simulate several candidate placement combinations.
+- For each, compute aggregate RiskScore (e.g. sum or max).
+- Deploy the replica set using the best configuration.
+
+Academic Value:
+Goes beyond greedy heuristics; introduces non-myopic, constraint-aware scheduling into Kubernetes research.
+
+Implementation:
+- Use beam search or greedy refinement to limit search space.
+- Query predictor API for each simulated set.
+- Bind pods manually or generate a scheduling plan.
+
+
+4. INTERFERENCE INJECTION & RESILIENCE TESTING
+----------------------------------------------
+Goal:
+Evaluate your scheduler’s robustness by injecting controlled, reproducible interference patterns using iBench.
+
+Concept:
+- Deploy interference workloads (e.g. CPU/LLC/mem stressors) on schedule or on demand.
+- Monitor how your scheduler detects and responds to performance degradation.
+
+Academic Value:
+Turns your testbed into a chaos-engineering environment for scheduling research. Allows measurement of detection time, action correctness, and recovery latency.
+
+Implementation:
+- Use YAML specs to define interference levels.
+- Track recovery time and action path.
+- Log metrics and state transitions for reproducibility.

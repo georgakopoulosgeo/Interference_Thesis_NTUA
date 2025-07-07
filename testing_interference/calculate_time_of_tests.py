@@ -1,9 +1,9 @@
 import math
 
 DURATION = "3m"  # Test duration per run
-REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
+REPLICAS_TO_TEST = [1, 2, 3,4,5,6,7,8,9]  # Number of replicas to test
 RPS_STEPS = [500]  # RPS steps to test
-INTERFERENCE_SCENARIOS = range(1, 5)
+INTERFERENCE_SCENARIOS = range(1, 19)
 
 # PCM monitoring configuration
 STABILATION_TIME_AFTER_DELETION = 10       # Time to wait for system stabilization after deletion of workloads
