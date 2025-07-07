@@ -18,7 +18,7 @@ spec:
         redis: "true"
       containers:
       - name: redis
-        image: redis:7.0
+        image: redis:latest
         ports:
         - containerPort: 6379
         resources:
