@@ -73,19 +73,14 @@ def predict():
         data = request.get_json()
         replicas = data['replicas']
         rps = data['rps']
-        
         # 2. Fetch metrics from metrics collector
         metrics_data = fetch_metrics()
-        
         # 3. Process metrics per node
         node_metrics = process_metrics_per_node(metrics_data)
-        
         # 4. Calculate stats and create feature set
         features = calculate_features(node_metrics, replicas, rps)
-        
-        # 5. Make predictions
+        # 5. Make predictions using the model
         predictions = make_predictions(features)
-        
         return jsonify(predictions)
     
     except Exception as e:

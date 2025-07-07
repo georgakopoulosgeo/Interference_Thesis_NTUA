@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "Green_Book_V01" #Folder to store results
+FOLDER_NAME = "The_Substance_V01" #Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -25,7 +25,11 @@ NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py
 DURATION = "3m"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
+# Deployment Configurations
+NGINX_NODE1_DEPLOYMENT_NAME = "my-nginx-node1"
+NGINX_NODE2_DEPLOYMENT_NAME = "my-nginx"
+NGINX_NODE1_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy-node1.yaml"
+NGINX_NODE2_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
 NGINX_DEPLOYMENT_NAME = "my-nginx"
 NGINX_METRICS_FIELDNAMES = [
     "Test_ID", "Replicas", "Interference_Name", "Interference_ID", "Given_RPS",
@@ -44,8 +48,16 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
-RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+# Test scenarios
+REPLICAS_SCENARIOS_TO_TEST = [
+    #{"node1": 1, "node2": 0, "name": "node1_only"},
+    #{"node1": 0, "node2": 1, "name": "node2_only"},
+    {"node1": 1, "node2": 1, "name": "balanced"},
+    {"node1": 2, "node2": 2, "name": "scaled_balanced"},
+    #{"node1": 3, "node2": 1, "name": "weighted_node1"},
+    #{"node1": 1, "node2": 3, "name": "weighted_node2"}
+]
+RPS_STEPS = [1500]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -59,18 +71,18 @@ INTERFERENCE_SCENARIOS = [
     #{"id": 3, "name": "Baseline3", "type": None},
     #{"id": 4, "name": "Baseline4", "type": None},
     # Ibench CPU Scenarios
-    {"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
+    #{"id": 11, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
     {"id": 12, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
     #{"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
     #{"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    #{"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
+    #{"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
+    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
     #{"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
     #{"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
     #iBench MemBW Scenarios
-    {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1}
-    #{"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
+    #{"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
+    {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2}
     #{"id": 33, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
     #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
@@ -102,7 +114,7 @@ INTERFERENCE_SCENARIOS_B = [
 def calculate_duration():
     """Calculate the total duration of the execution"""
     total_duration = 0
-    for replicas in REPLICAS_TO_TEST:
+    for replicas in REPLICAS_SCENARIOS_TO_TEST:
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Each test runs for DURATION + stabilization times
@@ -111,19 +123,6 @@ def calculate_duration():
     print(f"Total execution duration: {total_duration / 60} minutes", flush=True)
     print(f"Total execution duration: {total_duration / 3600} hours", flush=True)
 
-
-## WARMUP - IGNORE
-# Warmup configuration
-WARMUP_DURATION = "30s"
-WARMUP_RPS = 1500
-WARMUP_THREADS = 1
-WARMUP_CONNECTIONS = 200
-WARMUP_CLIENTS = 100
-WARMUP_SCENARIOS = {
-    "ibench-cpu": {"id": -1, "name": "WARMUP_CPU", "type": "ibench-cpu", "count": 1},
-    "stress-ng-l3": {"id": -2, "name": "WARMUP_L3", "type": "stress-ng-l3", "count": 1},
-    "ibench-membw": {"id": -3, "name": "WARMUP_MEMBW", "type": "ibench-membw", "count": 1}
-}
 
 # ENSURE DIRECTORIES FUNCTION
 def ensure_directories(script_dir):
@@ -145,31 +144,6 @@ def ensure_directories(script_dir):
     
     return main_results_dir, raw_log_folder
 
-def run_warmup(rps: int):
-    """Run warmup workload without PCM monitoring"""
-    print(f"Starting warmup at {rps} RPS equivalent...", flush=True)
-    try:
-        subprocess.run([
-            WRK_PATH,
-            f"-t{WARMUP_THREADS}",
-            f"-c{WARMUP_CONNECTIONS}",
-            f"-d{WARMUP_DURATION}",
-            f"-R{rps}",
-            NGINX_SERVICE_URL
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
-        print("Warmup completed", flush=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Warmup failed: {e.stderr}", flush=True)
-
-def warmup_with_interference(interference_type: str, rps: int):
-    """Run warmup with specific interference type"""
-    if interference_type in WARMUP_SCENARIOS:
-        print(f"Starting {interference_type} warmup...", flush=True)
-        create_interference(WARMUP_SCENARIOS[interference_type])
-        warmup_rps = rps
-        run_warmup(warmup_rps)
-        cleanup_interference(WARMUP_SCENARIOS[interference_type])
-        time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
 
 # INTERFERENCE FUNCTIONS
 def create_interference(scenario: Dict, from_mix = False, all_nodes = True) -> bool:
@@ -273,30 +247,45 @@ def cleanup_interference(scenario: Dict):
 
 
 # WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
-def deploy_nginx_workload():
-    """Deploy NGINX workload using kubectl"""
+# WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS
+def deploy_workload(yaml_file: str):
+    """Generic workload deployment using kubectl"""
     try:
-        subprocess.run(["kubectl", "apply", "-f", NGINX_DEPLOY_YAML], check=True)
-        print("[DEPLOYMENT] NGINX workload deployed successfully.", flush=True)
-
+        subprocess.run(["kubectl", "apply", "-f", yaml_file], check=True)
+        print(f"[DEPLOYMENT] Workload from {yaml_file} deployed successfully.", flush=True)
     except subprocess.CalledProcessError as e:
-        print(f"Failed to deploy NGINX workload: {e.stderr}", flush=True)   
+        print(f"Failed to deploy workload: {e.stderr}", flush=True)   
 
-def scale_nginx_workload(replicas: int):
-    """Scale NGINX workload to a specific number of replicas"""
+def scale_workload(deployment_name: str, replicas: int):
+    """Generic workload scaling"""
     try:
-        subprocess.run(["kubectl", "scale", "deployment", NGINX_DEPLOYMENT_NAME, f"--replicas={replicas}"], check=True)
-        print(f"NGINX workload scaled to {replicas} replicas successfully.", flush=True)
+        subprocess.run(["kubectl", "scale", "deployment", deployment_name, f"--replicas={replicas}"], check=True)
+        print(f"{deployment_name} scaled to {replicas} replicas successfully.", flush=True)
     except subprocess.CalledProcessError as e:
-        print(f"Failed to scale NGINX workload: {e.stderr}", flush=True)
+        print(f"Failed to scale {deployment_name}: {e.stderr}", flush=True)
 
-def delete_nginx_workload():
-    """Delete NGINX workload using kubectl"""
+def delete_workload(deployment_name: str):
+    """Generic workload deletion"""
     try:
-        subprocess.run(["kubectl", "delete", "deployment", NGINX_DEPLOYMENT_NAME], check=True)
-        print("NGINX workload deleted successfully.", flush=True)
+        subprocess.run(["kubectl", "delete", "deployment", deployment_name], check=True)
+        print(f"{deployment_name} deleted successfully.", flush=True)
     except subprocess.CalledProcessError as e:
-        print(f"Failed to delete NGINX workload: {e.stderr}", flush=True)
+        print(f"Failed to delete {deployment_name}: {e.stderr}", flush=True)
+
+def deploy_nginx_scenario(node1_replicas: int, node2_replicas: int):
+    """Deploy nginx across nodes according to scenario"""
+    # Deploy both deployments (they'll start with 1 replica)
+    deploy_workload(NGINX_NODE1_DEPLOY_YAML)
+    deploy_workload(NGINX_NODE2_DEPLOY_YAML)
+    
+    # Scale to desired replicas
+    scale_workload(NGINX_NODE1_DEPLOYMENT_NAME, node1_replicas)
+    scale_workload(NGINX_NODE2_DEPLOYMENT_NAME, node2_replicas)
+
+def cleanup_nginx_scenario():
+    """Clean up both nginx deployments"""
+    delete_workload(NGINX_NODE1_DEPLOYMENT_NAME)
+    delete_workload(NGINX_NODE2_DEPLOYMENT_NAME)
 
 
 # WORKLOAD TESTING FUNCTIONS
@@ -408,46 +397,40 @@ def run_nginx_testing():
     prev_interference_type = None
     prev_replicas = 1
 
-    for replicas in REPLICAS_TO_TEST:
-        if replicas != prev_replicas:
-            time.sleep(STABILATION_TIME_NEW_REPLICAS)
-            prev_replicas = replicas
+    for replicas_scenario in REPLICAS_SCENARIOS_TO_TEST:
+        node1_replicas = replicas_scenario["node1"]
+        node2_replicas = replicas_scenario["node2"]
+        scenario_name = replicas_scenario["name"]
+        
+        # Skip if no replicas in scenario
+        if node1_replicas == 0 and node2_replicas == 0:
+            continue
         for rps in RPS_STEPS:
             for scenario in INTERFERENCE_SCENARIOS:
                 # Generate unique test ID
-                test_id = f"{replicas}replicas_scenario{scenario['id']}_{rps}rps"
+                test_id = f"{scenario_name}replicas_scenario{scenario['id']}_{rps}rps"
 
                 # Deploy NGINX workload and scale it
-                print(f"\n[Replicas={replicas}|RPS={rps}] Deploying NGINX workload...", flush=True)
-                deploy_nginx_workload()
-                scale_nginx_workload(replicas)
+                # Deploy the scenario
+                print(f"\n[Scenario={scenario_name}|Node1={node1_replicas}|Node2={node2_replicas}] Deploying NGINX...", flush=True)
+                deploy_nginx_scenario(node1_replicas, node2_replicas)
+                time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT)
                 time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT) 
 
-                # Warmup phase / IGNORE
-                if scenario["type"] == None:
-                    print(f"\n[Replicas={replicas}|RPS={rps}] Running warmup for baseline scenario ...", flush=True)
-                    #run_warmup(rps)
-                    #time.sleep(STABILATION_TIME_AFTER_WARMUP)
-                elif scenario["type"] != prev_interference_type:
-                    print(f"\n[Replicas={replicas}|RPS={rps}] Running warmup for {scenario['name']}...", flush=True)
-                    #warmup_with_interference(scenario["type"], rps)
-                    #time.sleep(STABILATION_TIME_AFTER_WARMUP)
-                prev_interference_type = scenario["type"]
-
                 # Setup interference (will handle 10s stabilization internally)
-                print(f"\n[Replicas={replicas}|RPS={rps}] Testing {scenario['name']}", flush=True)
+                print(f"\n[Replicas={scenario_name}|RPS={rps}] Testing {scenario['name']}", flush=True)
                 if scenario["type"] and not create_interference(scenario):
                     # Here we have STABILATION_TIME sleep for the interference to stabilize
                     print(f"Skipping failed scenario {scenario['name']}", flush=True)
                     continue
-                print(f"[Replicas={replicas}|RPS={rps}] Interference {scenario['name']} created successfully.", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] Interference {scenario['name']} created successfully.", flush=True)
                 if scenario["type"] == "mix":
                     time.sleep(STABILATION_TIME_MIX_SCENARIOS)  # Longer stabilization for mixed scenarios
                 elif scenario["type"]:
                     time.sleep(STABILATION_TIME_AFTER_INTERFERENCE)
 
                 # Start monitoring
-                print(f"[Replicas={replicas}|RPS={rps}] Starting PCM monitoring...", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] Starting PCM monitoring...", flush=True)
                 pcm_system_csv = os.path.join(main_results_dir, f"pcm_system_{test_id}.csv")
                 pcm_core_csv = os.path.join(main_results_dir, f"pcm_core_{test_id}.csv")
                 intelpcm_thread = threading.Thread(
@@ -456,7 +439,7 @@ def run_nginx_testing():
                     daemon=True
                 )
                 # Run workload
-                print(f"[Replicas={replicas}|RPS={rps}] Starting workload traffic...", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] Starting workload traffic...", flush=True)
                 intelpcm_thread.start()
                 time.sleep(1)
                 if GENERATOR == "wrk":
@@ -469,28 +452,28 @@ def run_nginx_testing():
                 #amduprof_thread.join()
                 intelpcm_thread.join()
                 time.sleep(1)  # Ensure all threads are done before proceeding
-                print(f"[Replicas={replicas}|RPS={rps}] PCM monitoring completed.", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] PCM monitoring completed.", flush=True)
 
                 # Parse and store workload output
-                print(f"[Replicas={replicas}|RPS={rps}] Parsing and storing workload output...", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] Parsing and storing workload output...", flush=True)
                 if GENERATOR == "wrk":
                     workload_metrics = parse_workload_output(output_file)
-                    print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
-                    store_workload_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
+                    print(f"[Replicas={scenario_name}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
+                    store_workload_metrics(workload_csv, scenario_name, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
                 elif GENERATOR == "vegeta": 
                     workload_metrics = parse_vegeta_metrics(output_file)
-                    print(f"[Replicas={replicas}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
-                    store_vegeta_metrics(workload_csv, replicas, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
+                    print(f"[Replicas={scenario_name}|RPS={rps}] Parsed metrics: {workload_metrics}", flush=True)
+                    store_vegeta_metrics(workload_csv, scenario_name, scenario["name"], workload_metrics, rps, test_id, scenario["id"])
 
                 if scenario["type"]:
                     cleanup_interference(scenario)
 
-                print(f"[Replicas={replicas}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.", flush=True)
-                print(f"[Replicas={replicas}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] Cleanup completed for scenario {scenario['name']}.", flush=True)
+                print(f"[Replicas={scenario_name}|RPS={rps}] Test case {test_id} completed. Waiting for {SLEEP_BETWEEN_TESTS} seconds before next test...", flush=True)
 
                 # Delete NGINX workload if it exists
-                print(f"[Replicas={replicas}|RPS={rps}] Deleting existing NGINX workload if any...", flush=True)
-                delete_nginx_workload()
+                print(f"[Replicas={scenario_name}|RPS={rps}] Deleting existing NGINX workload if any...", flush=True)
+                cleanup_nginx_scenario()
                 #time.sleep(STABILATION_TIME_AFTER_DELETION)  # Wait for deletion to stabilize
 
                 time.sleep(SLEEP_BETWEEN_TESTS)
