@@ -11,7 +11,7 @@ from workload_run_monitor import store_workload_metrics, parse_workload_output, 
 import threading
 
 
-FOLDER_NAME = "bababab"  # Folder to store results
+FOLDER_NAME = "Redis_V01"  # Folder to store results
 
 # Redis server configuration (for memtier_benchmark)
 REDIS_SERVER = "192.168.49.3"
@@ -22,6 +22,9 @@ REDIS_THREADS = 1
 REDIS_RATIO = "2:1"  # 50% read, 50% write
 REDIS_DATA_SIZE = 32  # Data size in bytes
 REDIS_TEST_TIME = 60  # Test duration in seconds
+
+REDIS_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/redis/redis_pod.yaml"
+REDIS_DEPLOYMENT_NAME = "redis"
 
 # PCM monitoring configuration
 SLEEP_BETWEEN_TESTS = 30                    # Sleep time between tests to allow system to stabilize
@@ -36,6 +39,14 @@ STABILATION_TIME_NEW_REPLICAS = 60          # Time to wait before tests for new 
 # Test matrix
 REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
 RPS_STEPS = [1500]
+
+# Redis Workload Scenarios
+REDIS_SCENARIOS = {
+    "read_heavy": {"ratio": "9:1", "pipeline": 10, "clients": 50},
+    "write_heavy": {"ratio": "1:9", "pipeline": 1, "clients": 30},
+    "mixed": {"ratio": "1:1", "pipeline": 5, "clients": 40},
+    "large_payload": {"ratio": "1:1", "data_size": 1024, "clients": 20}
+}
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -177,6 +188,32 @@ def cleanup_interference(scenario: Dict):
         for mix_scenario in scenario["mix"]:
             cleanup_interference(mix_scenario)
 
+# WORKLOAD DEPLOYMENT, SCALING AND DELETION FUNCTIONS FOR REDIS
+def deploy_redis_workload():
+    """Deploy Redis workload using kubectl"""
+    try:
+        subprocess.run(["kubectl", "apply", "-f", REDIS_DEPLOY_YAML], check=True)
+        print("[DEPLOYMENT] Redis workload deployed successfully.", flush=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to deploy Redis workload: {e.stderr}", flush=True)   
+
+def scale_redis_workload(replicas: int):
+    """Scale Redis workload to a specific number of replicas"""
+    try:
+        subprocess.run(["kubectl", "scale", "deployment", REDIS_DEPLOYMENT_NAME, f"--replicas={replicas}"], check=True)
+        print(f"Redis workload scaled to {replicas} replicas successfully.", flush=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to scale Redis workload: {e.stderr}", flush=True)
+
+def delete_redis_workload():
+    """Delete Redis workload using kubectl"""
+    try:
+        subprocess.run(["kubectl", "delete", "deployment", REDIS_DEPLOYMENT_NAME], check=True)
+        print("Redis workload deleted successfully.", flush=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to delete Redis workload: {e.stderr}", flush=True)
+
+
 # ENSURE DIRECTORIES FUNCTION
 def ensure_directories(script_dir):
     """
@@ -235,14 +272,6 @@ def run_redis_testing():
 
     # Data Files
     pcm_raw_file = os.path.join(raw_log_folder, f"pcm_raw_{timestamp}.csv")
-    
-    # Redis Workload Scenarios
-    REDIS_SCENARIOS = {
-        "read_heavy": {"ratio": "9:1", "pipeline": 10, "clients": 50},
-        "write_heavy": {"ratio": "1:9", "pipeline": 1, "clients": 30},
-        "mixed": {"ratio": "1:1", "pipeline": 5, "clients": 40},
-        "large_payload": {"ratio": "1:1", "data_size": 1024, "clients": 20}
-    }
 
     # Initialize results file
     workload_csv = os.path.join(main_results_dir, "redis_metrics.csv")
@@ -257,18 +286,16 @@ def run_redis_testing():
     prev_interference_type = None
 
     for replicas in REPLICAS_TO_TEST:
-        subprocess.run(["kubectl", "scale", "deployment", "my-redis", f"--replicas={replicas}"], check=True)
-        time.sleep(5)
-
         for scenario in INTERFERENCE_SCENARIOS:
-            if scenario["type"] != prev_interference_type:
-                #warmup_with_interference(scenario["type"])
-                time.sleep(STABILATION_TIME_AFTER_WARMUP)
-            prev_interference_type = scenario["type"]
-
             for workload_name, workload_params in REDIS_SCENARIOS.items():
                 test_id = f"{replicas}replicas_scenario{scenario['id']}_{workload_name}"
-                
+
+                # Deploy NGINX workload and scale it
+                print(f"\n[Replicas={replicas}| Scenario={scenario['name']}| Workload={workload_name}] Deploying Redis workload with {replicas} replicas")
+                deploy_redis_workload()
+                scale_redis_workload(replicas)
+                time.sleep(STABILATION_TIME_AFTER_DEPLOYMENT) 
+
                 print(f"\n[Replicas={replicas}|Scenario={scenario['name']}|Workload={workload_name}] Starting test {test_id}")
                 # Start monitoring
                 pcm_system_csv = os.path.join(main_results_dir, f"pcm_system_{test_id}.csv")
@@ -315,3 +342,11 @@ def run_redis_testing():
                     if os.path.isfile(file_path):
                         os.remove(file_path)
                 time.sleep(SLEEP_BETWEEN_TESTS)
+            
+def main():
+    # Run Redis testing
+    run_redis_testing()
+    print("Redis testing completed successfully.", flush=True)
+
+if __name__ == "__main__":
+    main()
