@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Control whether to use colocation scenarios
-TEST_COLOCATION = True  # Set to False to use original scenarios
+TEST_COLOCATION = False  # Set to False to use original scenarios
 
 # Folder Name
 FOLDER_NAME = "The_Substance_V02" #Folder to store results
@@ -59,14 +59,14 @@ REPLICAS_SCENARIOS_TO_TEST = [
     #{"node1": 3, "node2": 3, "name": "balanced_3"}, 
     # Weighted Scenarios
     #{"node1": 1, "node2": 2, "name": "weighted_1_2"},
-    #{"node1": 2, "node2": 1, "name": "weighted_2_1"},
-    #{"node1": 3, "node2": 1, "name": "weighted_3_1"},
+    {"node1": 2, "node2": 1, "name": "weighted_2_1"},
+    {"node1": 3, "node2": 1, "name": "weighted_3_1"},
     #{"node1": 1, "node2": 3, "name": "weighted_1_3"},
     #{"node1": 2, "node2": 3, "name": "weighted_2_3"},
     #{"node1": 3, "node2": 2, "name": "weighted_3_2"},
     # Only node 1
     {"node1": 3, "node2": 0, "name": "only_node1"},
-    {"node1": 4, "node2": 0, "name": "only_node1"}
+    {"node1": 4, "node2": 0, "name": "only_node1_rep4"}
 ]
 RPS_STEPS = [1500]  # RPS steps to test
 
