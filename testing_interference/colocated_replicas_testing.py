@@ -18,7 +18,7 @@ GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 TEST_COLOCATION = True  # Set to False to use original scenarios
 
 # Folder Name
-FOLDER_NAME = "The_Substance_V01" #Folder to store results
+FOLDER_NAME = "The_Substance_V02" #Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -54,16 +54,19 @@ STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new 
 # Test scenarios
 REPLICAS_SCENARIOS_TO_TEST = [
     # Balanced Scenarios
-    {"node1": 1, "node2": 1, "name": "balanced_1"},
-    {"node1": 2, "node2": 2, "name": "balanced_2"},
-    {"node1": 3, "node2": 3, "name": "balanced_3"}, 
+    #{"node1": 1, "node2": 1, "name": "balanced_1"},
+    #{"node1": 2, "node2": 2, "name": "balanced_2"},
+    #{"node1": 3, "node2": 3, "name": "balanced_3"}, 
     # Weighted Scenarios
-    {"node1": 1, "node2": 2, "name": "weighted_1_2"},
-    {"node1": 2, "node2": 1, "name": "weighted_2_1"},
-    {"node1": 3, "node2": 1, "name": "weighted_3_1"},
-    {"node1": 1, "node2": 3, "name": "weighted_1_3"},
-    {"node1": 2, "node2": 3, "name": "weighted_2_3"},
-    {"node1": 3, "node2": 2, "name": "weighted_3_2"},
+    #{"node1": 1, "node2": 2, "name": "weighted_1_2"},
+    #{"node1": 2, "node2": 1, "name": "weighted_2_1"},
+    #{"node1": 3, "node2": 1, "name": "weighted_3_1"},
+    #{"node1": 1, "node2": 3, "name": "weighted_1_3"},
+    #{"node1": 2, "node2": 3, "name": "weighted_2_3"},
+    #{"node1": 3, "node2": 2, "name": "weighted_3_2"},
+    # Only node 1
+    {"node1": 3, "node2": 0, "name": "only_node1"},
+    {"node1": 4, "node2": 0, "name": "only_node1"}
 ]
 RPS_STEPS = [1500]  # RPS steps to test
 
@@ -316,8 +319,16 @@ def deploy_nginx_scenario(node1_replicas: int, node2_replicas: int):
     deploy_workload(NGINX_NODE2_DEPLOY_YAML)
     
     # Scale to desired replicas
-    scale_workload(NGINX_NODE1_DEPLOYMENT_NAME, node1_replicas)
-    scale_workload(NGINX_NODE2_DEPLOYMENT_NAME, node2_replicas)
+    # If replicas are 0, we delete the deployment
+    if node1_replicas == 0:
+        delete_workload(NGINX_NODE1_DEPLOYMENT_NAME)
+    if node2_replicas == 0:
+        delete_workload(NGINX_NODE2_DEPLOYMENT_NAME)
+    # Otherwise, scale to the specified number of replicas
+    if node1_replicas > 0:
+        scale_workload(NGINX_NODE1_DEPLOYMENT_NAME, node1_replicas)
+    if node2_replicas > 0:
+        scale_workload(NGINX_NODE2_DEPLOYMENT_NAME, node2_replicas)
 
 def cleanup_nginx_scenario():
     """Clean up both nginx deployments"""
