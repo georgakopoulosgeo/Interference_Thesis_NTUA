@@ -1,0 +1,9 @@
+marla/
+├── controller.py             # 🔁 Main control loop (decision engine)
+├── predictor_client.py       # 📡 Sends input to slowdown prediction API
+├── rps_forecaster.py         # 🔮 ARIMA-based traffic predictor
+├── k8s_interface.py          # ☸️ Kubernetes API actions (scale, evict, etc.)
+├── placement_logic.py        # 🧠 Finds optimal replica distribution
+├── config.py                 # ⚙️ Constants and thresholds
+├── logs/                     # 🧾 Logs of MARLA decisions, metrics, and predictions
+└── utils.py                  # 🧰 Shared helpers (e.g., timestamping, smoothing)

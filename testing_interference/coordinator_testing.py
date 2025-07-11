@@ -75,6 +75,42 @@ INTERFERENCE_SCENARIOS = [
     #{"id": 34, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
+INTERFERENCE_SCENARIOS_MIX = [
+    {"id": 51, "name": "1_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 52, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 53, "name": "1_CPU_2_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "ibench-membw", "count": 2}
+    ]},
+    {"id": 54, "name": "2_CPU_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 55, "name": "1_CPU_2_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 2}
+    ]},
+    {"id": 56, "name": "1_CPU_1_L3_1_MemBW", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 1},
+        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-membw", "count": 1}
+    ]},
+    {"id": 57, "name": "2_CPU_1_L3", "type": "mix", "mix": [
+        {"type": "ibench-cpu", "count": 2},
+        {"type": "stress-ng-l3", "count": 1}
+    ]},
+    {"id": 68, "name": "1_L3_3_MemBW", "type": "mix", "mix": [
+        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-membw", "count": 3}
+    ]}
+]
+
 # Case B Scenarios
 INTERFERENCE_SCENARIOS_B = [
     # Baseline Scenarios
