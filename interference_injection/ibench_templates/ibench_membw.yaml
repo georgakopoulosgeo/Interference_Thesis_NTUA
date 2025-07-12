@@ -12,7 +12,7 @@ spec:
       - name: ibench
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./membw", "120"]
+        command: ["./memBw", "120"]
         resources:
           requests:
             cpu: "250m"

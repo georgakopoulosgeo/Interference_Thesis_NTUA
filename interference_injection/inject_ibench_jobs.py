@@ -58,7 +58,7 @@ def run_scheduler():
         if sleep_time > 0:
             time.sleep(sleep_time)
 
-        template_file = os.path.join(TEMPLATE_DIR, f"ibench-{entry['job_type']}.yaml")
+        template_file = os.path.join(TEMPLATE_DIR, f"ibench_{entry['job_type']}.yaml")
         manifest = create_job_yaml(
             template_file,
             entry['job_name'],
