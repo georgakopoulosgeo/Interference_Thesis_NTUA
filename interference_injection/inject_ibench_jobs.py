@@ -7,8 +7,9 @@ import yaml
 import os
 
 # === Global Config ===
-CSV_PATH = "ibench_schedule.csv"
-TEMPLATE_DIR = "ibench_templates"
+CSV_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_schedule.csv"
+TEMPLATE_DIR = "/home/george/Workspace/Interference/interference_injection/ibench_templates"
+
 NAMESPACE = "default"
 
 # === Load Kubernetes Client ===

@@ -22,5 +22,5 @@ spec:
             memory: "256Mi"
       restartPolicy: Never
       nodeSelector:
-        kubernetes.io/hostname: node1   # to be overridden in code
+        kubernetes.io/hostname: minikube   # to be overridden in code
   backoffLimit: 0
