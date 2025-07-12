@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: ibench-membw
 spec:
+  ttlSecondsAfterFinished: 30
   template:
     metadata:
       labels:

@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: ibench-cpu
 spec:
+  ttlSecondsAfterFinished: 30
   template:
     metadata:
       labels:
