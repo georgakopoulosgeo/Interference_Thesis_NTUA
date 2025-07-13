@@ -1,6 +1,8 @@
 import csv
 import threading
 import time
+import io
+import csv
 
 BUFFER_PATH = "/opt/pcm_metrics/buffer_metrics.csv"
 DESIRED_KEYWORDS = [
@@ -18,6 +20,18 @@ def read_buffer_csv(buffer_path: str) -> list[list[str]]:
         rows = list(reader)
     return rows
 
+def metrics_to_csv(metrics: list[dict]) -> str:
+    """
+    Converts list of dicts (metrics) into CSV-formatted string.
+    """
+    if not metrics:
+        return ""
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=metrics[0].keys())
+    writer.writeheader()
+    writer.writerows(metrics)
+    return output.getvalue()
 
 def parse_csv_rows(rows: list[list[str]]) -> list[dict]:
     """
@@ -25,15 +39,15 @@ def parse_csv_rows(rows: list[list[str]]) -> list[dict]:
     Returns list of dicts for API response.
     """
     if len(rows) < 3:
-        print("[pcm_reader] CSV file has fewer than 3 rows — skipping.")
+        #print("[pcm_reader] CSV file has fewer than 3 rows — skipping.")
         return []
 
     header_domain = rows[0]
     header_metric = rows[1]
     data_rows = rows[2:]
 
-    print(f"[pcm_reader] Header domain columns: {len(header_domain)}")
-    print(f"[pcm_reader] Header metric columns: {len(header_metric)}")
+    #print(f"[pcm_reader] Header domain columns: {len(header_domain)}")
+    #print(f"[pcm_reader] Header metric columns: {len(header_metric)}")
 
     # Build final headers and indices to keep
     indices_to_keep = []
@@ -48,21 +62,34 @@ def parse_csv_rows(rows: list[list[str]]) -> list[dict]:
             indices_to_keep.append(idx)
             final_headers.append(f"{dom.strip()} - {met.strip()}")
     
-    print(f"[pcm_reader] Keeping {len(indices_to_keep)} columns: {final_headers[:5]}...")
+    #print(f"[pcm_reader] Keeping {len(indices_to_keep)} columns: {final_headers[:5]}...")
 
     # Parse selected data rows into dicts
     result = []
     for i,row in enumerate(data_rows):
         if len(row) < max(indices_to_keep) + 1:
-            print(f"[pcm_reader] Skipping row {i} with only {len(row)} columns.")
+            #print(f"[pcm_reader] Skipping row {i} with only {len(row)} columns.")
             continue
         filtered = [row[i] for i in indices_to_keep]
         result.append(dict(zip(final_headers, filtered)))
-    print(f"[pcm_reader] Parsed {len(result)} metrics from CSV.")
+    #print(f"[pcm_reader] Parsed {len(result)} metrics from CSV.")
     return result
 
+def metrics_to_csv(metrics: list[dict]) -> str:
+    """
+    Converts list of dicts (metrics) into CSV-formatted string.
+    """
+    if not metrics:
+        return ""
 
-def periodic_buffer_refresh(buffer_path: str, cache: dict, interval: int = 2):
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=metrics[0].keys())
+    writer.writeheader()
+    writer.writerows(metrics)
+    return output.getvalue()
+
+
+def periodic_buffer_refresh(buffer_path: str, cache: dict, interval: int = 5):
     """Periodically refreshes shared_cache with latest metrics."""
     while True:
         try:
