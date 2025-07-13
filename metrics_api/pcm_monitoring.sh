@@ -12,9 +12,9 @@ sudo /home/george/Workspace/pcm/build/bin/pcm 1 -r -csv=raw_metrics.csv 1>&- 2>&
 # Maintain a 30-line buffer of latest data in buffer_metrics.csv
 while true; do
     # Copy header (top 3 lines)
-    head -n 3 raw_metrics.csv > buffer_metrics_temp.csv
+    head -n 2 raw_metrics.csv > buffer_metrics_temp.csv
     # Copy last 30 lines of actual data
-    tail -n 40 raw_metrics.csv >> buffer_metrics_temp.csv
+    tail -n 20 raw_metrics.csv >> buffer_metrics_temp.csv
     # Atomically replace the old buffer
     mv buffer_metrics_temp.csv buffer_metrics.csv
     # Wait before repeating
