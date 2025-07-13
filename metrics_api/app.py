@@ -4,12 +4,12 @@ from pcm_reader import init_metrics_updater, metrics_to_csv, BUFFER_PATH
 app = Flask(__name__)
 cache = init_metrics_updater(BUFFER_PATH)
 
-@app.route("/metrics", methods=["GET"])
+@app.route("/metrics_list", methods=["GET"])
 def get_metrics():
     """Returns last parsed PCM metrics from buffer."""
     return jsonify({"metrics": cache["metrics"]})
 
-@app.route("/metrics_csv", methods=["GET"])
+@app.route("/metrics", methods=["GET"])
 def get_metrics_csv():
     csv_data = metrics_to_csv(cache["metrics"])
     return Response(csv_data, mimetype="text/csv")

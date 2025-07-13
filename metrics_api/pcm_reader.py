@@ -39,15 +39,15 @@ def parse_csv_rows(rows: list[list[str]]) -> list[dict]:
     Returns list of dicts for API response.
     """
     if len(rows) < 3:
-        #print("[pcm_reader] CSV file has fewer than 3 rows — skipping.")
+        #print("[pcm_reader] CSV file has fewer than 3 rows — skipping.") #DEBUG
         return []
 
     header_domain = rows[0]
     header_metric = rows[1]
     data_rows = rows[2:]
 
-    #print(f"[pcm_reader] Header domain columns: {len(header_domain)}")
-    #print(f"[pcm_reader] Header metric columns: {len(header_metric)}")
+    #print(f"[pcm_reader] Header domain columns: {len(header_domain)}") #DEBUG
+    #print(f"[pcm_reader] Header metric columns: {len(header_metric)}") #DEBUG
 
     # Build final headers and indices to keep
     indices_to_keep = []
@@ -62,17 +62,17 @@ def parse_csv_rows(rows: list[list[str]]) -> list[dict]:
             indices_to_keep.append(idx)
             final_headers.append(f"{dom.strip()} - {met.strip()}")
     
-    #print(f"[pcm_reader] Keeping {len(indices_to_keep)} columns: {final_headers[:5]}...")
+    #print(f"[pcm_reader] Keeping {len(indices_to_keep)} columns: {final_headers[:5]}...") #DEBUG
 
     # Parse selected data rows into dicts
     result = []
     for i,row in enumerate(data_rows):
         if len(row) < max(indices_to_keep) + 1:
-            #print(f"[pcm_reader] Skipping row {i} with only {len(row)} columns.")
+            #print(f"[pcm_reader] Skipping row {i} with only {len(row)} columns.") #DEBUG
             continue
         filtered = [row[i] for i in indices_to_keep]
         result.append(dict(zip(final_headers, filtered)))
-    #print(f"[pcm_reader] Parsed {len(result)} metrics from CSV.")
+    #print(f"[pcm_reader] Parsed {len(result)} metrics from CSV.") #DEBUG
     return result
 
 def metrics_to_csv(metrics: list[dict]) -> str:
@@ -94,10 +94,11 @@ def periodic_buffer_refresh(buffer_path: str, cache: dict, interval: int = 5):
     while True:
         try:
             raw_rows = read_buffer_csv(buffer_path)
-            print(f"[pcm_reader] Read {len(raw_rows)} rows from buffer.")
+            #print(f"[pcm_reader] Read {len(raw_rows)} rows from buffer.") #DEBUG
             parsed = parse_csv_rows(raw_rows)
-            print(f"[pcm_reader] Parsed {len(parsed)} metrics.")
+            #print(f"[pcm_reader] Parsed {len(parsed)} metrics.") #DEBUG
             cache["metrics"] = parsed
+            print(f"[pcm_reader {time.strftime('%Y-%m-%d %H:%M:%S')}] Updated cache with {len(parsed)} metrics.")
         except Exception as e:
             print(f"[pcm_reader] Error reading buffer: {e}")
             cache["metrics"] = []
