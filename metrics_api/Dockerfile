@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Copy your Python code into the image
 COPY app.py ./
+COPY pcm_reader.py ./
 
 # Install dependencies
 RUN pip install flask
