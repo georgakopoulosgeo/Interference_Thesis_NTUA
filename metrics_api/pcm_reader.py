@@ -57,7 +57,9 @@ def periodic_buffer_refresh(buffer_path: str, cache: dict, interval: int = 2):
     while True:
         try:
             raw_rows = read_buffer_csv(buffer_path)
+            print(f"[pcm_reader] Read {len(raw_rows)} rows from buffer.")
             parsed = parse_csv_rows(raw_rows)
+            print(f"[pcm_reader] Parsed {len(parsed)} metrics.")
             cache["metrics"] = parsed
         except Exception as e:
             print(f"[pcm_reader] Error reading buffer: {e}")
