@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: ibench-membw
 spec:
+  ttlSecondsAfterFinished: 30
   template:
     metadata:
       labels:
@@ -12,7 +13,7 @@ spec:
       - name: ibench
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./membw", "120"]
+        command: ["./memBw", "120"]
         resources:
           requests:
             cpu: "250m"
@@ -22,5 +23,5 @@ spec:
             memory: "256Mi"
       restartPolicy: Never
       nodeSelector:
-        kubernetes.io/hostname: node1   # to be overridden in code
+        kubernetes.io/hostname: minikube   # to be overridden in code
   backoffLimit: 0

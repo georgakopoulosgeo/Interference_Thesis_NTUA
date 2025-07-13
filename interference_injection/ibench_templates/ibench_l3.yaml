@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: ibench-l3
 spec:
+  ttlSecondsAfterFinished: 30
   template:
     metadata:
       labels:
@@ -22,5 +23,5 @@ spec:
             memory: "256Mi"
       restartPolicy: Never
       nodeSelector:
-        kubernetes.io/hostname: node1   # to be overridden in code
+        kubernetes.io/hostname: minikube   # to be overridden in code
   backoffLimit: 0

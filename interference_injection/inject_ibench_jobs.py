@@ -7,8 +7,9 @@ import yaml
 import os
 
 # === Global Config ===
-CSV_PATH = "ibench_schedule.csv"
-TEMPLATE_DIR = "ibench_templates"
+CSV_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_schedule.csv"
+TEMPLATE_DIR = "/home/george/Workspace/Interference/interference_injection/ibench_templates"
+
 NAMESPACE = "default"
 
 # === Load Kubernetes Client ===
@@ -57,7 +58,7 @@ def run_scheduler():
         if sleep_time > 0:
             time.sleep(sleep_time)
 
-        template_file = os.path.join(TEMPLATE_DIR, f"ibench-{entry['job_type']}.yaml")
+        template_file = os.path.join(TEMPLATE_DIR, f"ibench_{entry['job_type']}.yaml")
         manifest = create_job_yaml(
             template_file,
             entry['job_name'],
