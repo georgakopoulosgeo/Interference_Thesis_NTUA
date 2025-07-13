@@ -27,7 +27,7 @@ app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.DEBUG)
 
 # Load the model at startup
-MODEL_PATH = './slowdown_predictor.pkl'
+MODEL_PATH = '/model/slowdown_predictor.pkl'
 
 try:
     model = joblib.load(MODEL_PATH)
