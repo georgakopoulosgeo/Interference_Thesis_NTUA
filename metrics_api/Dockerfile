@@ -1,18 +1,16 @@
-# Use a slim Python base image
 FROM python:3.10-slim
 
-# Set working directory
+# Create working directory
 WORKDIR /app
 
+# Copy your Python code into the image
+COPY metrics_api.py ./
+
 # Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install flask
 
-# Copy the source files
-COPY app.py pcm_reader.py ./
-
-# Expose the port used by Flask
+# Expose port for Flask
 EXPOSE 8000
 
-# Command to run the Flask app
+# Run the app
 CMD ["python", "app.py"]
