@@ -27,7 +27,7 @@ app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.DEBUG)
 
 # Load the model at startup
-MODEL_PATH = '/model/slowdown_predictor.pkl'
+MODEL_PATH = './slowdown_predictor.pkl'
 
 try:
     model = joblib.load(MODEL_PATH)
@@ -37,7 +37,7 @@ except Exception as e:
     print(f"Error loading model: {e}")
 
 # Configuration
-METRICS_SERVICE_URL = "http://metrics-collector:8000/metrics"
+METRICS_SERVICE_URL = "http://localhost:30090/metrics"
 REQUEST_TIMEOUT = 5  # seconds
 
 @app.route('/health')
@@ -257,11 +257,6 @@ def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
     predictions = {}
     try:
         for node_name, feature_vector in features.items():
-
-            # DEBUG: test only for node1
-            if node_name != 'node1':
-                continue
-
             # Ensure features are in right shape (2D array)
             input_data = np.array(feature_vector).reshape(1, -1)
             

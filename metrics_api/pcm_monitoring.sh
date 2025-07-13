@@ -14,9 +14,9 @@ while true; do
     # Copy header (top 3 lines)
     head -n 2 raw_metrics.csv > buffer_metrics_temp.csv
     # Copy last 30 lines of actual data
-    tail -n 20 raw_metrics.csv >> buffer_metrics_temp.csv
+    tail -n 30 raw_metrics.csv >> buffer_metrics_temp.csv
     # Atomically replace the old buffer
     mv buffer_metrics_temp.csv buffer_metrics.csv
     # Wait before repeating
-    sleep 2
+    sleep 4
 done &
