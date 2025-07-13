@@ -37,7 +37,7 @@ except Exception as e:
     print(f"Error loading model: {e}")
 
 # Configuration
-METRICS_SERVICE_URL = "http://host.docker.internal:30090/metrics"
+METRICS_SERVICE_URL = "http://172.17.0.1:30090/metrics"
 REQUEST_TIMEOUT = 5  # seconds
 
 @app.route('/health')
