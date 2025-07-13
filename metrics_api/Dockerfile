@@ -4,7 +4,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Copy your Python code into the image
-COPY metrics_api.py ./
+COPY app.py ./
 
 # Install dependencies
 RUN pip install flask
