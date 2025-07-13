@@ -67,8 +67,6 @@ def periodic_buffer_refresh(buffer_path: str, cache: dict, interval: int = 2):
 
 def init_metrics_updater(buffer_path: str) -> dict:
     """Initializes background thread and returns shared cache reference."""
-    thread = threading.Thread(
-        target=periodic_buffer_refresh, args=(buffer_path, shared_cache), daemon=True
-    )
+    thread = threading.Thread(target=periodic_buffer_refresh, args=(buffer_path, shared_cache), daemon=True)
     thread.start()
     return shared_cache

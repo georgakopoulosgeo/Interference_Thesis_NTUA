@@ -1,6 +1,6 @@
 #!/bin/bash
 # Define where to store the metrics
-METRICS_DIR="/opt/pcm_metrics"
+METRICS_DIR="/home/pcm_metrics"
 mkdir -p "$METRICS_DIR"
 cd "$METRICS_DIR"
 # Load MSR kernel module (required for Intel PCM)

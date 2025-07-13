@@ -22,12 +22,12 @@ spec:
             - containerPort: 8000
           volumeMounts:
             - name: pcm-metrics
-              mountPath: /opt/pcm_metrics
+              mountPath: /opt/pcm_metrics     # ← same path as used in your Python code
               readOnly: true
       volumes:
         - name: pcm-metrics
           hostPath:
-            path: /opt/pcm_metrics
+            path: /mnt/pcm_metrics            # ← this is the mounted folder inside the node container
             type: Directory
 ---
 apiVersion: v1
@@ -41,5 +41,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8000
-      nodePort: 30080
+      nodePort: 30090
   type: NodePort

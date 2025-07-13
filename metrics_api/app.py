@@ -8,7 +8,7 @@ cache = init_metrics_updater(BUFFER_PATH)
 @app.route("/metrics", methods=["GET"])
 def get_metrics():
     """Returns last parsed PCM metrics from buffer."""
-    return jsonify(cache["metrics"])
+    return jsonify({"metrics":cache["metrics"]})
 
 
 @app.route("/health", methods=["GET"])
