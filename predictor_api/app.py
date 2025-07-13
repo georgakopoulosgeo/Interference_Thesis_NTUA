@@ -132,7 +132,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     }
 
     # Always retain System Date and Time
-    base_columns = ['System - Date', 'System - Time']
+    base_columns = ['Date', 'Time']
 
     # Initialize container
     node_data = {'node1': df[base_columns].copy(), 'node2': df[base_columns].copy()}
