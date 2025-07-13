@@ -17,7 +17,7 @@ def get_metrics_csv():
 @app.route("/health", methods=["GET"])
 def health():
     """Simple health check endpoint."""
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "metrics_count": len(cache["metrics"])})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=30090, threaded=True)
