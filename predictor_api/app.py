@@ -257,18 +257,19 @@ def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
     predictions = {}
     try:
         for node_name, feature_vector in features.items():
-            # Ensure features are in right shape (2D array)
-            input_data = np.array(feature_vector).reshape(1, -1)
+            app.logger.debug(f"Feature vector for {node_name}: {dict(zip(EXPECTED_FEATURES, feature_vector))}")
+            # Construct a DataFrame with proper feature names
+            input_df = pd.DataFrame([feature_vector], columns=EXPECTED_FEATURES)
             
-            # Full pipeline transformation + prediction
-            prediction = model.predict(input_data)[0]  
+            prediction = model.predict(input_df)[0]
             predictions[node_name] = float(prediction)
             
-        app.logger.debug(f"Predictions made: {predictions}")
+            app.logger.debug(f"{node_name} prediction: {prediction}")
         return predictions
     except Exception as e:
         app.logger.error(f"Prediction failed: {str(e)}")
         raise Exception(f"Prediction error: {str(e)}")
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
