@@ -235,7 +235,7 @@ def compute_core_features_from_df(
 
     # Compute aggregated AvgCore metrics
     for metric, series_list in core_metrics_group.items():
-        continue
+        #continue
         if series_list:
             df_metric = pd.concat(series_list, axis=1)
             agg_series = df_metric.mean(axis=1)  # row-wise average
