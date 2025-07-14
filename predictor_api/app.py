@@ -240,6 +240,7 @@ def compute_core_features_from_df(
             core_metrics_group[metric].append(series)
 
     # Compute aggregated AvgCore metrics
+    print(f"Aggregating core metrics for: {list(core_metrics_group.keys())}")
     for metric, series_list in core_metrics_group.items():
         #continue
         if series_list:
