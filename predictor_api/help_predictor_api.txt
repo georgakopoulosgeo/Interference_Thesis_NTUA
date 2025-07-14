@@ -108,4 +108,4 @@ System - Date,System - Time,System_IPC,System_L3MISS,System_L2MISS,System_READ,S
 curl http://localhost:5000/health
 curl -X POST http://localhost:5000/predict \
   -H "Content-Type: application/json" \
-  -d '{"replicas": 2, "rps": 3000}'
+  -d '{"replicas": 2, "rps": 2000}'
