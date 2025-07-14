@@ -123,9 +123,9 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
 
     # Mapping of core column prefixes to target node and renamed core
     core_mapping = {
-        'Core0 (Socket-1)': ('node1', 'Core3'),
-        'Core1 (Socket-1)': ('node1', 'Core4'),
-        'Core2 (Socket-1)': ('node1', 'Core5'),
+        'Core0 (Socket 0)': ('node1', 'Core3'),
+        'Core1 (Socket 0)': ('node1', 'Core4'),
+        'Core2 (Socket 0)': ('node1', 'Core5'),
         'Core3 (Socket 0)': ('node2', 'Core3'),
         'Core4 (Socket 0)': ('node2', 'Core4'),
         'Core5 (Socket 0)': ('node2', 'Core5'),
@@ -147,7 +147,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     # Length of each node's DataFrame
     for node, data in node_data.items():
         app.logger.debug(f"{node} has {len(data)} rows of metrics data")
-        app.logger.debug(f"{node} columns: {data.head(6)}")
+        #app.logger.debug(f"{node} columns: {data.head(6)}")
     return node_data
 
 
@@ -248,7 +248,7 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
         
         features[node_name] = feature_vector
         
-        app.logger.debug(f"Generated {len(feature_vector)} features for {node_name}")
+    #app.logger.debug(f"Generated {len(feature_vector)} features for {node_name}")
     
     return features
 
