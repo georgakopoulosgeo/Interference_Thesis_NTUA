@@ -221,7 +221,7 @@ def compute_core_features_from_df(
     core_metrics_group = defaultdict(list)
 
     # Metrics we care about
-    keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%']
+    keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%', 'PhysIPC']
 
     for core in target_cores:
         core_prefix = core_prefix_template.format(core=core)
