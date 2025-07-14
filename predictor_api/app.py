@@ -128,7 +128,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
         'Core2 (Socket 0)': ('node1', 'Core5'),
         'Core3 (Socket 0)': ('node2', 'Core3'),
         'Core4 (Socket 0)': ('node2', 'Core4'),
-        'Core5 (Socket 0)': ('node2', 'Core5'),
+        'Core5 (Socket 0)': ('node2', 'Core5')
     }
 
     # Always retain System Date and Time
@@ -172,24 +172,18 @@ def compute_windowed_stats(series, window_size, stats):
 # Expected feature order (from your model)
 EXPECTED_FEATURES = [
     'RPS', 'Replicas_x', 
-    'mean_AvgCore_C0res', 'mean_AvgCore_C1res', 'mean_AvgCore_C6res', 'mean_AvgCore_IPC', 
-    'mean_AvgCore_L2MISS', 'mean_AvgCore_L3MISS', 'mean_AvgCore_PhysIPC', 
     'mean_Core3_C0res', 'mean_Core3_C1res', 'mean_Core3_C6res', 'mean_Core3_IPC', 
     'mean_Core3_L2MISS', 'mean_Core3_L3MISS', 'mean_Core3_PhysIPC', 
     'mean_Core4_C0res', 'mean_Core4_C1res', 'mean_Core4_C6res', 'mean_Core4_IPC', 
     'mean_Core4_L2MISS', 'mean_Core4_L3MISS', 'mean_Core4_PhysIPC', 
     'mean_Core5_C0res', 'mean_Core5_C1res', 'mean_Core5_C6res', 'mean_Core5_IPC', 
     'mean_Core5_L2MISS', 'mean_Core5_L3MISS', 'mean_Core5_PhysIPC', 
-    'p95_AvgCore_C0res', 'p95_AvgCore_C1res', 'p95_AvgCore_C6res', 'p95_AvgCore_IPC', 
-    'p95_AvgCore_L2MISS', 'p95_AvgCore_L3MISS', 'p95_AvgCore_PhysIPC', 
     'p95_Core3_C0res', 'p95_Core3_C1res', 'p95_Core3_C6res', 'p95_Core3_IPC', 
     'p95_Core3_L2MISS', 'p95_Core3_L3MISS', 'p95_Core3_PhysIPC', 
     'p95_Core4_C0res', 'p95_Core4_C1res', 'p95_Core4_C6res', 'p95_Core4_IPC', 
     'p95_Core4_L2MISS', 'p95_Core4_L3MISS', 'p95_Core4_PhysIPC', 
     'p95_Core5_C0res', 'p95_Core5_C1res', 'p95_Core5_C6res', 'p95_Core5_IPC', 
     'p95_Core5_L2MISS', 'p95_Core5_L3MISS', 'p95_Core5_PhysIPC', 
-    'std_AvgCore_C0res', 'std_AvgCore_C1res', 'std_AvgCore_C6res', 'std_AvgCore_IPC', 
-    'std_AvgCore_L2MISS', 'std_AvgCore_L3MISS', 'std_AvgCore_PhysIPC', 
     'std_Core3_C0res', 'std_Core3_C1res', 'std_Core3_C6res', 'std_Core3_IPC', 
     'std_Core3_L2MISS', 'std_Core3_L3MISS', 'std_Core3_PhysIPC', 
     'std_Core4_C0res', 'std_Core4_C1res', 'std_Core4_C6res', 'std_Core4_IPC', 
@@ -198,59 +192,82 @@ EXPECTED_FEATURES = [
     'std_Core5_L2MISS', 'std_Core5_L3MISS', 'std_Core5_PhysIPC'
 ]
 
+def compute_core_features_from_df(
+    df_pcm: pd.DataFrame,
+    target_cores: List[int] = [3, 4, 5],
+    window_size: int = 2,
+    stats: List[str] = ['mean', 'p95', 'std'],
+    core_prefix_template: str = "Core{core} (Socket 0) - "
+) -> Dict[str, float]:
+    """
+    Computes per-core and AvgCore PCM stats from a single PCM DataFrame.
+
+    Parameters:
+    - df_pcm: DataFrame with time-series PCM metrics
+    - target_cores: cores to analyze (default [3,4,5])
+    - window_size: window for rolling stat calculation
+    - stats: stats to compute (e.g., ['mean','std','p95'])
+    - core_prefix_template: pattern for column prefix
+
+    Returns:
+    - Dict of {feature_name: value}
+    """
+    from collections import defaultdict
+
+    features = {}
+    core_metrics_group = defaultdict(list)
+
+    # Metrics we care about
+    keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%', 'PhysIPC']
+
+    for core in target_cores:
+        core_prefix = core_prefix_template.format(core=core)
+        core_cols = [col for col in df_pcm.columns if col.startswith(core_prefix)]
+        core_cols = [col for col in core_cols if any(m in col for m in keep_metrics)]
+
+        for col in core_cols:
+            metric = col.replace(core_prefix, '').replace('%', '')
+            clean_name = f'Core{core}_{metric}'
+            series = df_pcm[col]
+
+            stat_values = compute_windowed_stats(series, window_size, stats)
+            for stat, value in stat_values.items():
+                features[f'{stat}_{clean_name}'] = value
+
+            core_metrics_group[metric].append(series)
+
+    # Compute aggregated AvgCore metrics
+    for metric, series_list in core_metrics_group.items():
+        continue
+        if series_list:
+            df_metric = pd.concat(series_list, axis=1)
+            agg_series = df_metric.mean(axis=1)  # row-wise average
+            agg_stats = compute_windowed_stats(agg_series, window_size, stats)
+            for stat, value in agg_stats.items():
+                features[f'{stat}_AvgCore_{metric}'] = value
+
+    return features
+
 def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps: int) -> Dict[str, List[float]]:
     """
-    Calculate features matching the training notebook's approach
-    Returns: Dictionary of {node_name: feature_vector}
+    Uses the shared core feature function to generate feature vectors for each node.
     """
     features = {}
-    window_size = 2  # Same as training
-    stats = ['mean', 'std', 'p95']  # Same as training
-    target_cores = [3, 4, 5]  # Since we renamed cores 0-2 to 3-5
-    
     for node_name, df in node_metrics.items():
-        features_dict = defaultdict(dict)
-        core_metrics_group = defaultdict(list)
-        
-        # Process each target core
-        for core in target_cores:
-            core_prefix = f'Core{core} - '
-            core_cols = [col for col in df.columns if col.startswith(core_prefix)]
-            
-            # Filter to metrics we care about
-            keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%', 'PhysIPC']
-            core_cols = [col for col in core_cols if any(m in col for m in keep_metrics)]
-            
-            for col in core_cols:
-                metric = col.replace(core_prefix, '').replace('%', '')
-                s = df[col]
-                
-                # Compute statistics
-                stats_results = compute_windowed_stats(s, window_size, stats)
-                for stat, value in stats_results.items():
-                    features_dict[f'{stat}_Core{core}_{metric}'] = value
-                
-                # Store for aggregation
-                core_metrics_group[metric].append(s)
-        
-        # Compute aggregated stats across cores
-        for metric, series_list in core_metrics_group.items():
-            if series_list:  # Only if we have data
-                agg_series = pd.concat(series_list, axis=1).mean(axis=1)
-                agg_stats = compute_windowed_stats(agg_series, window_size, stats)
-                for stat, value in agg_stats.items():
-                    features_dict[f'{stat}_AvgCore_{metric}'] = value
-        
-        # Build feature vector in expected order
-        feature_vector = [rps, replicas]
-        for feature in EXPECTED_FEATURES[2:]:  # Skip RPS and Replicas
-            feature_vector.append(features_dict.get(feature, 0.0))
-        
+        feature_dict = compute_core_features_from_df(
+            df_pcm=df,
+            target_cores=[3, 4, 5],
+            window_size=2,
+            stats=['mean', 'p95', 'std'],
+            core_prefix_template="Core{core} - "  # matches renamed columns in predictor
+        )
+
+        # Build final feature vector using fixed feature list
+        feature_vector = [rps, replicas] + [feature_dict.get(f, 0.0) for f in EXPECTED_FEATURES[2:]]
         features[node_name] = feature_vector
-        
-    #app.logger.debug(f"Generated {len(feature_vector)} features for {node_name}")
-    
+
     return features
+
 
 def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
     """Make predictions using the full pipeline"""

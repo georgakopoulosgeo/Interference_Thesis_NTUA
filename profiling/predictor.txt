@@ -98,3 +98,132 @@ model.fit(X_train, y_train, early_stopping_rounds=10, eval_set=[(X_test, y_test)
 y_pred = model.predict(X_test)
 print("MAE:", mean_absolute_error(y_test, y_pred))
 print("R²:", r2_score(y_test, y_pred))
+
+
+
+
+
+
+
+
+
+
+import re
+
+def extract_pcm_features(data_dir, target_cores=[3,4,5], include_system=False, window_size=2, stats=('mean','p95','std')):
+    """
+    Extract PCM features from core and optionally system CSV logs.
+    
+    Parameters:
+    - data_dir (str): Directory containing PCM CSV files
+    - target_cores (list): Core numbers to analyze (default: [3,4,5])
+    - include_system (bool): Whether to include system-wide metrics
+    - window_size (int): Samples for rolling window
+    - stats (tuple): Statistics to compute ('mean','p95','std','max','min')
+    
+    Returns:
+    - pd.DataFrame: One row per scenario, features + pcm_id
+    """
+    # Pattern to match both core and system files
+    core_pattern = os.path.join(data_dir, 'pcm_core_*.csv')
+    system_pattern = os.path.join(data_dir, 'pcm_system_*.csv')
+    
+    # Get all available files
+    core_files = glob.glob(core_pattern)
+    system_files = glob.glob(system_pattern) if include_system else []
+    
+    if not core_files and not system_files:
+        print(f"⚠️ No PCM files found in {data_dir}")
+        return pd.DataFrame()
+
+    # Create mapping of scenario IDs to their features
+    features_dict = {}
+
+    # Process core files
+    for filepath in core_files:
+        # Extract pcm_id (e.g., "2replicas_scenario9_900rps" from "pcm_core_2replicas_scenario9_900rps.csv")
+        pcm_id = os.path.basename(filepath).replace('pcm_core_', '').replace('.csv', '')
+        
+        if pcm_id not in features_dict:
+            features_dict[pcm_id] = {'Test_ID': pcm_id}
+        
+        # Try extracting RPS and Replicas from ID
+        match_rps = re.search(r'(\d+)rps', pcm_id)
+        match_rep = re.search(r'(\d+)replicas', pcm_id)
+        if match_rps:
+            features_dict[pcm_id]['RPS'] = int(match_rps.group(1))
+        if match_rep:
+            features_dict[pcm_id]['Replicas'] = int(match_rep.group(1))
+            
+        df_pcm = pd.read_csv(filepath)
+        
+        # Collect per-core feature matrix
+        core_metrics_group = {}  # for later aggregation
+
+        # Process target cores
+        for core in target_cores:
+            core_prefix = f'Core{core} (Socket 0) - '
+            core_cols = [col for col in df_pcm.columns if col.startswith(core_prefix)]
+            
+            # Filter to metrics we care about
+            keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%']
+            core_cols = [col for col in core_cols if any(m in col for m in keep_metrics)]
+            
+            for col in core_cols:
+                metric = col.replace(core_prefix, '').replace('%', '')
+                clean_name = f'Core{core}_{metric}'
+                s = df_pcm[col]
+                
+                # Compute statistics
+                stats_results = compute_windowed_stats(s, window_size, stats)
+                for stat, value in stats_results.items():
+                    features_dict[pcm_id][f'{stat}_{clean_name}'] = value
+                
+                # Store for aggregation
+                key = f'{metric}'
+                if key not in core_metrics_group:
+                    core_metrics_group[key] = []
+                core_metrics_group[key].append(s)
+
+        # Don't know if this is needed, but keeping it for now
+        
+        # Compute aggregated stats across cores
+        for metric, series_list in core_metrics_group.items():
+            df_metric = pd.concat(series_list, axis=1)
+            agg_series = df_metric.mean(axis=1)  # row-wise avg across cores
+            agg_stats = compute_windowed_stats(agg_series, window_size, stats)
+            for stat, value in agg_stats.items():
+                features_dict[pcm_id][f'{stat}_AvgCore_{metric}'] = value
+
+    # Process system files if requested
+    if include_system:
+        for filepath in system_files:
+            pcm_id = os.path.basename(filepath).replace('pcm_system_', '').replace('.csv', '')
+            
+            if pcm_id not in features_dict:
+                features_dict[pcm_id] = {'pcm_id': pcm_id}
+                
+            df_sys = pd.read_csv(filepath)
+            
+            # Filter system metrics (excluding core-specific and unwanted metrics)
+            sys_cols = [col for col in df_sys.columns 
+                       if 'Core' not in col and 
+                       not any(x in col for x in ["System Pack C-States", "PhysIPC%"])]
+            
+            for col in sys_cols:
+                if ' - ' in col:
+                    metric = col.split(' - ')[1].replace('%', '')
+                    clean_name = f'Sys_{metric}'
+                else:
+                    clean_name = f'Sys_{col}'
+                    
+                s = df_sys[col]
+                stats_results = compute_windowed_stats(s, window_size, stats)
+                for stat, value in stats_results.items():
+                    features_dict[pcm_id][f'{stat}_{clean_name}'] = value
+
+    # Convert to DataFrame
+    df_features = pd.DataFrame(features_dict.values())
+    df_features = df_features[["Test_ID"] + sorted([c for c in df_features.columns if c != "Test_ID"])]
+    print(f"✅ Extracted {len(df_features.columns)-1} features from {len(df_features)} scenarios in {data_dir}")
+    return df_features
