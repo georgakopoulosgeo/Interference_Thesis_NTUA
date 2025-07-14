@@ -2,7 +2,7 @@
 
 # Define file paths
 RAW_METRICS="/opt/pcm_metrics/raw_metrics.csv"
-BUFFER_METRICS="/opt/pcm_metrics/buffer_metrics"
+BUFFER_METRICS="/opt/pcm_metrics/buffer_metrics.csv"
 
 # Check if files exist and remove them
 if [ -f "$RAW_METRICS" ]; then

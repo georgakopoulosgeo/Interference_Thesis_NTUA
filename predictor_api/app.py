@@ -171,22 +171,9 @@ def compute_windowed_stats(series, window_size, stats):
 
 # Expected feature order (from your model)
 EXPECTED_FEATURES = [
-    'mean_Core3_IPC', 'std_Core3_IPC', 'p95_Core3_IPC', 'mean_Core3_L3MISS', 'std_Core3_L3MISS', 'p95_Core3_L3MISS', 
-    'mean_Core3_L2MISS', 'std_Core3_L2MISS', 'p95_Core3_L2MISS', 'mean_Core3_C0res', 'std_Core3_C0res', 'p95_Core3_C0res', 
-    'mean_Core3_C1res', 'std_Core3_C1res', 'p95_Core3_C1res', 'mean_Core3_C6res', 'std_Core3_C6res', 'p95_Core3_C6res', 
-    'mean_Core3_PhysIPC', 'std_Core3_PhysIPC', 'p95_Core3_PhysIPC', 'mean_Core4_IPC', 'std_Core4_IPC', 'p95_Core4_IPC', 
-    'mean_Core4_L3MISS', 'std_Core4_L3MISS', 'p95_Core4_L3MISS', 'mean_Core4_L2MISS', 'std_Core4_L2MISS', 'p95_Core4_L2MISS', 
-    'mean_Core4_C0res', 'std_Core4_C0res', 'p95_Core4_C0res', 'mean_Core4_C1res', 'std_Core4_C1res', 'p95_Core4_C1res', 
-    'mean_Core4_C6res', 'std_Core4_C6res', 'p95_Core4_C6res', 'mean_Core4_PhysIPC', 'std_Core4_PhysIPC', 'p95_Core4_PhysIPC', 
-    'mean_Core5_IPC', 'std_Core5_IPC', 'p95_Core5_IPC', 'mean_Core5_L3MISS', 'std_Core5_L3MISS', 'p95_Core5_L3MISS', 
-    'mean_Core5_L2MISS', 'std_Core5_L2MISS', 'p95_Core5_L2MISS', 'mean_Core5_C0res', 'std_Core5_C0res', 'p95_Core5_C0res',
-    'mean_Core5_C1res', 'std_Core5_C1res', 'p95_Core5_C1res', 'mean_Core5_C6res', 'std_Core5_C6res', 'p95_Core5_C6res',
-    'mean_Core5_PhysIPC', 'std_Core5_PhysIPC', 'p95_Core5_PhysIPC', 'mean_AvgCore_IPC', 'std_AvgCore_IPC', 'p95_AvgCore_IPC', ''
-    'mean_AvgCore_L3MISS', 'std_AvgCore_L3MISS', 'p95_AvgCore_L3MISS', 'mean_AvgCore_L2MISS', 'std_AvgCore_L2MISS', 
-    'p95_AvgCore_L2MISS', 'mean_AvgCore_C0res', 'std_AvgCore_C0res', 'p95_AvgCore_C0res', 'mean_AvgCore_C1res', 
-    'std_AvgCore_C1res', 'p95_AvgCore_C1res', 'mean_AvgCore_C6res', 'std_AvgCore_C6res', 'p95_AvgCore_C6res', 
-    'mean_AvgCore_PhysIPC', 'std_AvgCore_PhysIPC', 'p95_AvgCore_PhysIPC', 
-    'RPS', 'Replicas_x'
+    'mean_AvgCore_IPC', 'p95_AvgCore_IPC', 'mean_AvgCore_L3MISS', 'p95_AvgCore_L3MISS', 'mean_AvgCore_L2MISS', 
+    'p95_AvgCore_L2MISS', 'mean_AvgCore_C0res', 'p95_AvgCore_C0res', 'mean_AvgCore_C1res', 'p95_AvgCore_C1res', 
+    'mean_AvgCore_C6res', 'p95_AvgCore_C6res', 'mean_AvgCore_PhysIPC', 'p95_AvgCore_PhysIPC', 'RPS', 'Replicas_x'
 ]
 
 def compute_core_features_from_df(
@@ -254,7 +241,7 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
         feature_dict = compute_core_features_from_df(
             df_pcm=df,
             target_cores=[3, 4, 5],
-            window_size=2,
+            window_size=10,
             stats=['mean', 'p95', 'std'],
             core_prefix_template="Core{core} - "  # matches renamed columns in predictor
         )

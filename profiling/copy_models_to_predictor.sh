@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Absolute or relative paths
-SRC_MODEL="./models/slowdown_predictor_new.pkl"
+SRC_MODEL="./models/slowdown_predictor.pkl"
 DEST_DIR="../predictor_api"
-DEST_MODEL="$DEST_DIR/slowdown_predictor_new.pkl"
+DEST_MODEL="$DEST_DIR/slowdown_predictor.pkl"
 
 
 # Copy the model file
