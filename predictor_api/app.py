@@ -214,7 +214,7 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
         
         # Process each target core
         for core in target_cores:
-            core_prefix = f'Core{core}_'
+            core_prefix = f'Core{core} - '
             core_cols = [col for col in df.columns if col.startswith(core_prefix)]
             
             # Filter to metrics we care about

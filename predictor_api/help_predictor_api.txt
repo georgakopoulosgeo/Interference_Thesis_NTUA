@@ -103,3 +103,9 @@ curl http://192.168.49.2:32463/model_info
 ################################################ PCM METRICS FORMAT
 System - Date,System - Time,System_IPC,System_L3MISS,System_L2MISS,System_READ,System_WRITE,System_PhysIPC,System_PhysIPC%,System Core C-States_C0res%,System Core C-States_C1res%,System Core C-States_C6res%,System Pack C-States_C0res%,System Pack C-States_C6res%,Core0 (Socket-1)_IPC,Core0 (Socket-1)_L3MISS,Core0 (Socket-1)_L2MISS,Core0 (Socket-1)_C0res%,Core0 (Socket-1)_C1res%,Core0 (Socket-1)_C6res%,Core0 (Socket-1)_PhysIPC,Core0 (Socket-1)_PhysIPC%,Core1 (Socket-1)_IPC,Core1 (Socket-1)_L3MISS,Core1 (Socket-1)_L2MISS,Core1 (Socket-1)_C0res%,Core1 (Socket-1)_C1res%,Core1 (Socket-1)_C6res%,Core1 (Socket-1)_PhysIPC,Core1 (Socket-1)_PhysIPC%,Core2 (Socket-1)_IPC,Core2 (Socket-1)_L3MISS,Core2 (Socket-1)_L2MISS,Core2 (Socket-1)_C0res%,Core2 (Socket-1)_C1res%,Core2 (Socket-1)_C6res%,Core2 (Socket-1)_PhysIPC,Core2 (Socket-1)_PhysIPC%,Core3 (Socket 0)_IPC,Core3 (Socket 0)_L3MISS,Core3 (Socket 0)_L2MISS,Core3 (Socket 0)_C0res%,Core3 (Socket 0)_C1res%,Core3 (Socket 0)_C6res%,Core3 (Socket 0)_PhysIPC,Core3 (Socket 0)_PhysIPC%,Core4 (Socket 0)_IPC,Core4 (Socket 0)_L3MISS,Core4 (Socket 0)_L2MISS,Core4 (Socket 0)_C0res%,Core4 (Socket 0)_C1res%,Core4 (Socket 0)_C6res%,Core4 (Socket 0)_PhysIPC,Core4 (Socket 0)_PhysIPC%,Core5 (Socket 0)_IPC,Core5 (Socket 0)_L3MISS,Core5 (Socket 0)_L2MISS,Core5 (Socket 0)_C0res%,Core5 (Socket 0)_C1res%,Core5 (Socket 0)_C6res%,Core5 (Socket 0)_PhysIPC,Core5 (Socket 0)_PhysIPC%,node_name,assigned_cores
 
+
+
+curl http://localhost:5000/health
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"replicas": 2, "rps": 3000}'
