@@ -241,14 +241,14 @@ def compute_core_features_from_df(
 
     # Compute aggregated AvgCore metrics
     for metric, series_list in core_metrics_group.items():
-        continue
+        #continue
         if series_list:
             df_metric = pd.concat(series_list, axis=1)
             agg_series = df_metric.mean(axis=1)  # row-wise average
             agg_stats = compute_windowed_stats(agg_series, window_size, stats)
             for stat, value in agg_stats.items():
                 features[f'{stat}_AvgCore_{metric}'] = value
-
+    print(f"Computed features: {list(features.keys())}")
     return features
 
 def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps: int) -> Dict[str, List[float]]:
