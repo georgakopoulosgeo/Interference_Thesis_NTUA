@@ -259,12 +259,13 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
             target_cores=[3, 4, 5],
             window_size=2,
             stats=['mean', 'p95', 'std'],
-            core_prefix_template="Core{core} - "  # matches renamed columns in predictor
+            core_prefix_template="Core{core}_"  # matches renamed columns in predictor
         )
 
         # Build final feature vector using fixed feature list
         feature_vector = [rps, replicas] + [feature_dict.get(f, 0.0) for f in EXPECTED_FEATURES[2:]]
         features[node_name] = feature_vector
+        app.logger.debug(f"Length of Features {len(feature_vector)}")
 
     return features
 
