@@ -128,7 +128,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
         'Core2 (Socket 0)': ('node1', 'Core5'),
         'Core3 (Socket 0)': ('node2', 'Core3'),
         'Core4 (Socket 0)': ('node2', 'Core4'),
-        'Core5 (Socket 0)': ('node2', 'Core5')
+        'Core5 (Socket 0)': ('node2', 'Core5'),
     }
 
     # Always retain System Date and Time
