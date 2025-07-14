@@ -15,7 +15,7 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "Green_Book_V01" #Folder to store results
+FOLDER_NAME = "Rear_Window_V01" #Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
@@ -44,8 +44,8 @@ STABILATION_TIME_AFTER_WARMUP = 10          # Time to wait for system stabilizat
 STABILATION_TIME_NEW_REPLICAS = 22          # Time to wait before tests for new replicas
 
 # Test matrix
-REPLICAS_TO_TEST = [1, 2, 3, 4]  # Number of replicas to test
-RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000]  # RPS steps to test
+REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
+RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
@@ -105,7 +105,7 @@ INTERFERENCE_SCENARIOS_MIX = [
         {"type": "ibench-cpu", "count": 2},
         {"type": "stress-ng-l3", "count": 1}
     ]},
-    {"id": 68, "name": "1_L3_3_MemBW", "type": "mix", "mix": [
+    {"id": 58, "name": "1_L3_3_MemBW", "type": "mix", "mix": [
         {"type": "stress-ng-l3", "count": 1},
         {"type": "ibench-membw", "count": 3}
     ]}

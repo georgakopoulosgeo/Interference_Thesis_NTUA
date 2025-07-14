@@ -170,19 +170,22 @@ def compute_windowed_stats(series, window_size, stats):
     return results
 
 # Expected feature order (from your model)
+
+
+
 EXPECTED_FEATURES = [
     'mean_Core3_IPC', 'std_Core3_IPC', 'p95_Core3_IPC', 'mean_Core3_L3MISS', 'std_Core3_L3MISS', 
     'p95_Core3_L3MISS', 'mean_Core3_L2MISS', 'std_Core3_L2MISS', 'p95_Core3_L2MISS', 'mean_Core3_C0res', 
     'std_Core3_C0res', 'p95_Core3_C0res', 'mean_Core3_C1res', 'std_Core3_C1res', 'p95_Core3_C1res', 
-    'mean_Core3_C6res', 'std_Core3_C6res', 'p95_Core3_C6res', 'mean_Core3_PhysIPC', 'std_Core3_PhysIPC', 
-    'p95_Core3_PhysIPC', 'mean_Core4_IPC', 'std_Core4_IPC', 'p95_Core4_IPC', 'mean_Core4_L3MISS', 
-    'std_Core4_L3MISS', 'p95_Core4_L3MISS', 'mean_Core4_L2MISS', 'std_Core4_L2MISS', 'p95_Core4_L2MISS', 
+    'mean_Core3_C6res', 'std_Core3_C6res', 'p95_Core3_C6res', 
+    'mean_Core4_IPC', 'std_Core4_IPC', 'p95_Core4_IPC', 'mean_Core4_L3MISS', 'std_Core4_L3MISS', 
+    'p95_Core4_L3MISS', 'mean_Core4_L2MISS', 'std_Core4_L2MISS', 'p95_Core4_L2MISS', 
     'mean_Core4_C0res', 'std_Core4_C0res', 'p95_Core4_C0res', 'mean_Core4_C1res', 'std_Core4_C1res', 
-    'p95_Core4_C1res', 'mean_Core4_C6res', 'std_Core4_C6res', 'p95_Core4_C6res', 'mean_Core4_PhysIPC', 
-    'std_Core4_PhysIPC', 'p95_Core4_PhysIPC', 'mean_Core5_IPC', 'std_Core5_IPC', 'p95_Core5_IPC', 'mean_Core5_L3MISS', 
+    'p95_Core4_C1res', 'mean_Core4_C6res', 'std_Core4_C6res', 'p95_Core4_C6res', 'mean_Core5_IPC', 
+    'std_Core5_IPC', 'p95_Core5_IPC', 'mean_Core5_L3MISS', 
     'std_Core5_L3MISS', 'p95_Core5_L3MISS', 'mean_Core5_L2MISS', 'std_Core5_L2MISS', 'p95_Core5_L2MISS', 'mean_Core5_C0res', 
     'std_Core5_C0res', 'p95_Core5_C0res', 'mean_Core5_C1res', 'std_Core5_C1res', 'p95_Core5_C1res', 'mean_Core5_C6res', 
-    'std_Core5_C6res', 'p95_Core5_C6res', 'mean_Core5_PhysIPC', 'std_Core5_PhysIPC', 'p95_Core5_PhysIPC', 
+    'std_Core5_C6res', 'p95_Core5_C6res', 
     'RPS', 'Replicas_x'
 ]
 
@@ -212,7 +215,7 @@ def compute_core_features_from_df(
     core_metrics_group = defaultdict(list)
 
     # Metrics we care about
-    keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%', 'PhysIPC']
+    keep_metrics = ['IPC', 'L3MISS', 'L2MISS', 'C0res%', 'C1res%', 'C6res%']
 
     for core in target_cores:
         core_prefix = core_prefix_template.format(core=core)
