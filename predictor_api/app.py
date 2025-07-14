@@ -265,7 +265,7 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
         # Build final feature vector using fixed feature list
         feature_dict['RPS'] = rps
         feature_dict['Replicas_x'] = replicas 
-        feature_vector = [feature_dict.get(f, 0.0) for f in EXPECTED_FEATURES[2:]]
+        feature_vector = [feature_dict.get(f, 0.0) for f in EXPECTED_FEATURES]
         features[node_name] = feature_vector
         app.logger.debug(f"Length of Features {len(feature_vector)}")
 
