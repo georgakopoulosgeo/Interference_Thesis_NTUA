@@ -9,7 +9,6 @@ from collections import defaultdict
 import numpy as np
 import joblib
 import json
-import xgboost as xgb
 
 import logging
 import sys
@@ -28,7 +27,7 @@ app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.DEBUG)
 
 # Load the model at startup
-MODEL_PATH = './slowdown_predictor_new.pkl'
+MODEL_PATH = './slowdown_predictor.pkl'
 
 try:
     model = joblib.load(MODEL_PATH)
@@ -171,28 +170,23 @@ def compute_windowed_stats(series, window_size, stats):
     return results
 
 # Expected feature order (from your model)
-
-
-
 EXPECTED_FEATURES = [
-'mean_Core3_IPC', 'std_Core3_IPC', 'p95_Core3_IPC', 'mean_Core3_L3MISS', 'std_Core3_L3MISS', 
-'p95_Core3_L3MISS', 'mean_Core3_L2MISS', 'std_Core3_L2MISS', 'p95_Core3_L2MISS', 'mean_Core3_C0res', 
-'std_Core3_C0res', 'p95_Core3_C0res', 'mean_Core3_C1res', 'std_Core3_C1res', 'p95_Core3_C1res', 
-'mean_Core3_C6res', 'std_Core3_C6res', 'p95_Core3_C6res', 'mean_Core3_PhysIPC', 'std_Core3_PhysIPC', 
-'p95_Core3_PhysIPC', 'mean_Core4_IPC', 'std_Core4_IPC', 'p95_Core4_IPC', 'mean_Core4_L3MISS', 
-'std_Core4_L3MISS', 'p95_Core4_L3MISS', 'mean_Core4_L2MISS', 'std_Core4_L2MISS', 'p95_Core4_L2MISS', 
-'mean_Core4_C0res', 'std_Core4_C0res', 'p95_Core4_C0res', 'mean_Core4_C1res', 'std_Core4_C1res', 
-'p95_Core4_C1res', 'mean_Core4_C6res', 'std_Core4_C6res', 'p95_Core4_C6res', 'mean_Core4_PhysIPC', 
-'std_Core4_PhysIPC', 'p95_Core4_PhysIPC', 'mean_Core5_IPC', 'std_Core5_IPC', 'p95_Core5_IPC', 
-'mean_Core5_L3MISS', 'std_Core5_L3MISS', 'p95_Core5_L3MISS', 'mean_Core5_L2MISS', 'std_Core5_L2MISS',
- 'p95_Core5_L2MISS', 'mean_Core5_C0res', 'std_Core5_C0res', 'p95_Core5_C0res', 'mean_Core5_C1res', 
- 'std_Core5_C1res', 'p95_Core5_C1res', 'mean_Core5_C6res', 'std_Core5_C6res', 'p95_Core5_C6res', 
- 'mean_Core5_PhysIPC', 'std_Core5_PhysIPC', 'p95_Core5_PhysIPC', 'mean_AvgCore_IPC', 'std_AvgCore_IPC', 
- 'p95_AvgCore_IPC', 'mean_AvgCore_L3MISS', 'std_AvgCore_L3MISS', 'p95_AvgCore_L3MISS', 'mean_AvgCore_L2MISS', 
- 'std_AvgCore_L2MISS', 'p95_AvgCore_L2MISS', 'mean_AvgCore_C0res', 'std_AvgCore_C0res', 'p95_AvgCore_C0res', 
- 'mean_AvgCore_C1res', 'std_AvgCore_C1res', 'p95_AvgCore_C1res', 'mean_AvgCore_C6res', 'std_AvgCore_C6res', 
- 'p95_AvgCore_C6res', 'mean_AvgCore_PhysIPC', 'std_AvgCore_PhysIPC', 'p95_AvgCore_PhysIPC', 
- 'RPS', 'Replicas_x'
+    'mean_Core3_IPC', 'std_Core3_IPC', 'p95_Core3_IPC', 'mean_Core3_L3MISS', 'std_Core3_L3MISS', 'p95_Core3_L3MISS', 
+    'mean_Core3_L2MISS', 'std_Core3_L2MISS', 'p95_Core3_L2MISS', 'mean_Core3_C0res', 'std_Core3_C0res', 'p95_Core3_C0res', 
+    'mean_Core3_C1res', 'std_Core3_C1res', 'p95_Core3_C1res', 'mean_Core3_C6res', 'std_Core3_C6res', 'p95_Core3_C6res', 
+    'mean_Core3_PhysIPC', 'std_Core3_PhysIPC', 'p95_Core3_PhysIPC', 'mean_Core4_IPC', 'std_Core4_IPC', 'p95_Core4_IPC', 
+    'mean_Core4_L3MISS', 'std_Core4_L3MISS', 'p95_Core4_L3MISS', 'mean_Core4_L2MISS', 'std_Core4_L2MISS', 'p95_Core4_L2MISS', 
+    'mean_Core4_C0res', 'std_Core4_C0res', 'p95_Core4_C0res', 'mean_Core4_C1res', 'std_Core4_C1res', 'p95_Core4_C1res', 
+    'mean_Core4_C6res', 'std_Core4_C6res', 'p95_Core4_C6res', 'mean_Core4_PhysIPC', 'std_Core4_PhysIPC', 'p95_Core4_PhysIPC', 
+    'mean_Core5_IPC', 'std_Core5_IPC', 'p95_Core5_IPC', 'mean_Core5_L3MISS', 'std_Core5_L3MISS', 'p95_Core5_L3MISS', 
+    'mean_Core5_L2MISS', 'std_Core5_L2MISS', 'p95_Core5_L2MISS', 'mean_Core5_C0res', 'std_Core5_C0res', 'p95_Core5_C0res',
+    'mean_Core5_C1res', 'std_Core5_C1res', 'p95_Core5_C1res', 'mean_Core5_C6res', 'std_Core5_C6res', 'p95_Core5_C6res',
+    'mean_Core5_PhysIPC', 'std_Core5_PhysIPC', 'p95_Core5_PhysIPC', 'mean_AvgCore_IPC', 'std_AvgCore_IPC', 'p95_AvgCore_IPC', ''
+    'mean_AvgCore_L3MISS', 'std_AvgCore_L3MISS', 'p95_AvgCore_L3MISS', 'mean_AvgCore_L2MISS', 'std_AvgCore_L2MISS', 
+    'p95_AvgCore_L2MISS', 'mean_AvgCore_C0res', 'std_AvgCore_C0res', 'p95_AvgCore_C0res', 'mean_AvgCore_C1res', 
+    'std_AvgCore_C1res', 'p95_AvgCore_C1res', 'mean_AvgCore_C6res', 'std_AvgCore_C6res', 'p95_AvgCore_C6res', 
+    'mean_AvgCore_PhysIPC', 'std_AvgCore_PhysIPC', 'p95_AvgCore_PhysIPC', 
+    'RPS', 'Replicas_x'
 ]
 
 def compute_core_features_from_df(
@@ -240,17 +234,15 @@ def compute_core_features_from_df(
             core_metrics_group[metric].append(series)
 
     # Compute aggregated AvgCore metrics
-    app.logger.debug(f"Aggregating core metrics for: {list(core_metrics_group.keys())}")
-    #print(f"Aggregating core metrics for: {list(core_metrics_group.keys())}")
     for metric, series_list in core_metrics_group.items():
-        #continue
+        continue
         if series_list:
             df_metric = pd.concat(series_list, axis=1)
             agg_series = df_metric.mean(axis=1)  # row-wise average
             agg_stats = compute_windowed_stats(agg_series, window_size, stats)
             for stat, value in agg_stats.items():
                 features[f'{stat}_AvgCore_{metric}'] = value
-    print(f"Computed features: {list(features.keys())}")
+
     return features
 
 def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps: int) -> Dict[str, List[float]]:
