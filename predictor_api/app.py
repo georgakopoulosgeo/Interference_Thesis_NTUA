@@ -147,7 +147,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     # Length of each node's DataFrame
     for node, data in node_data.items():
         app.logger.debug(f"{node} has {len(data)} rows of metrics data")
-        #app.logger.debug(f"{node} columns: {data.head(6)}")
+        print(f"[{node}] first 6 rows:\n{data.head(6)}")  # DEBUG 
     return node_data
 
 
@@ -204,7 +204,7 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
     Returns: Dictionary of {node_name: feature_vector}
     """
     features = {}
-    window_size = 5  # Same as training
+    window_size = 2  # Same as training
     stats = ['mean', 'std', 'p95']  # Same as training
     target_cores = [3, 4, 5]  # Since we renamed cores 0-2 to 3-5
     
@@ -228,7 +228,7 @@ def calculate_features(node_metrics: Dict[str, pd.DataFrame], replicas: int, rps
                 # Compute statistics
                 stats_results = compute_windowed_stats(s, window_size, stats)
                 for stat, value in stats_results.items():
-                    features_dict[f'{stat}_{core_prefix}{metric}'] = value
+                    features_dict[f'{stat}_Core{core}_{metric}'] = value
                 
                 # Store for aggregation
                 core_metrics_group[metric].append(s)
