@@ -2,8 +2,8 @@ import subprocess
 import os
 
 # User-defined variables
-name_of_local_folder = "profiling/The_Substance_V02"
-name_of_server_folder = "The_Substance_V02"
+name_of_local_folder = "profiling/Fight_Club_V02"
+name_of_server_folder = "Fight_Club_V02"
 
 # Remote and local paths
 remote_user = "george@147.102.13.77"

@@ -147,7 +147,7 @@ def process_metrics_per_node(metrics_df: pd.DataFrame) -> Dict[str, pd.DataFrame
     # Length of each node's DataFrame
     for node, data in node_data.items():
         app.logger.debug(f"{node} has {len(data)} rows of metrics data")
-        print(f"[{node}] first 6 rows:\n{data.head(6)}")  # DEBUG 
+        #print(f"[{node}] first 6 rows:\n{data.head(6)}")  # DEBUG 
     return node_data
 
 
@@ -271,7 +271,7 @@ def make_predictions(features: Dict[str, List[float]]) -> Dict[str, float]:
     predictions = {}
     try:
         for node_name, feature_vector in features.items():
-            app.logger.debug(f"Feature vector for {node_name}: {dict(zip(EXPECTED_FEATURES, feature_vector))}")
+            #app.logger.debug(f"Feature vector for {node_name}: {dict(zip(EXPECTED_FEATURES, feature_vector))}")
             # Construct a DataFrame with proper feature names
             input_df = pd.DataFrame([feature_vector], columns=EXPECTED_FEATURES)
             
