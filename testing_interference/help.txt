@@ -52,3 +52,23 @@ REPLICAS_SCENARIOS_TO_TEST = [
 ]
 RPS_STEPS = [1500]  # RPS steps to test
 # INTERFERENCE_SCENARIOS = range(1, 19)  #1 to 5 pods to all nodes 
+
+
+================================
+# Fight Club
+V01:
+REPLICAS_TO_TEST = [1]
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+All Basic 14 scenarios
+
+V02: same for 2 replicas
+
+
+================================
+# Rear Window
+V01:
+REPLICAS_TO_TEST = [1, 2]
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+8 Mix Scenarios
+
+V02: same for replicas 3, and 4
