@@ -170,11 +170,13 @@ def compute_windowed_stats(series, window_size, stats):
     return results
 
 # Expected feature order (from your model)
-EXPECTED_FEATURES = [
-    'mean_AvgCore_IPC', 'p95_AvgCore_IPC', 'mean_AvgCore_L3MISS', 'p95_AvgCore_L3MISS', 'mean_AvgCore_L2MISS', 
-    'p95_AvgCore_L2MISS', 'mean_AvgCore_C0res', 'p95_AvgCore_C0res', 'mean_AvgCore_C1res', 'p95_AvgCore_C1res', 
-    'mean_AvgCore_C6res', 'p95_AvgCore_C6res', 'mean_AvgCore_PhysIPC', 'p95_AvgCore_PhysIPC', 'RPS', 'Replicas_x'
-]
+# This list is stored in the feature_names.json file
+feature_names_file = './feature_names.json'
+if os.path.exists(feature_names_file):
+    with open(feature_names_file, 'r') as f:
+        EXPECTED_FEATURES = json.load(f)
+
+print(f"Expected features loaded: {EXPECTED_FEATURES}")
 
 def compute_core_features_from_df(
     df_pcm: pd.DataFrame,

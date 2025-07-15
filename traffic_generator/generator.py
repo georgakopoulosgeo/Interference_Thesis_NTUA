@@ -1,22 +1,67 @@
+import time
+import os
+import json
+from datetime import datetime
+from typing import Optional, List
 import random
-from typing import List, Optional
 
-def run_traffic_test():
-    """
-    1. Generates 30-minute RPS schedule (1 step per minute)
-    2. For each minute:
-       - Runs vegeta attack
-       - Parses vegeta results (latency, throughput)
-       - Logs current RPS + metrics
-    3. Saves RPS schedule + metrics log at the end
-    """
+from config import (
+    DURATION_MINUTES, STEP_INTERVAL, BASE_RPS, TARGET_URL, LOG_DIR,
+    PREDEFINED_RPS_30MIN
+)
+from vegeta_runner import run_vegeta_attack
+from generator import generate_rps_schedule
 
-def generate_rps_schedule(
-    duration_minutes: int = 30,
-    base_rps: int = 1500,
-    mode: str = "random",
-    predefined_rps: Optional[List[int]] = None
-) -> List[int]:
+def log_rps_schedule_entry(minute, rps):
+    entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "minute": minute,
+        "rps": rps
+    }
+    with open(os.path.join(LOG_DIR, "rps_schedule.jsonl"), "a") as f:
+        f.write(json.dumps(entry) + "\n")
+
+def run_traffic_test(
+    duration_minutes: int = DURATION_MINUTES,
+    mode: str = "predefined",
+    base_rps: int = BASE_RPS,
+    predefined_rps: Optional[List[int]] = PREDEFINED_RPS_30MIN
+):
+    print(f"Starting traffic test for {duration_minutes} minutes")
+    
+    # Create logs directory if needed
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+    # Generate the RPS schedule
+    rps_schedule = generate_rps_schedule(
+        duration_minutes=duration_minutes,
+        base_rps=base_rps,
+        mode=mode,
+        predefined_rps=predefined_rps
+    )
+
+    # Loop over each minute
+    for minute, rps in enumerate(rps_schedule):
+        print(f"[Minute {minute+1}] RPS = {rps}")
+        
+        # Log RPS for MARLA
+        log_rps_schedule_entry(minute, rps)
+
+        # Run vegeta attack
+        run_vegeta_attack(
+            rps=rps,
+            duration=STEP_INTERVAL,
+            target_url=TARGET_URL,
+            log_prefix=f"minute_{minute+1}"
+        )
+
+        # Sleep exactly for the interval (if vegeta is async, else skip this)
+        time.sleep(STEP_INTERVAL)
+
+    print("Traffic test completed.")
+
+
+def generate_rps_schedule(duration_minutes: int = 30, base_rps: int = 1500, mode: str = "random", predefined_rps: Optional[List[int]] = None) -> List[int]:
     """
     Generates a per-minute RPS schedule.
 
@@ -49,3 +94,12 @@ def generate_rps_schedule(
 
     else:
         raise ValueError("Mode must be either 'random' or 'predefined'")
+
+def log_rps_schedule(rps_schedule):
+    with open("logs/rps_schedule.jsonl", "w") as f:
+        for minute, rps in enumerate(rps_schedule):
+            f.write(json.dumps({
+                "timestamp": datetime.utcnow().isoformat(),
+                "minute": minute,
+                "rps": rps
+            }) + "\n")

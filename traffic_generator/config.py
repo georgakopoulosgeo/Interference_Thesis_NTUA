@@ -1,3 +1,4 @@
+# config.py
 DURATION_MINUTES = 30
 STEP_INTERVAL = 60  # seconds
 BASE_RPS = 1500
