@@ -1,7 +1,7 @@
 from kubernetes import client, config
 
 # Configuration
-DEPLOYMENT_NAME = "nginx"           # Change to your deployment name
+DEPLOYMENT_NAME = "my-nginx"           # Change to your deployment name
 NAMESPACE = "default"               # Change if needed
 REPLICAS = 4
 NODE_1 = "minikube"
