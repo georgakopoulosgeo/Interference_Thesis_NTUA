@@ -2,6 +2,7 @@ import threading
 import time
 import json
 import os
+from datetime import datetime
 import redis
 
 # Redis client
@@ -26,7 +27,7 @@ def log_rps_loop(interval=30):
             count = int(r.getset(REDIS_KEY, 0) or 0)
             rps = round(count / interval, 2)
 
-            entry = {"timestamp": int(time.time()), "rps": rps}
+            entry = {"timestamp": datetime.now().isoformat(), "rps": rps}
 
             if os.path.exists(LOG_PATH):
                 with open(LOG_PATH, "r+") as f:

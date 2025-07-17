@@ -1,6 +1,7 @@
 from flask import Flask, request, Response
 import requests, itertools
 from rps_logger import start_rps_logger_thread, RequestCounterMiddleware
+import os
 
 # Round robin targets
 SERVICE_TARGETS = [
@@ -17,7 +18,8 @@ SESSIONS = {
 # Initialize Flask app
 app = Flask(__name__)
 app.wsgi_app = RequestCounterMiddleware(app.wsgi_app)
-start_rps_logger_thread()
+if os.getpid() == os.getppid():  # Only main process logs
+    start_rps_logger_thread()
 
 @app.route("/", methods=["GET", "POST"])
 def handle_request():
