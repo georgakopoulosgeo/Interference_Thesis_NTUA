@@ -1,33 +1,50 @@
+import threading
+import time
 import json
 import os
-from datetime import datetime
-from threading import Lock
 
-LOG_PATH = "logs/rps_schedule.jsonl"
-_counter = 0
-_lock = Lock()
+# Shared request counter
+request_counter = {
+    "count": 0
+}
+lock = threading.Lock()
 
-import os
+LOG_PATH = "logs/rps.json"
 os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
 
-def log_request():
-    global _counter
-    with _lock:
-        _counter += 1
+def log_rps_loop(interval=30):
+    while True:
+        time.sleep(interval)
+        with lock:
+            count = request_counter["count"]
+            request_counter["count"] = 0
 
-def flush_counter_to_log():
-    global _counter
-    timestamp = datetime.utcnow().isoformat()
+        rps = count / interval
+        entry = {
+            "timestamp": int(time.time()),
+            "rps": round(rps, 2)
+        }
 
-    log_entry = {
-        "timestamp": timestamp,
-        "rps": _counter
-    }
+        try:
+            if os.path.exists(LOG_PATH):
+                with open(LOG_PATH, "r+") as f:
+                    try:
+                        data = json.load(f)
+                    except json.JSONDecodeError:
+                        data = []
+                    data.append(entry)
+                    f.seek(0)
+                    json.dump(data, f, indent=2)
+            else:
+                with open(LOG_PATH, "w") as f:
+                    json.dump([entry], f, indent=2)
+        except Exception as e:
+            print(f"⚠️ Error writing RPS log: {e}")
 
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+def start_rps_logger_thread():
+    t = threading.Thread(target=log_rps_loop, daemon=True)
+    t.start()
 
-    with open(LOG_PATH, "a") as f:
-        f.write(json.dumps(log_entry) + "\n")
-
-    print(f"📝 Logged RPS: {_counter} @ {timestamp}")
-    _counter = 0
+def increment_request_count():
+    with lock:
+        request_counter["count"] += 1
