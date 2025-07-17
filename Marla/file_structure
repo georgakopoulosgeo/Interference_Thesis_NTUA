@@ -1,9 +1,13 @@
 marla/
-├── controller.py             # 🔁 Main control loop (decision engine)
-├── predictor_client.py       # 📡 Sends input to slowdown prediction API
-├── rps_forecaster.py         # 🔮 ARIMA-based traffic predictor
-├── k8s_interface.py          # ☸️ Kubernetes API actions (scale, evict, etc.)
-├── placement_logic.py        # 🧠 Finds optimal replica distribution
-├── config.py                 # ⚙️ Constants and thresholds
-├── logs/                     # 🧾 Logs of MARLA decisions, metrics, and predictions
-└── utils.py                  # 🧰 Shared helpers (e.g., timestamping, smoothing)
+├── app.py                       # Flask proxy for Vegeta to send traffic to
+├── controller.py                # Main control loop, runs every 1 minute
+├── placement_logic.py           # Select best replica split using scoring logic
+├── arima.py                     # ARIMA model to forecast next-minute RPS
+├── k8s_interface.py             # Kubernetes interaction (scale, patch affinity)
+├── predictor_client.py          # Requests slowdown predictions from predictor API
+├── router.py                    # Round robin request forwarding to svc-node1/node2
+├── traffic_logger.py            # Logs incoming requests for RPS history
+├── config.py                    # Static settings (paths, thresholds, labels)
+├── utils.py                     # Helper functions (timestamps, log parsing)
+├── logs/                        # Logged incoming RPS and optional debug output
+    └── rps_schedule.jsonl       # One line per minute: {"rps": ..., "timestamp": ...}

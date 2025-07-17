@@ -14,14 +14,14 @@ def run_vegeta_attack(rps, duration=60, target_url="http://nginx.default.svc.clu
 
     print(f"Running Vegeta attack: RPS={rps}, duration={duration}s")
 
-    # 1. Run vegeta attack and store binary output
+    # Run vegeta attack and store binary output
     attack_cmd = (
         f'echo "{target_definition}" | '
         f'vegeta attack -rate={rps} -duration={duration}s -format=json > "{attack_file}"'
     )
     subprocess.run(attack_cmd, shell=True, check=True)
 
-    # 2. Generate JSON report
+    # Generate JSON report
     report_cmd = f'vegeta report -type=json < "{attack_file}" > "{report_file}"'
     subprocess.run(report_cmd, shell=True, check=True)
 
