@@ -7,6 +7,9 @@ LOG_PATH = "logs/rps_schedule.jsonl"
 _counter = 0
 _lock = Lock()
 
+import os
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
 def log_request():
     global _counter
     with _lock:

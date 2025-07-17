@@ -31,7 +31,7 @@ def handle_request():
         else:
             return "Unsupported method", 405
 
-        print(f"→ Forwarded to: {target_url} | Status: {proxied.status_code}")
+        #print(f"→ Forwarded to: {target_url} | Status: {proxied.status_code}")
         # Log the request RPS (used in ARIMA)
         log_request()
         return Response(proxied.content, status=proxied.status_code, headers=dict(proxied.headers))
