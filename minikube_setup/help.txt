@@ -4,12 +4,13 @@
 minikube delete --all
 
 # Start control plane (pinned to CPU 6)
-  minikube start \
-    --driver=docker \
-    --cpus=3 \
-    --memory=3072 \
-    --container-runtime=containerd \
-    --nodes=2 
+minikube start \
+  --driver=docker \
+  --cpus=3 \
+  --memory=3072 \
+  --container-runtime=containerd \
+  --nodes=2 \
+  --extra-config=kube-proxy.mode=ipvs
 
 # Apply CPU pinning
 docker update minikube --cpus=3 --cpuset-cpus="0-2"  
@@ -27,6 +28,8 @@ sudo vi /var/lib/kubelet/config.yaml
   reservedSystemCPUs: "6-7" # maybe change more?
   cpuManagerPolicy: static
 sudo systemctl restart kubelet
+
+--extra-config=kube-proxy.mode=ipvs -> for round-robin
 
 ///////////////// Validation
 

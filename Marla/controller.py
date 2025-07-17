@@ -4,13 +4,6 @@ def run_marla_loop():
     Executes full decision cycle: monitor → predict → decide → act.
     """
 
-def fetch_current_pcm_metrics():
-    """
-    Retrieves the latest PCM hardware metrics from all nodes.
-    Will be passed to the slowdown predictor.
-    Returns: dict[node_name] = {metric_name: value}
-    """
-
 def measure_current_rps():
     """
     Measures or retrieves the current RPS observed by the system.
