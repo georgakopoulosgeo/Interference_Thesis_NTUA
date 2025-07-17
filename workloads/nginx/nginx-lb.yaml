@@ -5,7 +5,9 @@ metadata:
 spec:
   selector:
     app: my-nginx
+  type: NodePort
   ports:
-    - port: 80
-      targetPort: 80
-  type: LoadBalancer 
+    - name: http
+      port: 80            # Port exposed inside the cluster
+      targetPort: 80      # Port your NGINX containers expose
+      nodePort: 30080     # Optional: manually set the external port (between 30000-32767)
