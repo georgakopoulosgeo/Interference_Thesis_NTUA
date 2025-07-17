@@ -9,7 +9,7 @@ request_counter = {
 }
 lock = threading.Lock()
 
-LOG_PATH = "/home/logs/rps.json"
+LOG_PATH = "/home/george/logs/rps.json"
 os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
 
 def log_rps_loop(interval=30):
