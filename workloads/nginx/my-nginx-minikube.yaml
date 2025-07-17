@@ -6,11 +6,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-nginx-minikube
+      app: my-nginx
   template:
     metadata:
       labels:
-        app: my-nginx-minikube
+        app: my-nginx
     spec:
       affinity:
         nodeAffinity:
