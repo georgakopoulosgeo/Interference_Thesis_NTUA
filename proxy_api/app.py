@@ -1,7 +1,6 @@
 from flask import Flask, request, Response
 import requests, itertools, threading, time, json, os
 from datetime import datetime
-import redis
 
 # Constants
 LOG_PATH = "/home/george/logs/rps.json"
@@ -12,13 +11,11 @@ SERVICE_TARGETS = [
     "http://192.168.49.2:30081",
     "http://192.168.49.3:30082",
 ]
-target_cycle = itertools.cycle(SERVICE_TARGETS)
 SESSIONS = {target: requests.Session() for target in SERVICE_TARGETS}
+target_cycle = itertools.cycle(SERVICE_TARGETS)
 
 # Initialize Flask app
 app = Flask(__name__)
-
-REDIS = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 @app.route("/", methods=["GET", "POST"])
 def handle_request():
