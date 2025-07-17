@@ -1,1 +1,1 @@
-LOG_PATH = "home/george/logs/rps.json"
+LOG_PATH = "/home/george/logs/rps.json"
