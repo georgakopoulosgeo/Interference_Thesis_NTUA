@@ -1,6 +1,7 @@
 from flask import Flask, request, Response
 import requests, itertools, threading, time, json, os
 from datetime import datetime
+import redis
 
 # Constants
 LOG_PATH = "/home/george/logs/rps.json"
@@ -17,36 +18,10 @@ SESSIONS = {target: requests.Session() for target in SERVICE_TARGETS}
 # Initialize Flask app
 app = Flask(__name__)
 
-# Request counter (thread-safe)
-request_count = 0
-lock = threading.Lock()
-
-def log_rps():
-    global request_count
-    while True:
-        time.sleep(LOG_INTERVAL)
-        with lock:
-            count = request_count
-            request_count = 0
-        rps = count / LOG_INTERVAL
-        entry = {"timestamp": datetime.now().isoformat(), "rps": rps}
-        os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-        with open(LOG_PATH, "a") as f:
-            f.write(json.dumps(entry) + "\n")
-        print(f"Logged RPS: {entry}")
-
-# Start the logger thread when the app module is loaded
-def start_logger_thread():
-    t = threading.Thread(target=log_rps, daemon=True)
-    t.start()
-
-start_logger_thread()
+REDIS = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 @app.route("/", methods=["GET", "POST"])
 def handle_request():
-    global request_count
-    with lock:
-        request_count += 1
 
     target_url = next(target_cycle)
     session = SESSIONS[target_url]
