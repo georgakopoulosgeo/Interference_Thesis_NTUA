@@ -1,19 +1,16 @@
-from fastapi import FastAPI, Request, Response
-import httpx
-import threading
+from flask import Flask, request, Response
+import requests, threading, time, json
 
-app = FastAPI()
-
-# Target backend services
 SERVICE_TARGETS = [
     "http://192.168.49.2:30081",
     "http://192.168.49.3:30082",
 ]
 
+app = Flask(__name__)
+
 target_lock = threading.Lock()
 target_index = 0
 
-# Thread-local client session for httpx
 thread_local = threading.local()
 
 def get_next_target():
@@ -23,29 +20,28 @@ def get_next_target():
         target_index = (target_index + 1) % len(SERVICE_TARGETS)
         return target
 
-def get_client():
-    if not hasattr(thread_local, "client"):
-        thread_local.client = httpx.AsyncClient()
-    return thread_local.client
+def get_session():
+    if not hasattr(thread_local, "session"):
+        thread_local.session = requests.Session()
+    return thread_local.session
 
-@app.api_route("/", methods=["GET", "POST"])
-async def handle_proxy(request: Request):
+@app.route("/", methods=["GET", "POST"])
+def handle_request():
     target_url = get_next_target()
-    client = get_client()
+    session = get_session()
 
     try:
-        headers = {k.decode(): v.decode() for k, v in request.headers.raw if k.decode().lower() != "host"}
-        body = await request.body()
+        headers = {k: v for k, v in request.headers if k.lower() != 'host'}
 
         if request.method == "GET":
-            proxied = await client.get(target_url, headers=headers, timeout=5.0)
+            proxied = session.get(target_url, headers=headers, timeout=5)
         elif request.method == "POST":
-            proxied = await client.post(target_url, content=body, headers=headers, timeout=5.0)
+            proxied = session.post(target_url, headers=headers, data=request.get_data(), timeout=5)
         else:
-            return Response("Unsupported method", status_code=405)
+            return "Unsupported method", 405
 
-        return Response(content=proxied.content, status_code=proxied.status_code, headers=proxied.headers)
+        return Response(proxied.content, status=proxied.status_code, headers=dict(proxied.headers))
 
     except Exception as e:
         print(f"❌ Error forwarding to {target_url}: {e}")
-        return Response("MARLA proxy error", status_code=502)
+        return "MARLA proxy error", 502
