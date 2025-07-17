@@ -23,6 +23,9 @@ def handle_request():
     target_url = next(target_cycle)
 
     try:
+        # Log the request RPS (used in ARIMA)
+        log_request()
+
         # Forward the request (Only GET/POST for now)
         if request.method == "GET":
             proxied = requests.get(target_url, headers=request.headers, timeout=5)
@@ -32,8 +35,6 @@ def handle_request():
             return "Unsupported method", 405
 
         #print(f"→ Forwarded to: {target_url} | Status: {proxied.status_code}")
-        # Log the request RPS (used in ARIMA)
-        log_request()
         return Response(proxied.content, status=proxied.status_code, headers=dict(proxied.headers))
 
     except Exception as e:
