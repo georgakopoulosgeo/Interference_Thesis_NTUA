@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: nginx-service
 spec:
-  type: NodePort  # Expose on a static port (30000-32767)
+  type: LoadBalancer
   selector:
     app: my-nginx
   ports:
