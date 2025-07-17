@@ -35,10 +35,12 @@ def log_rps():
             f.write(json.dumps(entry) + "\n")
         print(f"Logged RPS: {entry}")
 
-@app.before_first_request
+# Start the logger thread when the app module is loaded
 def start_logger_thread():
     t = threading.Thread(target=log_rps, daemon=True)
     t.start()
+
+start_logger_thread()
 
 @app.route("/", methods=["GET", "POST"])
 def handle_request():
