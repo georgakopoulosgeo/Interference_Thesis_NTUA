@@ -5,6 +5,12 @@ BASE_RPS = 1000
 TARGET_URL = "http://192.168.49.2:30080/"
 LOG_DIR = "/home/george/logs/traffic_generator"
 
+NGINX_METRICS_FIELDNAMES = [
+    "Test_ID", "Minute", "RPS", "Throughput", "Avg_Latency",
+    "P50_Latency", "P75_Latency", "P90_Latency", "P95_Latency",
+    "P99_Latency", "Max_Latency", "Min_Latency", "Errors"
+]
+
 PREDEFINED_RPS_10MIN = [
     1000, 1200, 1400, 1600, 1800,
     2000, 1800, 1600, 1400, 1200

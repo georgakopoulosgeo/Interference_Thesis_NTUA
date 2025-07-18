@@ -8,7 +8,7 @@ import csv
 
 from config import (
     DURATION_MINUTES, STEP_INTERVAL, BASE_RPS, TARGET_URL, LOG_DIR,
-    PREDEFINED_RPS_30MIN, PREDEFINED_RPS_10MIN, PREDEFINED_RPS_60MIN
+    PREDEFINED_RPS_30MIN, PREDEFINED_RPS_10MIN, PREDEFINED_RPS_60MIN, NGINX_METRICS_FIELDNAMES
 )
 from vegeta_runner import run_vegeta_attack
 from parsing_and_storing import parse_vegeta_metrics, store_workload_metrics
@@ -56,6 +56,10 @@ def run_traffic_test(duration_minutes: int = DURATION_MINUTES,mode: str = "prede
     # Create logs directory if needed
     os.makedirs(LOG_DIR, exist_ok=True)
     performance_csv = os.path.join(LOG_DIR, "performance_metrics.csv")
+    # Explicitly write headers once
+    with open(performance_csv, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=NGINX_METRICS_FIELDNAMES)
+        writer.writeheader()
 
     # Generate the RPS schedule
     rps_schedule = generate_rps_schedule(
@@ -72,7 +76,7 @@ def run_traffic_test(duration_minutes: int = DURATION_MINUTES,mode: str = "prede
         print(f"[Minute {minute+1}] RPS = {rps}")
         
         # Log RPS for MARLA
-        log_rps_schedule_entry(minute, rps)
+        log_rps_schedule_entry(minute+1, rps)
 
         # Run vegeta attack
         report = run_vegeta_attack(
