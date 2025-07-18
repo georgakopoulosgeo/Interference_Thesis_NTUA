@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from typing import Optional, List
 import random
+import csv
 
 from config import (
     DURATION_MINUTES, STEP_INTERVAL, BASE_RPS, TARGET_URL, LOG_DIR,
@@ -78,6 +79,8 @@ def run_traffic_test(
         predefined_rps=predefined_rps
     )
 
+    summary_data = []
+
     # Loop over each minute
     for minute, rps in enumerate(rps_schedule):
         print(f"[Minute {minute+1}] RPS = {rps}")
@@ -93,10 +96,27 @@ def run_traffic_test(
             log_prefix=f"minute_{minute+1}"
         )
 
+        # inside for loop
+        summary_data.append({
+            "minute": minute + 1,
+            "rps": rps,
+            "duration": STEP_INTERVAL,
+            "attack_file": f"minute_{minute+1}_attack.bin",
+            "report_file": f"minute_{minute+1}_report.json"
+        })
+
         # Sleep exactly for the interval (if vegeta is async, else skip this)
         time.sleep(STEP_INTERVAL)
 
     print("Traffic test completed.")
+
+
+def write_summary_csv(summary_data, filepath):
+    with open(filepath, mode="w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=summary_data[0].keys())
+        writer.writeheader()
+        writer.writerows(summary_data)
+
 
 if __name__ == "__main__":
     run_traffic_test(

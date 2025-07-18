@@ -3,7 +3,7 @@ DURATION_MINUTES = 10
 STEP_INTERVAL = 60  # seconds
 BASE_RPS = 1000
 TARGET_URL = "http://192.168.49.2:30080"
-LOG_DIR = "/home/logs/traffic_generator"
+LOG_DIR = "/home/george/logs/traffic_generator"
 
 PREDEFINED_RPS_10MIN = [
     1000, 1200, 1400, 1600, 1800,
