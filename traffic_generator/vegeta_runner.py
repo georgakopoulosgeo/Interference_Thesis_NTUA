@@ -1,28 +1,23 @@
 import subprocess
 import os
 import json
-from typing import Any, Dict
-import tempfile
+from typing import Dict, Any
 
 from config import LOG_DIR, TARGET_URL
 
 def run_vegeta_attack(rps: int, duration: int = 60, target_url: str = TARGET_URL, log_prefix: str = "") -> Dict[str, Any]:
-    """
-    Executes a Vegeta load test at the specified RPS for `duration` seconds.
-    Saves output in both binary and JSON format for analysis.
-    """
-    attack_file = os.path.join(LOG_DIR, f"{log_prefix}_attack.bin")
-    report_file = os.path.join(LOG_DIR, f"{log_prefix}_report.json")
+    """Execute Vegeta attack and return parsed performance report."""
 
-    # Prepare targets file
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp_target_file:
-        tmp_target_file.write(f"GET {target_url}\n")
-        tmp_target_file.flush()
-        targets_path = tmp_target_file.name
-
-    print(f"Running Vegeta attack: RPS={rps}, duration={duration}s")
+    # Define output paths
+    targets_path = os.path.join(LOG_DIR, f"{log_prefix}_targets.txt")
+    results_path = os.path.join(LOG_DIR, f"{log_prefix}_attack.bin")
+    report_path = os.path.join(LOG_DIR, f"{log_prefix}_report.json")
 
     try:
+        # Write target definition
+        with open(targets_path, "w") as f:
+            f.write(f"GET {target_url}\n")  # newline is essential
+
         # Run vegeta attack
         subprocess.run([
             "vegeta", "attack",
@@ -30,28 +25,27 @@ def run_vegeta_attack(rps: int, duration: int = 60, target_url: str = TARGET_URL
             "-duration", f"{duration}s",
             "-format", "json",
             "-targets", targets_path,
-            "-output", attack_file
+            "-output", results_path
         ], check=True)
 
         # Run vegeta report
-        with open(report_file, "w") as f:
+        with open(report_path, "w") as f:
             subprocess.run([
                 "vegeta", "report",
                 "-type=json",
-                attack_file
+                results_path
             ], stdout=f, check=True)
 
-        print(f"Saved logs: {attack_file}, {report_file}")
-
-        # Optionally return report data
-        with open(report_file) as f:
+        # Load and return report
+        with open(report_path) as f:
             return json.load(f)
 
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Vegeta failed: {e}")
+        print(f"[ERROR] Vegeta test failed: {e}", flush=True)
         return {}
 
     finally:
-        # Clean up temp targets file
-        if os.path.exists(targets_path):
-            os.remove(targets_path)
+        # Optional cleanup — comment this out if you want to keep logs
+        for path in [targets_path, results_path, report_path]:
+            if os.path.exists(path):
+                os.remove(path)

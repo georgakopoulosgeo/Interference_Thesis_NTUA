@@ -80,7 +80,6 @@ def run_traffic_test(
         predefined_rps=predefined_rps
     )
 
-    summary_data = []
     performance_csv = os.path.join(LOG_DIR, "performance_metrics.csv")
     test_id = "rps_sweep_test"  # Optional: change to UUID or timestamp for uniqueness
 
@@ -109,25 +108,10 @@ def run_traffic_test(
             metrics=metrics
         )
 
-        summary_data.append({
-            "minute": minute + 1,
-            "rps": rps,
-            "duration": STEP_INTERVAL,
-            "attack_file": f"minute_{minute+1}_attack.bin",
-            "report_file": f"minute_{minute+1}_report.json"
-        })
-
         # Sleep exactly for the interval (if vegeta is async, else skip this)
         time.sleep(STEP_INTERVAL)
 
     print("Traffic test completed.")
-
-
-def write_summary_csv(summary_data, filepath):
-    with open(filepath, mode="w", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=summary_data[0].keys())
-        writer.writeheader()
-        writer.writerows(summary_data)
 
 
 if __name__ == "__main__":
