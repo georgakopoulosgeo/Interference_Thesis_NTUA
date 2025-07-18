@@ -5,7 +5,7 @@ from arima import predict_next_rps
 from predictor_client import get_slowdown_predictions
 from placement_logic import choose_best_replica_plan, determine_replica_count_for_rps
 from k8s_interface import apply_replica_plan
-from utils import log_decision
+#from utils import log_decision
 
 logging.basicConfig(level=logging.INFO) # Logging setup
 
@@ -32,7 +32,7 @@ def marla_loop():
             logging.info(f"Slowdown predictions: {slowdown_predictions}")
 
             # Choose optimal replica plan
-            best_plan = choose_best_replica_plan(slowdown_predictions, forecasted_rps)
+            best_plan = choose_best_replica_plan(slowdown_predictions)
             logging.info(f"Best replica plan selected: {best_plan}")
 
             # Apply changes if different from current distribution
@@ -44,7 +44,7 @@ def marla_loop():
                 logging.info("Current plan already optimal. No changes made.")
 
             # Log decision
-            log_decision(forecasted_rps, slowdown_predictions, last_applied_plan, best_plan)
+            #log_decision(forecasted_rps, slowdown_predictions, last_applied_plan, best_plan)
 
         except Exception as e:
             logging.error(f"MARLA error: {e}")
