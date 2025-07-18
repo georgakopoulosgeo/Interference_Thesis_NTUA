@@ -24,7 +24,6 @@ def run_vegeta_attack(rps: int, duration: int = 60, target_url: str = TARGET_URL
             "vegeta", "attack",
             "-rate", str(rps),
             "-duration", f"{duration}s",
-            "-format", "json",
             "-targets", targets_path,
             "-output", results_path
         ], check=True)
