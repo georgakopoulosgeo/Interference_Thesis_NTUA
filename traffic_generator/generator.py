@@ -8,7 +8,7 @@ import csv
 
 from config import (
     DURATION_MINUTES, STEP_INTERVAL, BASE_RPS, TARGET_URL, LOG_DIR,
-    PREDEFINED_RPS_30MIN
+    PREDEFINED_RPS_30MIN, PREDEFINED_RPS_10MIN, PREDEFINED_RPS_60MIN
 )
 from vegeta_runner import run_vegeta_attack
 from parsing_and_storing import parse_vegeta_metrics, store_workload_metrics
@@ -65,7 +65,7 @@ def run_traffic_test(
     duration_minutes: int = DURATION_MINUTES,
     mode: str = "predefined",
     base_rps: int = BASE_RPS,
-    predefined_rps: Optional[List[int]] = PREDEFINED_RPS_30MIN
+    predefined_rps: Optional[List[int]] = PREDEFINED_RPS_10MIN
 ):
     print(f"Starting traffic test for {duration_minutes} minutes")
     
@@ -79,6 +79,7 @@ def run_traffic_test(
         mode=mode,
         predefined_rps=predefined_rps
     )
+    print(f"Generated RPS schedule: {rps_schedule}")
 
     performance_csv = os.path.join(LOG_DIR, "performance_metrics.csv")
     test_id = "rps_sweep_test"  # Optional: change to UUID or timestamp for uniqueness
@@ -109,7 +110,7 @@ def run_traffic_test(
         )
 
         # Sleep exactly for the interval (if vegeta is async, else skip this)
-        time.sleep(STEP_INTERVAL)
+        #time.sleep(STEP_INTERVAL)
 
     print("Traffic test completed.")
 
@@ -119,5 +120,5 @@ if __name__ == "__main__":
         duration_minutes=DURATION_MINUTES,
         mode="predefined",
         base_rps=BASE_RPS,
-        predefined_rps=PREDEFINED_RPS_30MIN
+        predefined_rps=PREDEFINED_RPS_10MIN
     )
