@@ -43,7 +43,7 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
         {'minikube': best_r1, 'minikube-m02': best_r2}
     """
     best_plan = None
-    best_score = float('inf')
+    best_score = -float('inf')
 
     available_replica_counts = sorted(int(k) for k in slowdown_predictions.keys())
 
@@ -60,7 +60,7 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
 
             score = compute_aggregated_slowdown(r1, s1, r2, s2, method=PLACEMENT_METRIC)
 
-            if score < best_score:
+            if score > best_score:
                 best_score = score
                 best_plan = {'minikube': r1, 'minikube-m02': r2}
 
