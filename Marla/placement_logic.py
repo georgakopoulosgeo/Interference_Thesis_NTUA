@@ -1,5 +1,6 @@
 from config import RPS_TO_REPLICAS, MAX_REPLICAS, PLACEMENT_METRIC
 import logging
+logging.basicConfig(level=logging.INFO) # Logging setup
 
 def compute_aggregated_slowdown(r1, s1, r2, s2, method="avg"):
     # Aggregates the slowdowns 
@@ -61,7 +62,7 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
 
             score = compute_aggregated_slowdown(r1, s1, r2, s2, method=PLACEMENT_METRIC)
             # Logging the score for debugging
-            logging.debug(f"Evaluating split: ({r1}, {r2}) -> Score: {score}")
+            logging.info(f"Evaluating split: ({r1}, {r2}) -> Score: {score}")
 
             if score > best_score:
                 best_score = score
