@@ -1,7 +1,7 @@
 import time
 import logging
 from config import CHECK_INTERVAL_SEC, RPS_TO_REPLICAS, MAX_REPLICAS
-from arima import predict_next_rps
+from arima import predict_next_rps, train_arima_model
 from predictor_client import get_slowdown_predictions
 from placement_logic import choose_best_replica_plan, determine_replica_count_for_rps
 from k8s_interface import apply_replica_plan
@@ -16,6 +16,7 @@ def marla_loop():
     while True:
         start_time = time.time()
         logging.info("Controller loop triggered.")
+        train_arima_model()  # Ensure model is trained before predictions
 
         try:
             # Forecast next-minute RPS
