@@ -13,3 +13,10 @@ CLUSTER_NODES = ['minikube', 'minikube-m02']
 PREDICTOR_API_URL = "http://localhost:5000"  # URL of the slowdown predictor API
 
 PLACEMENT_METRIC = "avg"  # Options: "avg", "max"
+
+
+NAMESPACE = "default"
+DEPLOYMENT_BASE = "my-nginx"
+IMAGE = "nginx:1.21-alpine"
+LABEL = {"app": "my-nginx"}
+NODE_LABEL_KEY = "kubernetes.io/hostname"

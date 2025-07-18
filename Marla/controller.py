@@ -27,18 +27,18 @@ def marla_loop():
             replicas_needed = determine_replica_count_for_rps(forecasted_rps)
             logging.info(f"Replicas needed based on forecasted RPS: {replicas_needed}")
 
-            # Get slowdown predictions for each combination of pods in the nodes. 
-            slowdown_predictions = get_slowdown_predictions(forecasted_rps, replicas_needed)
-            logging.info(f"Slowdown predictions: {slowdown_predictions}")
+            # Get normalized_perfomance predictions for each combination of pods in the nodes. 
+            normalized_perfomance_predictions = get_slowdown_predictions(forecasted_rps, replicas_needed)
+            logging.info(f"Slowdown predictions: {normalized_perfomance_predictions}")
 
             # Choose optimal replica plan
-            best_plan = choose_best_replica_plan(slowdown_predictions)
+            best_plan = choose_best_replica_plan(normalized_perfomance_predictions)
             logging.info(f"Best replica plan selected: {best_plan}")
 
             # Apply changes if different from current distribution
             if best_plan != last_applied_plan:
-                #apply_replica_plan(best_plan, forecasted_rps)
-                #last_applied_plan = best_plan
+                apply_replica_plan(best_plan)
+                last_applied_plan = best_plan
                 logging.info("Applied new replica plan.")
             else:
                 logging.info("Current plan already optimal. No changes made.")
