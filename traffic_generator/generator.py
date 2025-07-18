@@ -10,8 +10,8 @@ from config import (
     PREDEFINED_RPS_30MIN
 )
 from vegeta_runner import run_vegeta_attack
-from generator import generate_rps_schedule
 
+# Writes RPS to a JSONL file for Marla Controller
 def log_rps_schedule_entry(minute, rps):
     entry = {
         "timestamp": datetime.utcnow().isoformat(),
@@ -20,6 +20,44 @@ def log_rps_schedule_entry(minute, rps):
     }
     with open(os.path.join(LOG_DIR, "rps_schedule.jsonl"), "a") as f:
         f.write(json.dumps(entry) + "\n")
+
+
+# Generates a per-minute RPS schedule based on the csv (or random) 
+def generate_rps_schedule(duration_minutes: int = 30, base_rps: int = 1500, mode: str = "predefined", predefined_rps: Optional[List[int]] = None) -> List[int]:
+    """
+    Generates a per-minute RPS schedule.
+
+    Parameters:
+        - duration_minutes: total test time in minutes
+        - base_rps: starting RPS for random mode
+        - mode: "random" or "predefined"
+        - predefined_rps: list of RPS levels (only for predefined mode)
+
+    Returns:
+        List[int]: length == duration_minutes
+    """
+    if mode == "random":
+        rps_values = [base_rps]
+        for _ in range(1, duration_minutes):
+            delta = random.choice([-500, -200, 200, 500])
+            next_rps = max(500, min(4000, rps_values[-1] + delta))
+            rps_values.append(next_rps)
+        return rps_values
+
+    elif mode == "predefined":
+        if not predefined_rps:
+            raise ValueError("You must provide a list of RPS levels for 'predefined' mode.")
+        
+        rps_values = []
+        for rps_level in predefined_rps:
+            rps_values.extend([rps_level] * 2)  # Each value held for 2 minutes
+        # If list is too short or too long, trim or extend
+        return (rps_values + [predefined_rps[-1]] * duration_minutes)[:duration_minutes]
+
+    else:
+        raise ValueError("Mode must be either 'random' or 'predefined'")
+
+
 
 def run_traffic_test(
     duration_minutes: int = DURATION_MINUTES,
@@ -60,46 +98,10 @@ def run_traffic_test(
 
     print("Traffic test completed.")
 
-
-def generate_rps_schedule(duration_minutes: int = 30, base_rps: int = 1500, mode: str = "random", predefined_rps: Optional[List[int]] = None) -> List[int]:
-    """
-    Generates a per-minute RPS schedule.
-
-    Parameters:
-        - duration_minutes: total test time in minutes
-        - base_rps: starting RPS for random mode
-        - mode: "random" or "predefined"
-        - predefined_rps: list of RPS levels (only for predefined mode)
-
-    Returns:
-        List[int]: length == duration_minutes
-    """
-    if mode == "random":
-        rps_values = [base_rps]
-        for _ in range(1, duration_minutes):
-            delta = random.choice([-500, -200, 200, 500])
-            next_rps = max(500, min(4000, rps_values[-1] + delta))
-            rps_values.append(next_rps)
-        return rps_values
-
-    elif mode == "predefined":
-        if not predefined_rps:
-            raise ValueError("You must provide a list of RPS levels for 'predefined' mode.")
-        
-        rps_values = []
-        for rps_level in predefined_rps:
-            rps_values.extend([rps_level] * 2)  # Each value held for 2 minutes
-        # If list is too short or too long, trim or extend
-        return (rps_values + [predefined_rps[-1]] * duration_minutes)[:duration_minutes]
-
-    else:
-        raise ValueError("Mode must be either 'random' or 'predefined'")
-
-def log_rps_schedule(rps_schedule):
-    with open("logs/rps_schedule.jsonl", "w") as f:
-        for minute, rps in enumerate(rps_schedule):
-            f.write(json.dumps({
-                "timestamp": datetime.utcnow().isoformat(),
-                "minute": minute,
-                "rps": rps
-            }) + "\n")
+if __name__ == "__main__":
+    run_traffic_test(
+        duration_minutes=DURATION_MINUTES,
+        mode="predefined",
+        base_rps=BASE_RPS,
+        predefined_rps=PREDEFINED_RPS_30MIN
+    )

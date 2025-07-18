@@ -1,9 +1,9 @@
 import subprocess
 import os
 
-from config import LOG_DIR
+from config import LOG_DIR, TARGET_URL
 
-def run_vegeta_attack(rps, duration=60, target_url="http://nginx.default.svc.cluster.local", log_prefix=""):
+def run_vegeta_attack(rps, duration=60, target_url= TARGET_URL, log_prefix=""):
     """
     Executes a Vegeta load test at the specified RPS for `duration` seconds.
     Saves output in both binary and JSON format for analysis.

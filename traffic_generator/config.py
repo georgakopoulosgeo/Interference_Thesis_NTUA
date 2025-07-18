@@ -1,10 +1,16 @@
 # config.py
-DURATION_MINUTES = 30
+DURATION_MINUTES = 10
 STEP_INTERVAL = 60  # seconds
-BASE_RPS = 1500
-TARGET_URL = "http://nginx.default.svc.cluster.local"
-LOG_DIR = "logs/"
-# RPS levels for 30-minute predefined test (changes every 2 minutes)
+BASE_RPS = 1000
+TARGET_URL = "http://192.168.49.2:30080"
+LOG_DIR = "/home/logs/traffic_generator"
+
+PREDEFINED_RPS_10MIN = [
+    1000, 1200, 1400, 1600, 1800,
+    2000, 1800, 1600, 1400, 1200
+]
+
+
 PREDEFINED_RPS_30MIN = [
     1300, 1100, 1200, 1300, 1500,
     1600, 1700, 1800, 1900, 2000,

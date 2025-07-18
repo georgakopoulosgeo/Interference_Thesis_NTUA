@@ -17,10 +17,10 @@ spec:
         resources:
           requests:
             cpu: "250m"
-            memory: "256Mi"
+            memory: "512Mi"
           limits:
             cpu: "250m"
-            memory: "256Mi"
+            memory: "512Mi"
       restartPolicy: Never
       nodeSelector:
         kubernetes.io/hostname: minikube   # to be overridden in code
