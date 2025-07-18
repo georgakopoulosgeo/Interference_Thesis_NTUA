@@ -30,24 +30,31 @@ def store_workload_metrics(csv_file: str, test_id: str, minute: int, given_rps: 
         "P50_Latency", "P75_Latency", "P90_Latency", "P95_Latency",
         "P99_Latency", "Max_Latency", "Min_Latency", "Errors"
     ]
+
+    # Check if file exists
     file_exists = os.path.exists(csv_file)
-    with open(csv_file, "a", newline="") as f:
+
+    with open(csv_file, mode="a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=header)
+
+        # Write header once
         if not file_exists:
             writer.writeheader()
-        row = {
+
+        # Write row
+        writer.writerow({
             "Test_ID": test_id,
             "Minute": minute,
             "RPS": given_rps,
-            "Throughput": metrics["throughput"],
-            "Avg_Latency": metrics["avg_latency"],
-            "P50_Latency": metrics["p50_latency"],
-            "P75_Latency": metrics["p75_latency"],
-            "P90_Latency": metrics["p90_latency"],
-            "P95_Latency": metrics["p95_latency"],
-            "P99_Latency": metrics["p99_latency"],
-            "Max_Latency": metrics["max_latency"],
-            "Min_Latency": metrics["min_latency"],
-            "Errors": metrics["errors"]
-        }
-        writer.writerow(row)
+            "Throughput": metrics.get("throughput", 0.0),
+            "Avg_Latency": metrics.get("avg_latency", 0.0),
+            "P50_Latency": metrics.get("p50_latency", 0.0),
+            "P75_Latency": metrics.get("p75_latency", 0.0),
+            "P90_Latency": metrics.get("p90_latency", 0.0),
+            "P95_Latency": metrics.get("p95_latency", 0.0),
+            "P99_Latency": metrics.get("p99_latency", 0.0),
+            "Max_Latency": metrics.get("max_latency", 0.0),
+            "Min_Latency": metrics.get("min_latency", 0.0),
+            "Errors": metrics.get("errors", 0)
+        })
+

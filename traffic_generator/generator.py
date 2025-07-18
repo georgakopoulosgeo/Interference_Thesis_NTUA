@@ -24,20 +24,8 @@ def log_rps_schedule_entry(minute, rps):
         f.write(json.dumps(entry) + "\n")
 
 
-# Generates a per-minute RPS schedule based on the csv (or random) 
+# Generates a per-minute RPS schedule based on the list in the config file (or random)
 def generate_rps_schedule(duration_minutes: int = 30, base_rps: int = 1500, mode: str = "predefined", predefined_rps: Optional[List[int]] = None) -> List[int]:
-    """
-    Generates a per-minute RPS schedule.
-
-    Parameters:
-        - duration_minutes: total test time in minutes
-        - base_rps: starting RPS for random mode
-        - mode: "random" or "predefined"
-        - predefined_rps: list of RPS levels (only for predefined mode)
-
-    Returns:
-        List[int]: length == duration_minutes
-    """
     if mode == "random":
         rps_values = [base_rps]
         for _ in range(1, duration_minutes):
@@ -52,25 +40,22 @@ def generate_rps_schedule(duration_minutes: int = 30, base_rps: int = 1500, mode
         
         rps_values = []
         for rps_level in predefined_rps:
-            rps_values.extend([rps_level] * 2)  # Each value held for 2 minutes
-        # If list is too short or too long, trim or extend
+            rps_values.extend([rps_level] * 1) # 1 minute per RPS level 
         return (rps_values + [predefined_rps[-1]] * duration_minutes)[:duration_minutes]
 
     else:
         raise ValueError("Mode must be either 'random' or 'predefined'")
 
 
-
-def run_traffic_test(
-    duration_minutes: int = DURATION_MINUTES,
-    mode: str = "predefined",
-    base_rps: int = BASE_RPS,
-    predefined_rps: Optional[List[int]] = PREDEFINED_RPS_10MIN
-):
+# Main function to run the traffic test
+def run_traffic_test(duration_minutes: int = DURATION_MINUTES,mode: str = "predefined",base_rps: int = BASE_RPS,predefined_rps: Optional[List[int]] = PREDEFINED_RPS_10MIN):
+    
     print(f"Starting traffic test for {duration_minutes} minutes")
+    test_id = "rps_sweep_test"  # Optional: change to UUID or timestamp for uniqueness
     
     # Create logs directory if needed
     os.makedirs(LOG_DIR, exist_ok=True)
+    performance_csv = os.path.join(LOG_DIR, "performance_metrics.csv")
 
     # Generate the RPS schedule
     rps_schedule = generate_rps_schedule(
@@ -81,8 +66,6 @@ def run_traffic_test(
     )
     print(f"Generated RPS schedule: {rps_schedule}")
 
-    performance_csv = os.path.join(LOG_DIR, "performance_metrics.csv")
-    test_id = "rps_sweep_test"  # Optional: change to UUID or timestamp for uniqueness
 
     # Loop over each minute
     for minute, rps in enumerate(rps_schedule):
