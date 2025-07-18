@@ -1,7 +1,7 @@
 import time
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 import random
 import csv
@@ -15,7 +15,7 @@ from vegeta_runner import run_vegeta_attack
 # Writes RPS to a JSONL file for Marla Controller
 def log_rps_schedule_entry(minute, rps):
     entry = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "minute": minute,
         "rps": rps
     }
