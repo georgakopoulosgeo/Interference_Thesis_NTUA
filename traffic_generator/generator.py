@@ -11,6 +11,7 @@ from config import (
     PREDEFINED_RPS_30MIN
 )
 from vegeta_runner import run_vegeta_attack
+from parsing_and_storing import parse_vegeta_metrics, store_workload_metrics
 
 # Writes RPS to a JSONL file for Marla Controller
 def log_rps_schedule_entry(minute, rps):
@@ -80,6 +81,8 @@ def run_traffic_test(
     )
 
     summary_data = []
+    performance_csv = os.path.join(LOG_DIR, "performance_metrics.csv")
+    test_id = "rps_sweep_test"  # Optional: change to UUID or timestamp for uniqueness
 
     # Loop over each minute
     for minute, rps in enumerate(rps_schedule):
@@ -89,14 +92,23 @@ def run_traffic_test(
         log_rps_schedule_entry(minute, rps)
 
         # Run vegeta attack
-        run_vegeta_attack(
+        report = run_vegeta_attack(
             rps=rps,
             duration=STEP_INTERVAL,
             target_url=TARGET_URL,
             log_prefix=f"minute_{minute+1}"
         )
 
-        # inside for loop
+        # Parse metrics and store
+        metrics = parse_vegeta_metrics(report)
+        store_workload_metrics(
+            csv_file=performance_csv,
+            test_id=test_id,
+            minute=minute + 1,
+            given_rps=rps,
+            metrics=metrics
+        )
+
         summary_data.append({
             "minute": minute + 1,
             "rps": rps,
