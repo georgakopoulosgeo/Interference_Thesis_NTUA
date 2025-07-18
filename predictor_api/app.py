@@ -69,19 +69,23 @@ def predict():
     - rps: Request rate (requests per second)
     """
     try:
-        # 1. Get input parameters
+        # Get input parameters
         data = request.get_json()
         replicas = data['replicas']
         rps = data['rps']
-        # 2. Fetch metrics from metrics collector
+        # Fetch metrics from metrics collector
         metrics_data = fetch_metrics()
-        # 3. Process metrics per node
+        # Process metrics per node
         node_metrics = process_metrics_per_node(metrics_data)
-        # 4. Calculate stats and create feature set
-        features = calculate_features(node_metrics, replicas, rps)
-        # 5. Make predictions using the model
-        predictions = make_predictions(features)
-        return jsonify(predictions)
+        
+        # For each replica count, compute predictions
+        all_predictions = {}
+        for rep_count in range(1, replicas + 1):
+            features = calculate_features(node_metrics, replicas=rep_count, rps=rps)
+            predictions = make_predictions(features)
+            all_predictions[str(rep_count)] = predictions  # use str keys for JSON compatibility
+
+        return jsonify(all_predictions)
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500

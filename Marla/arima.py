@@ -1,6 +1,6 @@
-def update_rps_history(new_rps):
+def get_rps_history():
     """
-    Maintains a rolling history of RPS values to be used in ARIMA training.
+    Probably retrieves the historical RPS data with a query to Nginx Exporter
     """
 
 def train_arima_model():
@@ -14,3 +14,4 @@ def predict_next_rps():
     Uses the trained ARIMA model to forecast the next-minute RPS.
     Returns: int
     """
+    return 1000

@@ -1,12 +1,15 @@
 COOLDOWN_PERIOD = 3  # minutes between major actions
 SLO_THRESHOLD = 0.8  # Acceptable slowdown ratio
 MAX_REPLICAS = 4
+CHECK_INTERVAL_SEC = 60  # Check every minute
 
 RPS_TO_REPLICAS = {
-    0: 1,
-    1500: 2,
-    3000: 3,
-    4000: 4
+    1000: 2,
+    1500: 3
 }
 
-CLUSTER_NODES = ['node1', 'node2']
+CLUSTER_NODES = ['minikube', 'minikube-m02']
+
+PREDICTOR_API_URL = "http://localhost:5000"  # URL of the slowdown predictor API
+
+PLACEMENT_METRIC = "avg"  # Options: "avg", "max"
