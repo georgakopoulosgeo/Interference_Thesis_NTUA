@@ -1,4 +1,5 @@
 from config import RPS_TO_REPLICAS, MAX_REPLICAS, PLACEMENT_METRIC
+import logging
 
 def compute_aggregated_slowdown(r1, s1, r2, s2, method="avg"):
     # Aggregates the slowdowns 
@@ -59,7 +60,8 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
             s2 = slowdown_predictions.get(r2, {}).get('node2', 0.0) if r2 > 0 else 0.0
 
             score = compute_aggregated_slowdown(r1, s1, r2, s2, method=PLACEMENT_METRIC)
-            print (f"Evaluating split: {r1} replicas on node1, {r2} replicas on node2 => Score: {score}")
+            # Logging the score for debugging
+            logging.debug(f"Evaluating split: ({r1}, {r2}) -> Score: {score}")
 
             if score > best_score:
                 best_score = score
