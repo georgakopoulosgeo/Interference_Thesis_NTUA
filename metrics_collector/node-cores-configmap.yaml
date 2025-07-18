@@ -1,9 +1,0 @@
-# node-cores-configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: node-cores
-data:
-  # Matches your Minikube CPU pinning
-  minikube: "0-2"
-  minikube-m02: "3-5"
