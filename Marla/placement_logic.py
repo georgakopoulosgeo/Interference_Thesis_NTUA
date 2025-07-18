@@ -45,7 +45,7 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
     best_plan = None
     best_score = float('inf')
 
-    available_replica_counts = sorted(slowdown_predictions.keys())
+    available_replica_counts = sorted(int(k) for k in slowdown_predictions.keys())
 
     for total_replicas in available_replica_counts:
         for r1 in range(0, total_replicas + 1):

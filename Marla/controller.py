@@ -14,7 +14,7 @@ last_applied_plan = {"minikube": 1,"minikube-m02": 1} # Initial state with 1 rep
 def marla_loop():
     while True:
         start_time = time.time()
-        logging.info("MARLA loop triggered.")
+        logging.info("Controller loop triggered.")
 
         try:
             # Forecast next-minute RPS
@@ -47,7 +47,7 @@ def marla_loop():
             #log_decision(forecasted_rps, slowdown_predictions, last_applied_plan, best_plan)
 
         except Exception as e:
-            logging.error(f"MARLA error: {e}")
+            logging.error(f"Controller error: {e}")
 
         # Wait until next minute
         elapsed = time.time() - start_time
