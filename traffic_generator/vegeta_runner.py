@@ -4,6 +4,7 @@ import json
 from typing import Dict, Any
 
 from config import LOG_DIR, TARGET_URL
+NGINX_SERVICE_URL = "http://192.168.49.2:30080"
 
 def run_vegeta_attack(rps: int, duration: int = 60, target_url: str = TARGET_URL, log_prefix: str = "") -> Dict[str, Any]:
     """Execute Vegeta attack and return parsed performance report."""
@@ -16,7 +17,7 @@ def run_vegeta_attack(rps: int, duration: int = 60, target_url: str = TARGET_URL
     try:
         # Write target definition
         with open(targets_path, "w") as f:
-            f.write(f"GET {target_url}\n")  # newline is essential
+            f.write(f"GET {NGINX_SERVICE_URL}")
 
         # Run vegeta attack
         subprocess.run([
