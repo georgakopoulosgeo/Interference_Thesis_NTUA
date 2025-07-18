@@ -24,7 +24,7 @@ def compute_aggregated_slowdown(r1, s1, r2, s2, method="avg"):
         raise ValueError(f"Unsupported slowdown aggregation method: {method}")
 
 
-def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
+def choose_best_replica_plan(slowdown_predictions_raw: dict) -> dict:
     """
     Selects the best replica placement across nodes that minimizes aggregated slowdown.
     Evaluates all valid splits of total replicas across the two nodes and choose the best.
@@ -44,10 +44,12 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
     Returns:
         {'minikube': best_r1, 'minikube-m02': best_r2}
     """
+    slowdown_predictions = {int(k): v for k, v in slowdown_predictions_raw.items()}
+
     best_plan = None
     best_score = -float('inf')
 
-    available_replica_counts = sorted(int(k) for k in slowdown_predictions.keys())
+    available_replica_counts = sorted(slowdown_predictions.keys())
 
     for total_replicas in available_replica_counts:
         for r1 in range(0, total_replicas + 1):
@@ -62,7 +64,7 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
 
             score = compute_aggregated_slowdown(r1, s1, r2, s2, method=PLACEMENT_METRIC)
             # Logging the score for debugging
-            logging.info(f"Evaluating split: ({r1}, {r2}) -> Score: {score}")
+            #logging.info(f"Evaluating split: ({r1}, {r2}) -> Score: {score}")
 
             if score > best_score:
                 best_score = score
