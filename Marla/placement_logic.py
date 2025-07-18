@@ -59,6 +59,7 @@ def choose_best_replica_plan(slowdown_predictions: dict) -> dict:
             s2 = slowdown_predictions.get(r2, {}).get('node2', 0.0) if r2 > 0 else 0.0
 
             score = compute_aggregated_slowdown(r1, s1, r2, s2, method=PLACEMENT_METRIC)
+            print (f"Evaluating split: {r1} replicas on node1, {r2} replicas on node2 => Score: {score}")
 
             if score > best_score:
                 best_score = score
