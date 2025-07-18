@@ -8,10 +8,11 @@ from k8s_interface import apply_replica_plan
 #from utils import log_decision
 
 logging.basicConfig(level=logging.INFO) # Logging setup
+last_applied_plan = None
 
-last_applied_plan = {"minikube": 1,"minikube-m02": 1} # Initial state with 1 replica on each node
 
 def marla_loop():
+    last_applied_plan = {"minikube": 1,"minikube-m02": 1} # Initial state with 1 replica on each node
     while True:
         start_time = time.time()
         logging.info("Controller loop triggered.")
