@@ -1,5 +1,6 @@
 from config import RPS_TO_REPLICAS, MAX_REPLICAS, PLACEMENT_METRIC
 import logging
+from typing import Dict
 logging.basicConfig(level=logging.INFO) # Logging setup
 
 def compute_aggregated_slowdown(r1, s1, r2, s2, method="avg"):
@@ -12,7 +13,7 @@ def compute_aggregated_slowdown(r1, s1, r2, s2, method="avg"):
     if method == "avg":
         total = r1 + r2
         if total == 0:
-            return float('inf')
+            return float('-inf')
         return (r1 * s1 + r2 * s2) / total
     elif method == "max":
         if r1 == 0:
@@ -24,7 +25,7 @@ def compute_aggregated_slowdown(r1, s1, r2, s2, method="avg"):
         raise ValueError(f"Unsupported slowdown aggregation method: {method}")
 
 
-def choose_best_replica_plan(slowdown_predictions_raw: dict) -> dict:
+def choose_best_replica_plan(slowdown_predictions_raw: Dict[int, Dict[str, float]]) -> Dict[str, int]:
     """
     Selects the best replica placement across nodes that minimizes aggregated slowdown.
     Evaluates all valid splits of total replicas across the two nodes and choose the best.
@@ -56,7 +57,7 @@ def choose_best_replica_plan(slowdown_predictions_raw: dict) -> dict:
             r2 = total_replicas - r1
 
             # Skip splits for which we don't have predictions
-            if r1 not in slowdown_predictions or r2 not in slowdown_predictions:
+            if (r1 != 0 and r1 not in slowdown_predictions) or (r2 != 0 and r2 not in slowdown_predictions):
                 continue
 
             s1 = slowdown_predictions.get(r1, {}).get('node1', 0.0) if r1 > 0 else 0.0
@@ -64,7 +65,6 @@ def choose_best_replica_plan(slowdown_predictions_raw: dict) -> dict:
 
             score = compute_aggregated_slowdown(r1, s1, r2, s2, method=PLACEMENT_METRIC)
             # Logging the score for debugging
-            #logging.info(f"Evaluating split: ({r1}, {r2}) -> Score: {score}")
 
             if score > best_score:
                 best_score = score
