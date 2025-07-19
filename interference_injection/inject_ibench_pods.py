@@ -3,17 +3,26 @@ import time
 from datetime import datetime
 from kubernetes import client, config
 import yaml
+import os
 
 # === Constants ===
-CSV_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_schedule.csv"
+SCHEDULE_FOLDER = "/home/george/Workspace/Interference/interference_injection/interference_schedules"
+SCHEDULE_PROFILE = "balanced"  # options: light, medium, balanced, standard
+
+CSV_PATH = os.path.join(SCHEDULE_FOLDER, f"{SCHEDULE_PROFILE}_interference_schedule.csv")
 NAMESPACE = "default"
 
 # YAML file paths for deployments
-YAML_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_l3_template.yaml"
+YAML_DIR = "/home/george/Workspace/Interference/interference_injection/ibench_template"
 
+# Node selectors by deployment name
 NODE_SELECTORS = {
+    "ibench-cpu-node1": "minikube",
+    "ibench-cpu-node2": "minikube-m02",
     "ibench-l3-node1": "minikube",
-    "ibench-l3-node2": "minikube-m02"
+    "ibench-l3-node2": "minikube-m02",
+    "ibench-membw-node1": "minikube",
+    "ibench-membw-node2": "minikube-m02"
 }
 
 # === Kubernetes Client ===
@@ -22,8 +31,9 @@ def load_k8s_client():
     return client.AppsV1Api()
 
 # === Actions ===
-def create_deployment(apps_v1, deployment_name):
-    with open(YAML_PATH) as f:
+def create_deployment(apps_v1, deployment_name, type):
+    yaml_path = f"{YAML_DIR}/{type}_template.yaml"
+    with open(yaml_path) as f:
         dep = yaml.safe_load(f)
 
     # Override names and labels
@@ -41,8 +51,6 @@ def create_deployment(apps_v1, deployment_name):
 
     apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=dep)
     print(f"[{datetime.now()}] Created deployment {deployment_name}")
-
-
 
 def scale_deployment(apps_v1, deployment_name, replicas):
     body = {'spec': {'replicas': replicas}}
@@ -87,9 +95,10 @@ def run_scheduler():
         action = entry['action']
         deployment_name = entry['deployment_name']
         replicas = entry['replicas']
+        type = entry['type']
 
         if action == 'create':
-            create_deployment(apps_v1, deployment_name)
+            create_deployment(apps_v1, deployment_name, type)
         elif action == 'scale':
             scale_deployment(apps_v1, deployment_name, replicas)
         elif action == 'delete':
