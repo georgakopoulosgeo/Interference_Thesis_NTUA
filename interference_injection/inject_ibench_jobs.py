@@ -9,9 +9,11 @@ CSV_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_sc
 NAMESPACE = "default"
 
 # YAML file paths for deployments
-YAML_PATHS = {
-    "ibench-l3-node1": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node1.yaml",
-    "ibench-l3-node2": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node2.yaml"
+YAML_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_l3_template.yaml"
+
+NODE_SELECTORS = {
+    "ibench-l3-node1": "minikube",
+    "ibench-l3-node2": "minikube-m02"
 }
 
 # === Kubernetes Client ===
@@ -21,22 +23,25 @@ def load_k8s_client():
 
 # === Actions ===
 def create_deployment(apps_v1, deployment_name):
-    yaml_path = YAML_PATHS.get(deployment_name)
-    if not yaml_path:
-        print(f"[{datetime.now()}] No YAML defined for deployment '{deployment_name}'")
-        return
-
-    with open(yaml_path) as f:
+    with open(YAML_PATH) as f:
         dep = yaml.safe_load(f)
 
-    # Dynamically override the metadata name and label
+    # Override names and labels
     dep['metadata']['name'] = deployment_name
     dep['spec']['selector']['matchLabels']['app'] = deployment_name
     dep['spec']['template']['metadata']['labels']['app'] = deployment_name
     dep['spec']['template']['spec']['containers'][0]['name'] = deployment_name
 
+    # Override node selector based on deployment name
+    node_selector_value = NODE_SELECTORS.get(deployment_name)
+    if node_selector_value:
+        dep['spec']['template']['spec']['nodeSelector'] = {
+            "kubernetes.io/hostname": node_selector_value
+        }
+
     apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=dep)
     print(f"[{datetime.now()}] Created deployment {deployment_name}")
+
 
 
 def scale_deployment(apps_v1, deployment_name, replicas):
