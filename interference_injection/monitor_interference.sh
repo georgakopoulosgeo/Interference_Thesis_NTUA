@@ -1,9 +1,20 @@
-Nice.
-Now give me a bash script to run alongside with each of these test to monitor the level of interference by studying the pressure on hardware counters:
+#!/bin/bash
 
-The tool I use is the pcm.
-In previous tests I used this python code:
-    # Go to the directory where the PCM tool is located.
-    pcm_dir = "/home/george/Workspace/pcm/build/bin"
-    os.chdir(pcm_dir)
-    cmd = ["sudo", "./pcm", str(interval), "-csv=" + output_csv]
+# === Configuration ===
+PCM_DIR="/home/george/Workspace/pcm/build/bin"
+OUTPUT_DIR="/home/george/interference_injection/pcm_output"
+OUTPUT_CSV="${OUTPUT_DIR}/pcm_capture_$(date +%Y%m%d_%H%M%S).csv"
+INTERVAL=5        # in seconds
+DURATION=6000     # total duration of the test in seconds
+
+# === Preparation ===
+mkdir -p "$OUTPUT_DIR"
+cd "$PCM_DIR" || { echo "PCM directory not found!"; exit 1; }
+
+echo "🔍 Starting PCM capture for $DURATION seconds..."
+echo "📄 Output: $OUTPUT_CSV"
+
+# === Run PCM with timeout ===
+sudo timeout "$DURATION" ./pcm "$INTERVAL" -csv="$OUTPUT_CSV"
+
+echo "✅ PCM monitoring complete."

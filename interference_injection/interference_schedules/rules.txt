@@ -1,0 +1,14 @@
+Rules and Constraints
+
+Cycle = create → delete:
+    Every deployment must be created, then deleted after 100–140 seconds.
+Cycle Duration:
+    Each cycle must last between 100 and 140 seconds.
+Cooldown Between Cycles:
+    After a deployment is deleted, its next creation must wait at least 40 seconds.
+Concurrency:
+    Multiple deployments can be active at once, even on the same node.
+Replica Count:
+    Only 1 or 2 replicas are allowed. Values above 2 are invalid.
+Row Order:
+    Rows should be sorted by timestamp_sec in ascending order.

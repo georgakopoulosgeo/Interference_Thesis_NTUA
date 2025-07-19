@@ -136,6 +136,6 @@ def run_scheduler(max_minutes=None):
 
 
 if __name__ == "__main__":
-    # run_scheduler()             # Full test (30 min)
-    # run_scheduler(max_minutes=10)  # Short test (10 min)
-    run_scheduler()  # or replace with run_scheduler(max_minutes=10) as needed
+    #run_scheduler()             # Full test (30 min)
+    run_scheduler(max_minutes=10)  # Short test (10 min)
+    #run_scheduler()  # or replace with run_scheduler(max_minutes=10) as needed
