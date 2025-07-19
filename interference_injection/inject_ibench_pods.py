@@ -13,7 +13,7 @@ CSV_PATH = os.path.join(SCHEDULE_FOLDER, f"{SCHEDULE_PROFILE}_interference_sched
 NAMESPACE = "default"
 
 # YAML file paths for deployments
-YAML_DIR = "/home/george/Workspace/Interference/interference_injection/ibench_template"
+YAML_DIR = "/home/george/Workspace/Interference/interference_injection/ibench_templates"
 
 # Node selectors by deployment name
 NODE_SELECTORS = {
@@ -71,6 +71,20 @@ def delete_deployment(apps_v1, deployment_name):
     )
     print(f"[{datetime.now()}] Deleted {deployment_name}")
 
+def delete_all_deployments(apps_v1):
+    for deployment_name in NODE_SELECTORS:
+        try:
+            apps_v1.delete_namespaced_deployment(
+                name=deployment_name,
+                namespace=NAMESPACE,
+                body=client.V1DeleteOptions(propagation_policy='Foreground')
+            )
+            print(f"[{datetime.now()}] Deleted deployment {deployment_name}")
+        except client.exceptions.ApiException as e:
+            if e.status != 404:
+                print(f"[{datetime.now()}] ⚠️ Failed to delete {deployment_name}: {e.reason}")
+
+
 # === Load Schedule ===
 def load_schedule():
     with open(CSV_PATH, newline='') as f:
@@ -83,13 +97,19 @@ def load_schedule():
         return sorted(schedule, key=lambda r: r['timestamp_sec'])
 
 # === Main Scheduler ===
-def run_scheduler():
+def run_scheduler(max_minutes=None):
     apps_v1 = load_k8s_client()
     schedule = load_schedule()
     start_time = datetime.now()
 
     for entry in schedule:
-        # Wait for the correct time
+        # Stop early if time exceeds limit
+        if max_minutes is not None and entry['timestamp_sec'] > max_minutes * 60:
+            print(f"[{datetime.now()}] ⏹ Max duration reached ({max_minutes} minutes). Cleaning up...")
+            delete_all_deployments(apps_v1)
+            break
+
+        # Wait until the appropriate time
         sleep_time = entry['timestamp_sec'] - (datetime.now() - start_time).total_seconds()
         if sleep_time > 0:
             time.sleep(sleep_time)
@@ -97,16 +117,25 @@ def run_scheduler():
         action = entry['action']
         deployment_name = entry['deployment_name']
         replicas = entry['replicas']
-        type = entry['type']
+        dtype = entry['type']
 
-        if action == 'create':
-            create_deployment(apps_v1, deployment_name, type)
-        elif action == 'scale':
-            scale_deployment(apps_v1, deployment_name, replicas)
-        elif action == 'delete':
-            delete_deployment(apps_v1, deployment_name)
-        else:
-            print(f"[{datetime.now()}] Unknown action: {action}")
+        try:
+            if action == 'create':
+                create_deployment(apps_v1, deployment_name, dtype)
+                if replicas and replicas > 1:
+                    scale_deployment(apps_v1, deployment_name, replicas)
+            elif action == 'delete':
+                delete_deployment(apps_v1, deployment_name)
+            else:
+                print(f"[{datetime.now()}] Unknown action: {action}")
+        except client.exceptions.ApiException as e:
+            print(f"[{datetime.now()}] ⚠️ Failed to {action} deployment '{deployment_name}': {e.reason}")
+        except Exception as e:
+            print(f"[{datetime.now()}] ⚠️ Unexpected error during '{action}' for '{deployment_name}': {e}")
+
+
 
 if __name__ == "__main__":
-    run_scheduler()
+    # run_scheduler()             # Full test (30 min)
+    # run_scheduler(max_minutes=10)  # Short test (10 min)
+    run_scheduler()  # or replace with run_scheduler(max_minutes=10) as needed
