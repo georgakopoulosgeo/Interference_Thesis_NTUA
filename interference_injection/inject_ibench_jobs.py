@@ -10,8 +10,8 @@ NAMESPACE = "default"
 
 # YAML file paths for deployments
 YAML_PATHS = {
-    "l3-node1": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node1.yaml",
-    "l3-node2": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node2.yaml"
+    "ibench-l3-node1": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node1.yaml",
+    "ibench-l3-node2": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node2.yaml"
 }
 
 # === Kubernetes Client ===
