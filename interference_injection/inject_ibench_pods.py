@@ -32,6 +32,8 @@ def load_k8s_client():
 
 # === Actions ===
 def create_deployment(apps_v1, deployment_name, type):
+    # Replace the - of the type with _ for the YAML file name
+    type = type.replace("-", "_")
     yaml_path = f"{YAML_DIR}/{type}_template.yaml"
     with open(yaml_path) as f:
         dep = yaml.safe_load(f)
