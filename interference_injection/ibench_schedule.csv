@@ -1,6 +1,11 @@
-timestamp_sec,job_name,job_type,duration_sec,node_selector
-0,l3-job-0,create,120,minikube
-60,l3-job-1,create,120,minikube-m02
-120,l3-job-2,create,120,minikube
-180,l3-job-3,create,120,minikube-m02
-240,l3-job-4,create,120,minikube
+timestamp_sec,action,deployment_name,replicas
+0,create,ibench-l3-node1,1
+10,create,ibench-l3-node2,1
+40,scale,ibench-l3-node2,2
+60,scale,ibench-l3-node1,3
+90,delete,ibench-l3-node2,
+100,delete,ibench-l3-node1,
+130,create,ibench-l3-node2,1
+140,create,ibench-l3-node1,2
+170,delete,ibench-l3-node2,
+190,delete,ibench-l3-node1,

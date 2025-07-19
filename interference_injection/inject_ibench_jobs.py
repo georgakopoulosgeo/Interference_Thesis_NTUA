@@ -3,96 +3,86 @@ import time
 from datetime import datetime
 from kubernetes import client, config
 import yaml
-import os
 
-# === Configuration ===
-CSV_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_schedule.csv"
-TEMPLATE_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3.yaml"
+# === Constants ===
+CSV_PATH = "/home/george/Workspace/Interference/interference_injection/interference_l3_deployment_schedule.csv"
 NAMESPACE = "default"
 
+# YAML file paths for deployments
+YAML_PATHS = {
+    "l3-node1": "/home/george/Workspace/Interference/interference_injection/ibench_l3_node1.yaml",
+    "l3-node2": "/home/george/Workspace/Interference/interference_injection/ibench_l3_node2.yaml"
+}
 
-# === Load Kubernetes API Client ===
+# === Kubernetes Client ===
 def load_k8s_client():
     config.load_kube_config()
-    return client.ApiClient()
+    return client.AppsV1Api()
 
+# === Actions ===
+def create_deployment(apps_v1, deployment_name):
+    yaml_path = YAML_PATHS.get(deployment_name)
+    if not yaml_path:
+        print(f"[{datetime.now()}] No YAML defined for deployment '{deployment_name}'")
+        return
 
-# === Load the interference schedule CSV ===
+    with open(yaml_path) as f:
+        dep = yaml.safe_load(f)
+    apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=dep)
+    print(f"[{datetime.now()}] Created {deployment_name}")
+
+def scale_deployment(apps_v1, deployment_name, replicas):
+    body = {'spec': {'replicas': replicas}}
+    apps_v1.patch_namespaced_deployment_scale(
+        name=deployment_name,
+        namespace=NAMESPACE,
+        body=body
+    )
+    print(f"[{datetime.now()}] Scaled {deployment_name} to {replicas} replicas")
+
+def delete_deployment(apps_v1, deployment_name):
+    apps_v1.delete_namespaced_deployment(
+        name=deployment_name,
+        namespace=NAMESPACE,
+        body=client.V1DeleteOptions(propagation_policy='Foreground')
+    )
+    print(f"[{datetime.now()}] Deleted {deployment_name}")
+
+# === Load Schedule ===
 def load_schedule():
     with open(CSV_PATH, newline='') as f:
         reader = csv.DictReader(f)
-        schedule = [row for row in reader]
-        for row in schedule:
+        schedule = []
+        for row in reader:
             row['timestamp_sec'] = int(row['timestamp_sec'])
-            row['duration_sec'] = int(row['duration_sec'])
+            row['replicas'] = int(row['replicas']) if row['replicas'] else None
+            schedule.append(row)
         return sorted(schedule, key=lambda r: r['timestamp_sec'])
 
-
-# === Launch a Job based on the YAML template, dynamically overriding fields ===
-def launch_job(api_client, job_name, node_selector, duration_sec):
-    with open(TEMPLATE_PATH) as f:
-        template = yaml.safe_load(f)
-
-    # Override name and labels
-    template['metadata']['name'] = job_name
-    template['spec']['template']['metadata']['labels']['app'] = job_name
-
-    # Override command duration
-    container = template['spec']['template']['spec']['containers'][0]
-    container['command'][-1] = str(duration_sec)
-
-    # Override node selector
-    template['spec']['template']['spec']['nodeSelector'] = {
-        "kubernetes.io/hostname": node_selector
-    }
-
-    # Create the Job in Kubernetes
-    batch_v1 = client.BatchV1Api(api_client)
-    batch_v1.create_namespaced_job(namespace=NAMESPACE, body=template)
-
-
-# === Delete a Job and its associated pods ===
-def delete_job(api_client, job_name):
-    batch_v1 = client.BatchV1Api(api_client)
-    try:
-        batch_v1.delete_namespaced_job(
-            name=job_name,
-            namespace=NAMESPACE,
-            body=client.V1DeleteOptions(propagation_policy='Foreground')
-        )
-        print(f"[{datetime.now()}] Deleted job {job_name}")
-    except client.exceptions.ApiException as e:
-        print(f"[{datetime.now()}] Failed to delete job {job_name}: {e}")
-
-
-# === Main scheduler loop ===
+# === Main Scheduler ===
 def run_scheduler():
-    api_client = load_k8s_client()
+    apps_v1 = load_k8s_client()
     schedule = load_schedule()
     start_time = datetime.now()
 
     for entry in schedule:
-        # Wait until the correct time for this action
+        # Wait for the correct time
         sleep_time = entry['timestamp_sec'] - (datetime.now() - start_time).total_seconds()
         if sleep_time > 0:
             time.sleep(sleep_time)
 
-        job_name = entry['job_name']
-        job_type = entry['job_type']
-        node_selector = entry['node_selector']
-        duration_sec = entry['duration_sec']
+        action = entry['action']
+        deployment_name = entry['deployment_name']
+        replicas = entry['replicas']
 
-        # Decide action
-        if job_type == "create":
-            print(f"[{datetime.now()}] Creating job {job_name} on {node_selector} for {duration_sec}s")
-            launch_job(api_client, job_name, node_selector, duration_sec)
-        elif job_type == "delete":
-            print(f"[{datetime.now()}] Deleting job {job_name}")
-            delete_job(api_client, job_name)
+        if action == 'create':
+            create_deployment(apps_v1, deployment_name)
+        elif action == 'scale':
+            scale_deployment(apps_v1, deployment_name, replicas)
+        elif action == 'delete':
+            delete_deployment(apps_v1, deployment_name)
         else:
-            print(f"[{datetime.now()}] Unknown job_type '{job_type}' for job {job_name}")
+            print(f"[{datetime.now()}] Unknown action: {action}")
 
-
-# === Run the scheduler ===
 if __name__ == "__main__":
     run_scheduler()

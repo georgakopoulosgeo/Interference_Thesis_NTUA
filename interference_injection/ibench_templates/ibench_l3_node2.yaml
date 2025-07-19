@@ -1,20 +1,22 @@
 apiVersion: batch/v1
-kind: Job
+kind: Deployment
 metadata:
-  name: ibench  # ← will be replaced in code
+  name: ibench-l3
 spec:
-  ttlSecondsAfterFinished: 30
-  backoffLimit: 0
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ibench-l3
   template:
     metadata:
       labels:
-        app: ibench  # ← will be replaced in code
+        app: ibench-l3
     spec:
       containers:
-      - name: ibench
+      - name: ibench-l3
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./l3", "120"]  # ← duration replaced in code
+        command: ["./l3", "120"] 
         resources:
           requests:
             cpu: "250m"
@@ -24,4 +26,4 @@ spec:
             memory: "256Mi"
       restartPolicy: Never
       nodeSelector:
-        kubernetes.io/hostname: minikube  # ← will be replaced in code
+        kubernetes.io/hostname: minikube-m02
