@@ -4,10 +4,8 @@ from statsmodels.tsa.arima.model import ARIMA
 import numpy as np
 
 def get_rps_history():
-    """
-    Probably retrieves the historical RPS data with a query to Nginx Exporter
-    """
-    # Get last rps from /home/george/logs/traffic_generator/rps_schedule.jsonl
+    # Current approach: Get last rps from /home/george/logs/traffic_generator/rps_schedule.jsonl
+    # Proper approach: Retrieves the historical RPS data with a query to Nginx Exporter (httptotalrequests)
     rps_history = []
     try:
         with open("/home/george/logs/traffic_generator/rps_schedule.jsonl", "r") as f:
@@ -18,14 +16,13 @@ def get_rps_history():
         print(f"⚠️ Error reading RPS history: {e}")
     return rps_history
 
+
+
 # Global model object
 arima_model = None
 
+#Trains an ARIMA model on the historical RPS data.
 def train_arima_model():
-    """
-    Trains an ARIMA model on the historical RPS data.
-    Sets the global model object.
-    """
     global arima_model
     rps_history = get_rps_history()
 
@@ -44,11 +41,9 @@ def train_arima_model():
     except Exception as e:
         print(f"❌ Failed to train ARIMA model: {e}")
 
+
+# Uses the trained ARIMA model to forecast the next RPS value.
 def predict_next_rps():
-    """
-    Uses the trained ARIMA model to forecast the next RPS value.
-    Returns: int
-    """
     global arima_model
     if arima_model is None:
         print("⚠️ ARIMA model not trained. Returning fallback value.")

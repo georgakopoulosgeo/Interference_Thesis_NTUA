@@ -16,28 +16,28 @@ def marla_loop():
     while True:
         start_time = time.time()
         logging.info("Controller loop triggered.")
-        train_arima_model()  # Ensure model is trained before predictions
+        # 1. Ensure model is trained before predictions
+        train_arima_model()  
 
         try:
-            # Forecast next-minute RPS
+            # 2. Forecast next-minute RPS
             forecasted_rps = predict_next_rps()
             logging.info(f"Forecasted RPS: {forecasted_rps}")
-            # Round to nearest 500 for consistency
-            forecasted_rps = round(forecasted_rps / 500) * 500
+            #forecasted_rps = round(forecasted_rps / 500) * 500  # Round to nearest 500 for consistency
 
-            # Get number of replicas needed based on forecasted RPS, from the lookup table
+            # 3. Get number of replicas needed based on forecasted RPS, from the lookup table
             replicas_needed = determine_replica_count_for_rps(forecasted_rps)
             logging.info(f"Replicas needed based on forecasted RPS: {replicas_needed}")
 
-            # Get normalized_perfomance predictions for each combination of pods in the nodes. 
+            # 4. Get normalized_perfomance predictions for each combination of pods in the nodes. 
             normalized_perfomance_predictions = get_slowdown_predictions(forecasted_rps, replicas_needed)
             logging.info(f"Slowdown predictions: {normalized_perfomance_predictions}")
 
-            # Choose optimal replica plan
+            # 5. Choose optimal replica plan
             best_plan = choose_best_replica_plan(normalized_perfomance_predictions)
             logging.info(f"Best replica plan selected: {best_plan}")
 
-            # Apply changes if different from current distribution
+            # 6. Apply changes if different from current distribution
             if best_plan != last_applied_plan:
                 apply_replica_plan(best_plan)
                 last_applied_plan = best_plan
@@ -57,30 +57,3 @@ def marla_loop():
 
 if __name__ == "__main__":
     marla_loop()
-
-def measure_current_rps():
-    """
-    Measures or retrieves the current RPS observed by the system.
-    Used to train ARIMA and estimate load.
-    Returns: int
-    """
-
-def apply_best_placement(new_placement, current_placement):
-    """
-    Applies changes to the replica placement only if it differs from the current one.
-    Performs eviction, scaling, and affinity patching.
-    """
-
-def should_act(current_placement, new_placement, last_action_time):
-    """
-    Decides whether to perform a new placement action based on:
-    - Cooldown threshold
-    - Meaningful difference in performance
-    Returns: bool
-    """
-
-def log_state_and_decision():
-    """
-    Logs the full state, predictions, and decision to logs/ folder.
-    Called at every MARLA iteration.
-    """

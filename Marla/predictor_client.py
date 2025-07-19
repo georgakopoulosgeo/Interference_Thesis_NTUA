@@ -18,12 +18,14 @@ def get_slowdown_predictions(forecasted_rps: int, replicas_needed: list[int]) ->
     except requests.exceptions.RequestException as e:
         logging.error(f"Error contacting slowdown predictor API: {e}")
         return {}  # Fallback: empty dict (no predictions)
-'''
-    Returns:
-        A dict of the form:
-        {
-            1: {'node1': 0.6, 'node2': 0.8},
-            2: {'node1': 0.55, 'node2': 0.75},
-            ...
-        }
-'''
+"""
+NOTES
+    
+Returns:
+    A dict of the form:
+    {
+        1: {'node1': 0.6, 'node2': 0.8},
+        2: {'node1': 0.55, 'node2': 0.75},
+        ...
+    }
+"""

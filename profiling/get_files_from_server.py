@@ -2,8 +2,8 @@ import subprocess
 import os
 
 # User-defined variables
-name_of_local_folder = "profiling/LookUpTable_V01"
-name_of_server_folder = "LookUpTable_V01"
+name_of_local_folder = "profiling/LookUp_Table_V02"
+name_of_server_folder = "LookUp_Table_V02"
 
 # Remote and local paths
 remote_user = "george@147.102.13.77"
