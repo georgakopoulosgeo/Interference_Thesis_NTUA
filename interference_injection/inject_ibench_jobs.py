@@ -28,8 +28,16 @@ def create_deployment(apps_v1, deployment_name):
 
     with open(yaml_path) as f:
         dep = yaml.safe_load(f)
+
+    # Dynamically override the metadata name and label
+    dep['metadata']['name'] = deployment_name
+    dep['spec']['selector']['matchLabels']['app'] = deployment_name
+    dep['spec']['template']['metadata']['labels']['app'] = deployment_name
+    dep['spec']['template']['spec']['containers'][0]['name'] = deployment_name
+
     apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=dep)
-    print(f"[{datetime.now()}] Created {deployment_name}")
+    print(f"[{datetime.now()}] Created deployment {deployment_name}")
+
 
 def scale_deployment(apps_v1, deployment_name, replicas):
     body = {'spec': {'replicas': replicas}}
