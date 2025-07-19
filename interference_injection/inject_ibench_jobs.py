@@ -5,13 +5,13 @@ from kubernetes import client, config
 import yaml
 
 # === Constants ===
-CSV_PATH = "/home/george/Workspace/Interference/interference_injection/interference_l3_deployment_schedule.csv"
+CSV_PATH = "/home/george/Workspace/Interference/interference_injection/ibench_schedule.csv"
 NAMESPACE = "default"
 
 # YAML file paths for deployments
 YAML_PATHS = {
-    "l3-node1": "/home/george/Workspace/Interference/interference_injection/ibench_l3_node1.yaml",
-    "l3-node2": "/home/george/Workspace/Interference/interference_injection/ibench_l3_node2.yaml"
+    "l3-node1": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node1.yaml",
+    "l3-node2": "/home/george/Workspace/Interference/interference_injection/ibench_templates/ibench_l3_node2.yaml"
 }
 
 # === Kubernetes Client ===
