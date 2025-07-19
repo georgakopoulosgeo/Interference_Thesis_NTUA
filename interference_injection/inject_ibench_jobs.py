@@ -27,27 +27,39 @@ def load_schedule():
             row['duration_sec'] = int(row['duration_sec'])
         return sorted(schedule, key=lambda r: r['timestamp_sec'])
 
-# === Prepare Job Manifest ===
-def create_job_yaml(template_path, job_name, duration, node_name):
-    with open(template_path, 'r') as f:
-        manifest = yaml.safe_load(f)
-    
-    manifest['metadata']['name'] = job_name
-    manifest['spec']['template']['spec']['containers'][0]['command'][1] = str(duration)
-    
-    # Inject nodeSelector
-    manifest['spec']['template']['spec']['nodeSelector'] = {
-        'kubernetes.io/hostname': node_name
+def launch_job(api_client, job_name, template_path, node_selector, duration_sec):
+    with open(template_path) as f:
+        template = yaml.safe_load(f)
+
+    # Modify the job dynamically
+    template['metadata']['name'] = job_name
+    template['spec']['template']['metadata']['labels']['app'] = job_name
+    container = template['spec']['template']['spec']['containers'][0]
+    container['command'][-1] = str(duration_sec)
+    template['spec']['template']['spec']['nodeSelector'] = {
+        "kubernetes.io/hostname": node_selector
     }
 
-    return [manifest]
+    # Submit the job
+    batch_v1 = client.BatchV1Api(api_client)
+    batch_v1.create_namespaced_job(namespace=NAMESPACE, body=template)
+
+def delete_job(api_client, job_name):
+    batch_v1 = client.BatchV1Api(api_client)
+    core_v1 = client.CoreV1Api(api_client)
+
+    # Delete job
+    try:
+        batch_v1.delete_namespaced_job(
+            name=job_name,
+            namespace=NAMESPACE,
+            body=client.V1DeleteOptions(propagation_policy='Foreground')
+        )
+    except client.exceptions.ApiException as e:
+        print(f"Error deleting job {job_name}: {e}")
 
 
-# === Apply Job ===
-def submit_job(api_client, manifest):
-    create_from_yaml(k8s_client=api_client, yaml_objects=manifest, namespace=NAMESPACE)
 
-# === Main Loop ===
 def run_scheduler():
     api_client = load_k8s_client()
     schedule = load_schedule()
@@ -58,15 +70,23 @@ def run_scheduler():
         if sleep_time > 0:
             time.sleep(sleep_time)
 
-        template_file = os.path.join(TEMPLATE_DIR, f"ibench_{entry['job_type']}.yaml")
-        manifest = create_job_yaml(
-            template_file,
-            entry['job_name'],
-            entry['duration_sec'],
-            entry['node_selector']
-        )
-        submit_job(api_client, manifest)
-        print(f"[{datetime.now()}] Launched {entry['job_name']} ({entry['job_type']})")
+        job_name = entry['job_name']
+        job_type = entry['job_type']
+        node_selector = entry['node_selector']
+        duration_sec = entry['duration_sec']
+        template_path = os.path.join(TEMPLATE_DIR, f"{job_name}.yaml")
+
+        if job_type == "create":
+            print(f"[{datetime.now()}] Creating {job_name}")
+            launch_job(api_client, job_name, template_path, node_selector, duration_sec)
+
+        elif job_type == "delete":
+            print(f"[{datetime.now()}] Deleting {job_name}")
+            delete_job(api_client, job_name)
+
+        else:
+            print(f"Unknown job_type '{job_type}' in schedule")
+
 
 if __name__ == "__main__":
     run_scheduler()

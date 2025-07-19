@@ -1,8 +1,6 @@
 timestamp_sec,job_name,job_type,duration_sec,node_selector
-10,ibench-cpu-1,cpu,120,minikube
-90,ibench-membw-1,membw,120,minikube
-180,ibench-l3-1,l3,120,minikube-m02
-270,ibench-cpu-2,cpu,120,minikube-m02
-360,ibench-membw-2,membw,120,minikube
-450,ibench-l3-2,l3,120,minikube-m02
-540,ibench-cpu-3,cpu,120,minikube
+0,l3-job-0,create,120,minikube
+60,l3-job-1,create,120,minikube-m02
+120,l3-job-2,create,120,minikube
+180,l3-job-3,create,120,minikube-m02
+240,l3-job-4,create,120,minikube

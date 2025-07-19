@@ -32,15 +32,10 @@ def compute_aggregated_performance(r1, np1, r2, np2, method="avg"):
     
     # Πιθανόν να ευνοεί τις περιπτώσεις με 0 replicas σε εναν κομβο
 
-
+# Selects the best replica combination that maximizes aggregated normalized performance.
 def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]]) -> Dict[str, int]:
-    """
-    Selects the best replica combination that maximizes aggregated normalized performance.
-    Args:
-        np_predictions_raw
-    Returns:
-        {'minikube': best_r1, 'minikube-m02': best_r2}
-    """
+    # Args: np_predictions_raw
+    # Returns: {'minikube': best_r1, 'minikube-m02': best_r2}
     # Ensure keys are integers in case the input comes from JSON
     np_predictions = {int(k): v for k, v in np_predictions_raw.items()}
 
@@ -50,7 +45,9 @@ def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]]) ->
     available_replica_counts = sorted(np_predictions.keys())
 
     # For example if available_replica_counts are [1, 2, 3] we check:
-    # (0, 1), (1, 0), (0, 2), (2, 0), (1, 1), (0, 3), (3, 0), etc.
+    # (0, 1), (1, 0), 
+    # (0, 2), (2, 0), (1, 1), 
+    # (0, 3), (3, 0), (1, 2), (2, 1)
     # Number of Checks:
     # 1. Summation formula:
     #   Total = Sum from i=1 to N of (i + 1) = (N^2 + 3N - 2)/2
