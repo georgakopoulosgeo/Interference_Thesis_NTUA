@@ -5,7 +5,7 @@ Cycle = create → delete:
 Cycle Duration:
     Each cycle must last between 100 and 140 seconds.
 Cooldown Between Cycles:
-    After a deployment is deleted, its next creation must wait at least 40 seconds.
+    After a deployment is deleted, its next creation must wait at least 30 seconds.
 Concurrency:
     Multiple deployments can be active at once, even on the same node.
 Replica Count:

@@ -4,12 +4,10 @@ from datetime import datetime
 from kubernetes import client, config
 import yaml
 import os
+import sys
 
 # === Constants ===
 SCHEDULE_FOLDER = "/home/george/Workspace/Interference/interference_injection/interference_schedules"
-SCHEDULE_PROFILE = "balanced"  # options: light, medium, balanced, standard
-
-CSV_PATH = os.path.join(SCHEDULE_FOLDER, f"{SCHEDULE_PROFILE}_interference_schedule.csv")
 NAMESPACE = "default"
 
 # YAML file paths for deployments
@@ -86,8 +84,12 @@ def delete_all_deployments(apps_v1):
 
 
 # === Load Schedule ===
-def load_schedule():
-    with open(CSV_PATH, newline='') as f:
+def load_schedule(schedule_name):
+    path = os.path.join(SCHEDULE_FOLDER, f"{schedule_name}_interference_schedule.csv")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Schedule file not found: {path}")
+
+    with open(path, newline='') as f:
         reader = csv.DictReader(f)
         schedule = []
         for row in reader:
@@ -97,9 +99,9 @@ def load_schedule():
         return sorted(schedule, key=lambda r: r['timestamp_sec'])
 
 # === Main Scheduler ===
-def run_scheduler(max_minutes=None):
+def run_scheduler(schedule_name: str, max_minutes: int = None):
     apps_v1 = load_k8s_client()
-    schedule = load_schedule()
+    schedule = load_schedule(schedule_name)
     start_time = datetime.now()
 
     for entry in schedule:
@@ -135,7 +137,18 @@ def run_scheduler(max_minutes=None):
 
 
 
+# === Command-line Entry Point ===
 if __name__ == "__main__":
-    #run_scheduler()             # Full test (30 min)
-    run_scheduler(max_minutes=10)  # Short test (10 min)
-    #run_scheduler()  # or replace with run_scheduler(max_minutes=10) as needed
+    if len(sys.argv) < 2:
+        print("Usage: python3 inject_ibench_pods.py <schedule_name> [duration_minutes]")
+        sys.exit(1)
+
+    schedule_name = sys.argv[1]
+    max_minutes = int(sys.argv[2]) if len(sys.argv) > 2 else None
+
+    if max_minutes is None:
+        print(f"[{datetime.now()}] ▶️ Running full schedule: {schedule_name} (30 min)")
+        run_scheduler(schedule_name)
+    else:
+        print(f"[{datetime.now()}] ▶️ Running schedule '{schedule_name}' for {max_minutes} minutes")
+        run_scheduler(schedule_name, max_minutes)
