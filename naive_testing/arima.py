@@ -51,7 +51,7 @@ def train_arima_model():
         # Train ARIMA
         model = ARIMA(rps_series, order=(2, 1, 1))
         arima_model = model.fit()
-        print("✅ ARIMA model trained.")
+        print(f"✅ ARIMA model trained at {datetime.now(timezone.utc).isoformat()}.")
 
     except Exception as e:
         print(f"❌ Failed to train ARIMA model: {e}")
