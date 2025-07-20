@@ -4,7 +4,7 @@ set -e  # Exit on error
 # ===== CONFIG =====
 TRAFFIC_GEN_DIR="/home/george/Workspace/Interference/traffic_generator"
 INTERFERENCE_DIR="/home/george/Workspace/Interference/interference_injection"
-RESULTS_DIR="/home/george/experiment_results"
+RESULTS_DIR="/home/george/logs/traffic_generator"
 TASKSET_CORE="6"
 RPS_LIST="RPS_30MIN_GRADUAL_WIDE"
 DURATION_MINUTES="30"
@@ -23,10 +23,19 @@ fi
 
 FILENAME="$1"
 OUTPUT_CSV="$RESULTS_DIR/$FILENAME"
-LOG_FILE="$RESULTS_DIR/experiment_$(date +%Y%m%d_%H%M%S).log"
+LOG_FILE="$RESULTS_DIR/experiment_$FILENAME.log"
+
+# ===== ENSURE RESULTS DIR EXISTS =====
+mkdir -p "$RESULTS_DIR"
+
+# ===== START LOGGING =====
+echo "[$(date)] ===== Starting New Experiment =====" | tee -a "$LOG_FILE"
+echo "Output CSV Filename: $FILENAME" | tee -a "$LOG_FILE"
+echo "Traffic Pattern: $RPS_LIST" | tee -a "$LOG_FILE"
+echo "Duration: $DURATION_MINUTES minutes" | tee -a "$LOG_FILE"
 
 # ===== START TRAFFIC GENERATOR =====
-echo "[$(date)] Starting Traffic Generator using $RPS_LIST..." | tee -a "$LOG_FILE"
+echo "[$(date)] Starting Traffic Generator..." | tee -a "$LOG_FILE"
 taskset -c "$TASKSET_CORE" python3 "$TRAFFIC_GEN_DIR/generator.py" "$RPS_LIST" "$FILENAME" "$DURATION_MINUTES" >> "$LOG_FILE" 2>&1 &
 TRAFFIC_PID=$!
 
