@@ -78,7 +78,11 @@ def naive_loop():
 
         # 2. Get latest RPS from the log file
         forecasted_rps = predict_next_rps()
+        logging.info(f"Forecasted RPS: {forecasted_rps}")
+
+        # 3. Determine the number of replicas needed based on forecasted RPS  
         replicas_needed = determine_replica_count_for_rps(forecasted_rps)
+        logging.info(f"Determined replicas needed: {replicas_needed}")
 
         if replicas_needed != last_replicas:
             scale_deployment(apps_v1, replicas_needed)
