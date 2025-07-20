@@ -6,7 +6,7 @@ TRAFFIC_GEN_DIR="/home/george/Workspace/Interference/traffic_generator"
 INTERFERENCE_DIR="/home/george/Workspace/Interference/interference_injection"
 RESULTS_DIR="/home/george/logs/traffic_generator"
 TASKSET_CORE="6"
-DURATION_MINUTES="30"
+DURATION_MINUTES="3"
 DURATION_SECONDS=$((DURATION_MINUTES * 60))
 
 # ===== PARSE ARGS =====
@@ -45,7 +45,7 @@ esac
 # ===== MAP INTERFERENCE OPTION =====
 case "$INTERFERENCE_ARG" in
   light|ramp_up|balanced)
-    INTERFERENCE_SCHEDULE="dynamic_${INTERFERENCE_ARG}"
+    INTERFERENCE_SCHEDULE="${INTERFERENCE_ARG}"
     ;;
   *)
     echo "[ERROR] Invalid interference type: $INTERFERENCE_ARG"

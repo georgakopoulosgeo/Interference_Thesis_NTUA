@@ -25,7 +25,8 @@ NODE_SELECTORS = {
 
 # === Kubernetes Client ===
 def load_k8s_client():
-    config.load_kube_config()
+    kube_config_path = os.path.expanduser("~/.kube/config")
+    config.load_kube_config(config_file=kube_config_path)
     return client.AppsV1Api()
 
 # === Actions ===
