@@ -6,7 +6,7 @@ TRAFFIC_GEN_DIR="/home/george/Workspace/Interference/traffic_generator"
 INTERFERENCE_DIR="/home/george/Workspace/Interference/interference_injection"
 RESULTS_DIR="/home/george/logs/traffic_generator"
 TASKSET_CORE="6"
-DURATION_MINUTES="20"
+DURATION_MINUTES="30"
 DURATION_SECONDS=$((DURATION_MINUTES * 60))
 
 # === Args ===
