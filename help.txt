@@ -1,51 +1,25 @@
-## Set up the app
-sudo ./run_social_network.sh build
-sudo ./run_social_network.sh start
-sudo ./run_social_network.sh init_graph socfb-Reed98
-
-// Now the 27 containers are running and we have created a small social graph
-
-## Generating Workload (Here we mean the traffic)
-sudo ./run_social_network.sh workload <threads> <connections> <duration> <requests/sec> <script-path>
-
-// Example:
-// sudo ./run_social_network.sh workload 2 50 60 100 ./wrk2/scripts/social-network/compose-post.lua
-
-
-## How we run the experiments:
-python3 workload_gathering.py <Test_Case_ID>
-
-// workload_gathering.py:
-1. Take the parameters from the .csv file with the given <Test_Case_ID> 
-2. Start Perf Monitoring
-3. Start AMD Monitoring
-4. Start Workload
-5. Handle perf results (to dictionary)
-6. Handle amd results (to dictionary)
-7. Handle DeathStarBench Workload output
-8. Docker stats to take info about the containers
-9. Store all results (dictionaries) to .csv file
-
-
-
 ################################################################################
 ################################################################################
 ## MINIKUBE
 
 minikube start \
-  --nodes=2 \
   --driver=docker \
   --cpus=3 \
-  --memory=3072
+  --memory=3072 \
+  --container-runtime=containerd \
+  --nodes=2 \
+  --extra-config=kube-proxy.mode=ipvs
+
+# Apply CPU pinning
+docker update minikube --cpus=3 --cpuset-cpus="0-2"  
+docker update minikube-m02 --cpus=3 --cpuset-cpus="3-5"
 
 
 ################################################################################
 ################################################################################
 ## WORKLOADS
 
-## 1. Nginx
-## 2. Redis
-
+1. Nginx
 
 
 ################################################################################
@@ -65,3 +39,30 @@ sudo docker run -it --rm ibench /bin/bash
 ## Using chagned iBench scripts
 ## Just run ./cpu_changed 80 80 
 (80 seconds of 80% usage)
+
+
+################################################################################
+################################################################################
+## RUN FINAL EXPERIMENT 
+
+./run_experiment.sh <output_filename.csv> <traffic_type> <interference_type>
+
+
+ARGUMENTS:
+    <output_filename.csv>       Output file where metrics will be saved inside:
+                                /home/george/logs/traffic_generator
+
+    <traffic_type>              Select the RPS profile to apply minute-by-minute
+        - low       → gradually increases from 800 to 2000 RPS
+        - wide      → gradually increases from 500 to 4000 RPS
+
+    <interference_type>         Select the interference schedule
+        - light     → injects constant low interference pods
+        - ramp_up   → ramps interference up during the test
+        - balanced  → injects a balanced and shifting mix of interferences
+
+INCLUDES:
+    - Traffic Generator runs:  generator.py with your selected RPS pattern
+    - Interference Injector:   inject_ibench_pods.py with selected interference
+    - Both run concurrently, and logs are stored in the same folder
+
