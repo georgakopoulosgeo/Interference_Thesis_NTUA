@@ -8,6 +8,6 @@ kubectl delete deployment --ignore-not-found=true nginx-marla my-nginx-minikube 
 kubectl delete service --ignore-not-found=true nginx-service
 
 echo "Applying baseline naive deployment..."
-kubectl apply -f baseline-nginx.yaml
+kubectl apply -f nginx_for_naive.yaml
 
 echo "Naive deployment is live."

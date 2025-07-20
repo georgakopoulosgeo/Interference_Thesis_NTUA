@@ -1,27 +1,41 @@
 #!/bin/bash
 set -e  # Exit on error
 
-# ===== Config =====
+# ===== CONFIG =====
 TRAFFIC_GEN_DIR="/home/george/Workspace/Interference/traffic_generator"
 INTERFERENCE_DIR="/home/george/Workspace/Interference/interference_injection"
-OUTPUT_CSV="/home/george/experiment_results/traffic_$(date +%Y%m%d_%H%M%S).csv"
-LOG_FILE="/home/george/experiment_results/experiment_$(date +%Y%m%d_%H%M%S).log"
-DURATION="1800"  # 30 minutes in seconds
-
-# ===== Core Pinning =====
+RESULTS_DIR="/home/george/experiment_results"
 TASKSET_CORE="6"
+RPS_LIST="RPS_30MIN_GRADUAL_WIDE"
+DURATION_MINUTES="30"
+DURATION_SECONDS=$((DURATION_MINUTES * 60))
 
-# ===== Start Traffic Generator (gradual RPS) =====
-echo "[$(date)] Starting Traffic Generator (RPS_30MIN_GRADUAL_WIDE)..." | tee -a "$LOG_FILE"
-taskset -c "$TASKSET_CORE" python3 "$TRAFFIC_GEN_DIR/generator.py" RPS_30MIN_GRADUAL_WIDE "$OUTPUT_CSV" "$DURATION" >> "$LOG_FILE" 2>&1 &
+# ===== CHECK ARGS =====
+if [ $# -lt 1 ]; then
+  echo "Usage: ./run_experiment.sh <output_filename.csv>"
+  echo "Available traffic options:"
+  echo "  - RPS_30MIN_GRADUAL_WIDE"
+  echo "  - RPS_30MIN_GRADUAL_LOW"
+  echo "  - PREDEFINED_RPS_15MIN_LOW"
+  echo "  - PREDEFINED_RPS_15MIN_WIDE"
+  exit 1
+fi
+
+FILENAME="$1"
+OUTPUT_CSV="$RESULTS_DIR/$FILENAME"
+LOG_FILE="$RESULTS_DIR/experiment_$(date +%Y%m%d_%H%M%S).log"
+
+# ===== START TRAFFIC GENERATOR =====
+echo "[$(date)] Starting Traffic Generator using $RPS_LIST..." | tee -a "$LOG_FILE"
+taskset -c "$TASKSET_CORE" python3 "$TRAFFIC_GEN_DIR/generator.py" "$RPS_LIST" "$FILENAME" "$DURATION_MINUTES" >> "$LOG_FILE" 2>&1 &
 TRAFFIC_PID=$!
 
-# ===== Start Interference Injector =====
+# ===== START INTERFERENCE INJECTOR =====
 echo "[$(date)] Starting Interference Injector (schedule: dynamic_high)..." | tee -a "$LOG_FILE"
-taskset -c "$TASKSET_CORE" python3 "$INTERFERENCE_DIR/inject_ibench_pods.py" dynamic_high "$DURATION" >> "$LOG_FILE" 2>&1 &
+taskset -c "$TASKSET_CORE" python3 "$INTERFERENCE_DIR/inject_ibench_pods.py" dynamic_high "$DURATION_MINUTES" >> "$LOG_FILE" 2>&1 &
 INTERFERENCE_PID=$!
 
-# ===== Cleanup Trap =====
+# ===== CLEANUP TRAP =====
 cleanup() {
   echo "[$(date)] Stopping experiment..." | tee -a "$LOG_FILE"
   kill -TERM "$TRAFFIC_PID" "$INTERFERENCE_PID" 2>/dev/null
@@ -30,7 +44,7 @@ cleanup() {
 }
 trap cleanup EXIT TERM INT
 
-# ===== Wait for Completion =====
-echo "[$(date)] Experiment running for $DURATION seconds..." | tee -a "$LOG_FILE"
+# ===== WAIT =====
+echo "[$(date)] Experiment running for $DURATION_SECONDS seconds..." | tee -a "$LOG_FILE"
 wait "$TRAFFIC_PID" "$INTERFERENCE_PID"
 echo "[$(date)] Experiment completed successfully." | tee -a "$LOG_FILE"
