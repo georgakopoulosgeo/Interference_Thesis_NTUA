@@ -1,6 +1,6 @@
 import time
 import logging
-from config import CHECK_INTERVAL_SEC, RPS_TO_REPLICAS, MAX_REPLICAS
+from config import CHECK_INTERVAL_SEC
 from arima import predict_next_rps, train_arima_model
 from predictor_client import get_slowdown_predictions
 from placement_logic import choose_best_replica_plan, determine_replica_count_for_rps
