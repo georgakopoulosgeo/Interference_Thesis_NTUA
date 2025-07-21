@@ -77,7 +77,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     log_filename = sys.argv[1]
-    log_path = os.path.join("logs", log_filename)
-    os.makedirs("logs", exist_ok=True)
+    log_path = os.path.join("/home/george/logs/marla", log_filename)
+    os.makedirs("/home/george/logs/marla", exist_ok=True)
 
     marla_loop(log_path)
