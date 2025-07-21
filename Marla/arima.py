@@ -41,7 +41,7 @@ def train_arima_model():
             time_diff = (now - last_time).total_seconds()
 
             if time_diff < 25:
-                wait_time = 25 - time_diff
+                wait_time = 25
                 print(f"⏳ Waiting {wait_time:.2f}s for fresh data...")
                 time.sleep(wait_time)
 

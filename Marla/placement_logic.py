@@ -33,32 +33,31 @@ def compute_aggregated_performance(r1, np1, r2, np2, method="avg"):
     # Πιθανόν να ευνοεί τις περιπτώσεις με 0 replicas σε εναν κομβο
 
 # Selects the best replica combination that maximizes aggregated normalized performance.
-def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]]) -> Dict[str, int]:
-    # Args: np_predictions_raw
-    # Returns: {'minikube': best_r1, 'minikube-m02': best_r2}
-    # Ensure keys are integers in case the input comes from JSON
+def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]], replicas_needed: int, prev_plan: Dict[str, int], stability_weight: float = 0.05) -> Dict[str, int]:
+    """
+    Chooses the best placement of replicas_needed (or replicas_needed - 1 if allowed)
+    across two nodes to maximize performance, while encouraging plan stability.
+
+    Args:
+        np_predictions_raw: slowdown predictions {replica_count: {'node1': value, 'node2': value}}
+        replicas_needed: desired number of total replicas (usually from RPS lookup)
+        prev_plan: previous deployment plan, e.g. {'minikube': 2, 'minikube-m02': 1}
+        stability_weight: how much to favor stable (non-changing) plans
+    """
     np_predictions = {int(k): v for k, v in np_predictions_raw.items()}
-
     best_plan = None
-    best_score = -float('inf')  # because we are maximizing normalized performance
+    best_score = -float('inf')
 
-    available_replica_counts = sorted(np_predictions.keys())
+    # Accept total_replicas ∈ {replicas_needed, replicas_needed - 1} (if >1)
+    total_replicas_options = [replicas_needed]
+    if replicas_needed > 1:
+        total_replicas_options.append(replicas_needed - 1)
 
-    # For example if available_replica_counts are [1, 2, 3] we check:
-    # (0, 1), (1, 0), 
-    # (0, 2), (2, 0), (1, 1), 
-    # (0, 3), (3, 0), (1, 2), (2, 1)
-    # Number of Checks:
-    # 1. Summation formula:
-    #   Total = Sum from i=1 to N of (i + 1) = (N^2 + 3N - 2)/2
-    # 2. Binomial coefficient formula:
-    #   Total = C(N + 2, 2) - 1 = [(N + 1)(N + 2)]/2 - 1
-
-    for total_replicas in available_replica_counts:
+    for total_replicas in total_replicas_options:
         for r1 in range(0, total_replicas + 1):
             r2 = total_replicas - r1
 
-            # Ensure predictions exist for each partial replica count
+            # Skip if predictions missing
             if (r1 != 0 and r1 not in np_predictions) or (r2 != 0 and r2 not in np_predictions):
                 continue
 
@@ -67,14 +66,22 @@ def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]]) ->
 
             score = compute_aggregated_performance(r1, np1, r2, np2, method=PLACEMENT_METRIC)
 
-            logging.debug(f"Evaluated (r1={r1}, np1={np1:.3f}, r2={r2}, np2={np2:.3f}) → score={score:.4f}")
-            print(f"Evaluated (r1={r1}, np1={np1:.3f}, r2={r2}, np2={np2:.3f}) → score={score:.4f}")
+            # Add inertia bonus if current plan is similar to previous
+            prev_r1 = prev_plan.get('minikube', 0)
+            prev_r2 = prev_plan.get('minikube-m02', 0)
+            stability_bonus = 0
+            if r1 == prev_r1:
+                stability_bonus += 1
+            if r2 == prev_r2:
+                stability_bonus += 1
+            score += stability_weight * stability_bonus
 
             if score > best_score:
                 best_score = score
                 best_plan = {'minikube': r1, 'minikube-m02': r2}
 
     return best_plan
+
 
 # Get the number of replicas needed based on forecasted RPS from the replica_lookup.json file
 def determine_replica_count_for_rps(predicted_rps: int) -> int:
