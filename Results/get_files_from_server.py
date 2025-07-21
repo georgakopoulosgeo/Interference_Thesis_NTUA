@@ -1,13 +1,22 @@
 import subprocess
 import os
 
-# Local subfolder for storing results
-local_subfolder = "traffic_generator_csvs"  # or any name you prefer
-
-# Define server details and paths
 remote_user = "george@147.102.13.77"
-remote_folder = "/home/george/logs/traffic_generator"
-remote_path = f"{remote_user}:{remote_folder}/*.csv"
+
+# For traffic_generator_csvs
+#local_subfolder = "traffic_generator_csvs"  # or any name you prefer
+#remote_folder = "/home/george/logs/traffic_generator"
+#remote_path = f"{remote_user}:{remote_folder}/*.csv"
+
+# For naive_logs
+local_subfolder = "naive_logs" 
+remote_folder = "/home/george/logs/naive"
+remote_path = f"{remote_user}:{remote_folder}/*.jsonl"
+
+# For marla_logs
+#local_subfolder = "marla_logs"
+#remote_folder = "/home/george/logs/marla"
+#remote_path = f"{remote_user}:{remote_folder}/*.jsonl"
 
 # Full local path to store files
 local_base = "/home/george/Workshop/Interference/Results"
