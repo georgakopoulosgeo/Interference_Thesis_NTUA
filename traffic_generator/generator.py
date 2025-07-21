@@ -46,8 +46,9 @@ def generate_rps_schedule(duration_minutes: int = 30, predefined_rps: Optional[L
 def run_traffic_test(duration_minutes: int, predefined_rps: List[int], output_filename: str):
     print(f"Starting traffic test for {duration_minutes} minutes using list: {predefined_rps}")
 
+    output_csv = f"{output_filename}.csv"
     os.makedirs(LOG_DIR, exist_ok=True)
-    performance_csv = os.path.join(LOG_DIR, output_filename)
+    performance_csv = os.path.join(LOG_DIR, output_csv)
 
     with open(performance_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=NGINX_METRICS_FIELDNAMES)

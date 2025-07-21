@@ -5,8 +5,3 @@ marla/
 ├── k8s_interface.py             # Kubernetes interaction (scale, patch affinity)
 ├── predictor_client.py          # Requests slowdown predictions from predictor API
 ├── config.py                    # Static settings (paths, thresholds, labels)
-├── utils.py                     # Helper functions (timestamps, log parsing)
-
-
-├── logs/                        # Logged incoming RPS and optional debug output
-    └── rps_schedule.jsonl       # One line per minute: {"rps": ..., "timestamp": ...}

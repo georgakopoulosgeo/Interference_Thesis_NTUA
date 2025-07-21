@@ -57,30 +57,27 @@ def build_deployment(node: str, name: str, replicas: int) -> client.V1Deployment
 def apply_replica_plan(replica_plan: dict):
     """
     Applies the given replica plan:
-    - Scales existing deployments
-    - Deletes deployments with 0 replicas
-    - Creates deployments where missing
+    - Scales existing deployments to the desired replica count (including 0)
+    - Creates deployments if missing
     """
     for node, replicas in replica_plan.items():
         name = f"{DEPLOYMENT_BASE}-{node.replace('.', '-')}"
-        if replicas == 0:
-            try:
-                apps_v1.delete_namespaced_deployment(name=name, namespace=NAMESPACE, grace_period_seconds=0)
-                logger.info(f"🗑️ Deleted deployment '{name}' (replicas=0)")
-            except client.exceptions.ApiException as e:
-                if e.status != 404:
-                    logger.error(f"Failed to delete deployment '{name}': {e}")
-                    raise
-        else:
-            try:
-                scale = {"spec": {"replicas": replicas}}
-                apps_v1.patch_namespaced_deployment_scale(name=name, namespace=NAMESPACE, body=scale)
+        scale_body = {"spec": {"replicas": replicas}}
+
+        try:
+            # Try to scale an existing deployment
+            apps_v1.patch_namespaced_deployment_scale(name=name, namespace=NAMESPACE, body=scale_body)
+            if replicas == 0:
+                logger.info(f"🌑 Idling deployment '{name}' (scaled to 0)")
+            else:
                 logger.info(f"🔁 Scaled: {name} to {replicas} replicas")
-            except client.exceptions.ApiException as e:
-                if e.status == 404:
-                    deployment = build_deployment(node, name, replicas)
-                    apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=deployment)
-                    logger.info(f"✅ Created: {name} with {replicas} replicas on node '{node}'")
-                else:
-                    logger.error(f"Failed to scale or create deployment '{name}': {e}")
-                    raise
+        except client.exceptions.ApiException as e:
+            if e.status == 404:
+                # If deployment does not exist, create it with the desired replicas
+                deployment = build_deployment(node, name, replicas)
+                apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=deployment)
+                logger.info(f"✅ Created: {name} with {replicas} replicas on node '{node}'")
+            else:
+                logger.error(f"Failed to scale or create deployment '{name}': {e}")
+                raise
+
