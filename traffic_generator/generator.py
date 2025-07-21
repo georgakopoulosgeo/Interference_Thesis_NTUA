@@ -8,7 +8,7 @@ import csv
 import sys
 
 from config import DURATION_MINUTES, STEP_INTERVAL, BASE_RPS, TARGET_URL, LOG_DIR, NGINX_METRICS_FIELDNAMES
-from config import RPS_30MIN_GRADUAL_LOW, RPS_30MIN_GRADUAL_WIDE
+from config import RPS_30MIN_GRADUAL_LOW, RPS_30MIN_GRADUAL_WIDE, RPS_30MIN_GRADUAL_UP
 from vegeta_runner import run_vegeta_attack
 from parsing_and_storing import parse_vegeta_metrics, store_workload_metrics
 
@@ -16,7 +16,8 @@ TEST_ID = "FinalTest"
 
 AVAILABLE_RPS_LISTS = {
     "RPS_30MIN_GRADUAL_LOW": RPS_30MIN_GRADUAL_LOW,
-    "RPS_30MIN_GRADUAL_WIDE": RPS_30MIN_GRADUAL_WIDE
+    "RPS_30MIN_GRADUAL_WIDE": RPS_30MIN_GRADUAL_WIDE,
+    "RPS_30MIN_GRADUAL_UP": RPS_30MIN_GRADUAL_UP
 }
 
 

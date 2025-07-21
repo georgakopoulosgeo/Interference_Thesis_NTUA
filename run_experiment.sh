@@ -11,13 +11,14 @@ DURATION_SECONDS=$((DURATION_MINUTES * 60))
 
 # === Args ===
 if [ $# -ne 3 ]; then
-  echo "Usage: $0 <filename> <traffic: low|wide> <interference: light|ramp_up|balanced>"
+  echo "Usage: $0 <filename> <traffic: low|wide> <interference: light|ramp_up|flavor_split>"
   exit 1
 fi
 
-FILENAME="$1"
-TRAFFIC_LIST="RPS_30MIN_GRADUAL_${2^^}"  # e.g. low → RPS_30MIN_GRADUAL_LOW
+TRAFFIC="${2^^}"
+TRAFFIC_LIST="RPS_30MIN_GRADUAL_$TRAFFIC"
 INTERFERENCE_SCHEDULE="$3"
+FILENAME="$TRAFFIC"_"$INTERFERENCE_SCHEDULE"_"$1"
 
 # === Paths ===
 #OUTPUT_CSV="$RESULTS_DIR/$FILENAME"

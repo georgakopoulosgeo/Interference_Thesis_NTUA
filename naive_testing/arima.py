@@ -39,8 +39,8 @@ def train_arima_model():
             last_time = datetime.fromisoformat(last_entry["timestamp"])
             now = datetime.now(timezone.utc)
             time_diff = (now - last_time).total_seconds()
-            print(f"Last RPS entry was {time_diff:.2f} seconds ago.")
-            print(f"Current time is {now.isoformat()} and last entry time is {last_time.isoformat()}.")
+            #print(f"Last RPS entry was {time_diff:.2f} seconds ago.")
+            #print(f"Current time is {now.isoformat()} and last entry time is {last_time.isoformat()}.")
 
             wait_time = 40-time_diff if time_diff < 40 else 0
             print(f"⏳ Waiting {wait_time:.2f}s for fresh data...")

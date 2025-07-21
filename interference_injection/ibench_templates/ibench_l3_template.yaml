@@ -16,7 +16,7 @@ spec:
       - name: ibench-l3  # Will be overridden in Python
         image: ibench:latest
         imagePullPolicy: IfNotPresent
-        command: ["./l3", "120"]  # You can also override this in Python if needed
+        command: ["./l3", "220"]  # You can also override this in Python if needed
         resources:
           requests:
             cpu: "250m"
