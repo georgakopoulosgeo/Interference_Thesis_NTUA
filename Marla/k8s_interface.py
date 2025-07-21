@@ -1,6 +1,7 @@
 from kubernetes import client, config
 from config import NAMESPACE, DEPLOYMENT_BASE, IMAGE, LABEL, NODE_LABEL_KEY
 import logging
+from time import sleep
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,30 +55,72 @@ def build_deployment(node: str, name: str, replicas: int) -> client.V1Deployment
         )
     )
 
-def apply_replica_plan(replica_plan: dict):
+
+def get_current_replicas(name: str) -> int:
+    try:
+        deployment = apps_v1.read_namespaced_deployment(name=name, namespace=NAMESPACE)
+        return deployment.spec.replicas or 0
+    except client.exceptions.ApiException as e:
+        if e.status == 404:
+            return 0
+        else:
+            logger.error(f"Failed to fetch deployment '{name}': {e}")
+            raise
+
+def apply_replica_plan(replica_plan: dict, delay_before_scale_down: int = 5):
     """
     Applies the given replica plan:
-    - Scales existing deployments to the desired replica count (including 0)
-    - Creates deployments if missing
+    - First scales up target nodes (to avoid cold starts)
+    - Waits briefly before scaling down nodes
+    - Avoids full evictions unless strictly needed
     """
-    for node, replicas in replica_plan.items():
-        name = f"{DEPLOYMENT_BASE}-{node.replace('.', '-')}"
-        scale_body = {"spec": {"replicas": replicas}}
+    scale_up = []
+    scale_down = []
 
-        try:
-            # Try to scale an existing deployment
-            apps_v1.patch_namespaced_deployment_scale(name=name, namespace=NAMESPACE, body=scale_body)
-            if replicas == 0:
-                logger.info(f"🌑 Idling deployment '{name}' (scaled to 0)")
-            else:
-                logger.info(f"🔁 Scaled: {name} to {replicas} replicas")
-        except client.exceptions.ApiException as e:
-            if e.status == 404:
-                # If deployment does not exist, create it with the desired replicas
-                deployment = build_deployment(node, name, replicas)
-                apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=deployment)
-                logger.info(f"✅ Created: {name} with {replicas} replicas on node '{node}'")
-            else:
-                logger.error(f"Failed to scale or create deployment '{name}': {e}")
-                raise
+    for node, desired_replicas in replica_plan.items():
+        name = f"{DEPLOYMENT_BASE}-{node.replace('.', '-')}"
+        current_replicas = get_current_replicas(name)
+
+        # Decide whether to create, scale up or scale down
+        if current_replicas == 0 and desired_replicas > 0:
+            # Deployment may not exist, try to create it
+            try:
+                scale_body = {"spec": {"replicas": desired_replicas}}
+                apps_v1.patch_namespaced_deployment_scale(name=name, namespace=NAMESPACE, body=scale_body)
+                logger.info(f"🚀 Warm start: scaled up '{name}' to {desired_replicas}")
+            except client.exceptions.ApiException as e:
+                if e.status == 404:
+                    deployment = build_deployment(node, name, desired_replicas)
+                    apps_v1.create_namespaced_deployment(namespace=NAMESPACE, body=deployment)
+                    logger.info(f"✅ Created & scaled '{name}' to {desired_replicas}")
+                else:
+                    logger.error(f"Failed to scale or create deployment '{name}': {e}")
+                    raise
+        elif desired_replicas > current_replicas:
+            scale_up.append((name, desired_replicas))
+        elif desired_replicas < current_replicas:
+            scale_down.append((name, desired_replicas))
+        else:
+            logger.info(f"➖ No change needed for '{name}' ({current_replicas} replicas)")
+
+    # Phase 1: Scale up
+    for name, replicas in scale_up:
+        scale_body = {"spec": {"replicas": replicas}}
+        apps_v1.patch_namespaced_deployment_scale(name=name, namespace=NAMESPACE, body=scale_body)
+        logger.info(f"⬆️ Scaled up: {name} to {replicas} replicas")
+
+    # Wait before scaling down (let pods warm up)
+    if scale_down:
+        logger.info(f"⏳ Waiting {delay_before_scale_down}s before scaling down to avoid cold-start collisions...")
+        sleep(delay_before_scale_down)
+
+    # Phase 2: Scale down
+    for name, replicas in scale_down:
+        scale_body = {"spec": {"replicas": replicas}}
+        apps_v1.patch_namespaced_deployment_scale(name=name, namespace=NAMESPACE, body=scale_body)
+        if replicas == 0:
+            logger.info(f"🌑 Idled deployment '{name}' (scaled to 0)")
+        else:
+            logger.info(f"⬇️ Scaled down: {name} to {replicas} replicas")
+
 

@@ -33,7 +33,7 @@ def compute_aggregated_performance(r1, np1, r2, np2, method="avg"):
     # Πιθανόν να ευνοεί τις περιπτώσεις με 0 replicas σε εναν κομβο
 
 # Selects the best replica combination that maximizes aggregated normalized performance.
-def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]],replicas_needed: int,prev_plan: Dict[str, int], empty_node_penalty: float = 0.1) -> Dict[str, int]:
+def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]],replicas_needed: int,prev_plan: Dict[str, int], empty_node_penalty: float = 0.05) -> Dict[str, int]:
     np_predictions = {int(k): v for k, v in np_predictions_raw.items()}
     best_plan = None
     best_score = -float('inf')
