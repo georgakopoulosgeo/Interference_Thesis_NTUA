@@ -144,5 +144,7 @@ if __name__ == "__main__":
     log_filename = sys.argv[1]
     log_path = os.path.join("/home/george/logs/naive", log_filename)
     os.makedirs("/home/george/logs/naive", exist_ok=True)
+    if not log_path.endswith(".jsonl"):
+        log_path += ".jsonl"
 
     naive_loop(log_path)

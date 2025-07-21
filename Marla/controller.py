@@ -73,11 +73,14 @@ def marla_loop(log_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 marla_loop.py <log_filename.jsonl>")
+        print("Usage: python3 marla_loop.py <log_filename>")
         sys.exit(1)
 
     log_filename = sys.argv[1]
     log_path = os.path.join("/home/george/logs/marla", log_filename)
     os.makedirs("/home/george/logs/marla", exist_ok=True)
+    if not log_path.endswith(".jsonl"):
+        log_path += ".jsonl"
+
 
     marla_loop(log_path)
