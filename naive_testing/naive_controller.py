@@ -31,6 +31,29 @@ def get_latest_rps(filepath):
         print(f"[WARN] Failed to read RPS log: {e}")
     return 0
 
+def get_actual_replicas_per_node(label_selector="app=nginx"):
+    """
+    Returns a dictionary like: {'minikube': 2, 'minikube-m02': 1}
+    Counts how many running pods (Ready=True) exist per node for the given label.
+    """
+    core_v1 = client.CoreV1Api()
+    node_replica_count = {}
+
+    pods = core_v1.list_namespaced_pod(namespace=NAMESPACE, label_selector=label_selector).items
+    for pod in pods:
+        if pod.status.phase != "Running":
+            continue
+
+        conditions = {cond.type: cond.status for cond in pod.status.conditions or []}
+        if conditions.get("Ready") != "True":
+            continue
+
+        node_name = pod.spec.node_name
+        node_replica_count[node_name] = node_replica_count.get(node_name, 0) + 1
+
+    return node_replica_count
+
+
 # Get the number of replicas needed based on forecasted RPS from the replica_lookup.json file
 def determine_replica_count_for_rps(predicted_rps: int) -> int:
     try:
@@ -65,14 +88,16 @@ def scale_deployment(apps_api, replicas):
         body=body
     )
 
-def log_naive_plan(log_path, rps, replicas):
+def log_naive_plan(log_path, rps, replicas, actual_distribution):
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "rps": rps,
-        "replicas": replicas
+        "desired_replicas": replicas,
+        "actual_distribution": actual_distribution
     }
     with open(log_path, "a") as f:
         f.write(json.dumps(entry) + "\n")
+
 
 def naive_loop(log_path):
     config.load_kube_config()
@@ -99,7 +124,14 @@ def naive_loop(log_path):
             scale_deployment(apps_v1, replicas_needed)
             last_replicas = replicas_needed
             logging.info(f"Scaled deployment to {replicas_needed} replicas.")
-        log_naive_plan(log_path, forecasted_rps, replicas_needed)
+            # Wait a few seconds for pods to stabilize
+            logging.info("Waiting 7 seconds for replicas to stabilize...")
+            time.sleep(7)
+
+        # After stabilization, get actual distribution
+        actual_replicas = get_actual_replicas_per_node()
+        logging.info(f"Replica distribution: {actual_replicas}")
+        log_naive_plan(log_path, forecasted_rps, replicas_needed, actual_replicas)
 
         elapsed = time.time() - start_time
         time.sleep(max(0, CHECK_INTERVAL_SEC - elapsed))
