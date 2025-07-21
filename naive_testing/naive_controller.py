@@ -31,7 +31,7 @@ def get_latest_rps(filepath):
         print(f"[WARN] Failed to read RPS log: {e}")
     return 0
 
-def get_actual_replicas_per_node(label_selector="app=nginx"):
+def get_actual_replicas_per_node(label_selector="app=nginx-naive"):
     """
     Returns a dictionary like: {'minikube': 2, 'minikube-m02': 1}
     Counts how many running pods (Ready=True) exist per node for the given label.
@@ -93,7 +93,7 @@ def log_naive_plan(log_path, rps, replicas, actual_distribution):
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "rps": rps,
         "desired_replicas": replicas,
-        "replica_plan": actual_distribution
+        "actual_distribution": actual_distribution
     }
     with open(log_path, "a") as f:
         f.write(json.dumps(entry) + "\n")
