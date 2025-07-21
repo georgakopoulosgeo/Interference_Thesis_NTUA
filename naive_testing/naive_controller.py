@@ -99,7 +99,7 @@ def naive_loop(log_path):
             scale_deployment(apps_v1, replicas_needed)
             last_replicas = replicas_needed
             logging.info(f"Scaled deployment to {replicas_needed} replicas.")
-            log_naive_plan(log_path, forecasted_rps, replicas_needed)
+        log_naive_plan(log_path, forecasted_rps, replicas_needed)
 
         elapsed = time.time() - start_time
         time.sleep(max(0, CHECK_INTERVAL_SEC - elapsed))

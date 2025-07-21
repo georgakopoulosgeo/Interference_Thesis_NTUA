@@ -56,10 +56,10 @@ def marla_loop(log_path):
             if best_plan != last_applied_plan:
                 apply_replica_plan(best_plan)
                 last_applied_plan = best_plan
-                log_replica_plan(log_path, forecasted_rps_round500, best_plan)
                 logging.info("Applied new replica plan.")
             else:
                 logging.info("Current plan already optimal. No changes made.")
+            log_replica_plan(log_path, f"{forecasted_rps}_{forecasted_rps_round500}", best_plan)
 
             # Log decision
             #log_decision(forecasted_rps, slowdown_predictions, last_applied_plan, best_plan)

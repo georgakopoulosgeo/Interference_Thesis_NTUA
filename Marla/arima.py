@@ -42,10 +42,9 @@ def train_arima_model():
             print(f"Last RPS entry was {time_diff:.2f} seconds ago.")
             print(f"Current time is {now.isoformat()} and last entry time is {last_time.isoformat()}.")
 
-            if time_diff < 25:
-                wait_time = 25
-                print(f"⏳ Waiting {wait_time:.2f}s for fresh data...")
-                time.sleep(wait_time)
+            wait_time = 40-time_diff if time_diff < 40 else 0
+            print(f"⏳ Waiting {wait_time:.2f}s for fresh data...")
+            time.sleep(wait_time)
 
         # Convert to NumPy array
         rps_series = np.array(rps_history, dtype=np.float64)
