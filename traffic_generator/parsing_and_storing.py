@@ -26,7 +26,7 @@ def parse_vegeta_metrics(report: dict) -> dict:
 
 def store_workload_metrics(csv_file: str, test_id: str, minute: int, given_rps: int, metrics: dict):
     header = [
-        "Test_ID", "Minute", "RPS", "Throughput", "Avg_Latency",
+        "Test_ID", "Minute", "Time", "RPS", "Throughput", "Avg_Latency",
         "P50_Latency", "P75_Latency", "P90_Latency", "P95_Latency",
         "P99_Latency", "Max_Latency", "Min_Latency", "Errors"
     ]
@@ -45,6 +45,7 @@ def store_workload_metrics(csv_file: str, test_id: str, minute: int, given_rps: 
         writer.writerow({
             "Test_ID": test_id,
             "Minute": minute,
+            "Time": datetime.now(timezone.utc).isoformat(),
             "RPS": given_rps,
             "Throughput": metrics.get("throughput", 0.0),
             "Avg_Latency": metrics.get("avg_latency", 0.0),

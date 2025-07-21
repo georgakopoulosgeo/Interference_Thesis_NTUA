@@ -6,7 +6,7 @@ TARGET_URL = "http://192.168.49.2:30080/"
 LOG_DIR = "/home/george/logs/traffic_generator"
 
 NGINX_METRICS_FIELDNAMES = [
-    "Test_ID", "Minute", "RPS", "Throughput", "Avg_Latency",
+    "Test_ID", "Minute", "Time", "RPS", "Throughput", "Avg_Latency",
     "P50_Latency", "P75_Latency", "P90_Latency", "P95_Latency",
     "P99_Latency", "Max_Latency", "Min_Latency", "Errors"
 ]

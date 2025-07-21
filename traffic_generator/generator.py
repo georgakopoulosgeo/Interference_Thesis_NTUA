@@ -63,7 +63,7 @@ def run_traffic_test(duration_minutes: int, predefined_rps: List[int], output_fi
     for minute, rps in enumerate(rps_schedule):
         print(f"[Minute {minute+1}] RPS = {rps}")
         
-        # Log RPS for MARLA
+        # Log RPS for Marla's next cycle
         log_rps_schedule_entry(minute+1, rps)
 
         # Run vegeta attack

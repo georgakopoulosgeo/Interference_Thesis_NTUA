@@ -65,7 +65,6 @@ def scale_deployment(apps_api, replicas):
         body=body
     )
 
-# === Replica Plan Logger ===
 def log_naive_plan(log_path, rps, replicas):
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -111,7 +110,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     log_filename = sys.argv[1]
-    log_path = os.path.join("logs", log_filename)
-    os.makedirs("logs", exist_ok=True)
+    log_path = os.path.join("/home/george/logs/naive", log_filename)
+    os.makedirs("/home/george/logs/naive", exist_ok=True)
 
     naive_loop(log_path)
