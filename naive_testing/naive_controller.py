@@ -5,6 +5,8 @@ import json
 import os
 from kubernetes import client, config
 import logging
+import sys
+from datetime import datetime, timezone
 from arima import predict_next_rps, train_arima_model
 
 logging.basicConfig(level=logging.INFO) # Logging setup
@@ -63,7 +65,17 @@ def scale_deployment(apps_api, replicas):
         body=body
     )
 
-def naive_loop():
+# === Replica Plan Logger ===
+def log_naive_plan(log_path, rps, replicas):
+    entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "rps": rps,
+        "replicas": replicas
+    }
+    with open(log_path, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+
+def naive_loop(log_path):
     config.load_kube_config()
     apps_v1 = client.AppsV1Api()
     last_replicas = -1
@@ -87,9 +99,19 @@ def naive_loop():
         if replicas_needed != last_replicas:
             scale_deployment(apps_v1, replicas_needed)
             last_replicas = replicas_needed
+            logging.info(f"Scaled deployment to {replicas_needed} replicas.")
+            log_naive_plan(log_path, forecasted_rps, replicas_needed)
 
         elapsed = time.time() - start_time
         time.sleep(max(0, CHECK_INTERVAL_SEC - elapsed))
 
 if __name__ == "__main__":
-    naive_loop()
+    if len(sys.argv) < 2:
+        print("Usage: python3 naive_scaler.py <log_filename.jsonl>")
+        sys.exit(1)
+
+    log_filename = sys.argv[1]
+    log_path = os.path.join("logs", log_filename)
+    os.makedirs("logs", exist_ok=True)
+
+    naive_loop(log_path)
