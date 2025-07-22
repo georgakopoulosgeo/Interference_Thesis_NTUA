@@ -18,7 +18,7 @@ def log_replica_plan(log_path, rps, plan):
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "rps": rps,
-        "replica_plan": plan
+        "replica_distribution": plan
     }
     with open(log_path, "a") as f:
         f.write(json.dumps(entry) + "\n")
