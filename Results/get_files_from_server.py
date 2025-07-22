@@ -9,7 +9,7 @@ remote_folder = "/home/george/logs/traffic_generator"
 remote_path = f"{remote_user}:{remote_folder}/*.csv"
 
 # For naive_logs
-#local_subfolder = "naive_logs" 
+#ocal_subfolder = "naive_logs" 
 #remote_folder = "/home/george/logs/naive"
 #remote_path = f"{remote_user}:{remote_folder}/*.jsonl"
 
