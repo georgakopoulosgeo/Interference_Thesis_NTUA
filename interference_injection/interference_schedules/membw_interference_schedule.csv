@@ -1,0 +1,25 @@
+timestamp_sec,action,deployment_name,replicas,type,description
+300,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created
+319,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created
+493,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+495,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+553,create,ibench-membw-node2,2,ibench-membw,membw pod for node2 created
+572,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created
+742,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+742,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+803,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created
+823,create,ibench-membw-node1,2,ibench-membw,membw pod for node1 created
+981,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1019,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+1043,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created
+1083,create,ibench-membw-node1,2,ibench-membw,membw pod for node1 created
+1243,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1256,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+1306,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created
+1326,create,ibench-membw-node1,2,ibench-membw,membw pod for node1 created
+1486,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1508,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+1549,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created
+1572,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created
+1749,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1767,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted

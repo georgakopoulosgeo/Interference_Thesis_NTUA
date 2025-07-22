@@ -1,0 +1,25 @@
+timestamp_sec,action,deployment_name,replicas,type,description
+300,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created
+311,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created
+476,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+487,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+538,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created
+548,create,ibench-l3-node2,2,ibench-l3,l3 pod for node2 created
+704,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+747,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+766,create,ibench-l3-node1,2,ibench-l3,l3 pod for node1 created
+807,create,ibench-l3-node2,2,ibench-l3,l3 pod for node2 created
+936,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+998,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created
+1000,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+1061,create,ibench-l3-node2,2,ibench-l3,l3 pod for node2 created
+1168,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+1231,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created
+1239,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+1300,create,ibench-l3-node2,2,ibench-l3,l3 pod for node2 created
+1425,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+1485,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created
+1498,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+1559,create,ibench-l3-node2,2,ibench-l3,l3 pod for node2 created
+1665,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+1747,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted

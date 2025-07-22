@@ -93,7 +93,7 @@ def log_naive_plan(log_path, rps, replicas, actual_distribution):
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "rps": rps,
         "desired_replicas": replicas,
-        "actual_distribution": actual_distribution
+        "replica_distribution": actual_distribution
     }
     with open(log_path, "a") as f:
         f.write(json.dumps(entry) + "\n")
@@ -125,8 +125,8 @@ def naive_loop(log_path):
             last_replicas = replicas_needed
             logging.info(f"Scaled deployment to {replicas_needed} replicas.")
             # Wait a few seconds for pods to stabilize
-            logging.info("Waiting 7 seconds for replicas to stabilize...")
-            time.sleep(7)
+            logging.info("Waiting 4 seconds for replicas to stabilize...")
+            time.sleep(4)
 
         # After stabilization, get actual distribution
         actual_replicas = get_actual_replicas_per_node()
@@ -138,7 +138,8 @@ def naive_loop(log_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 naive_scaler.py <log_filename.jsonl>")
+        print("Usage: python3 naive_controller.py <interference_filename>")
+        print("Example: python3 naive_controller.py cpu_naive_v03")
         sys.exit(1)
 
     log_filename = sys.argv[1]

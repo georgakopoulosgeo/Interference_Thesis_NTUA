@@ -11,14 +11,14 @@ DURATION_SECONDS=$((DURATION_MINUTES * 60))
 
 # === Args ===
 if [ $# -ne 3 ]; then
-  echo "Usage: $0 <filename> <traffic: low|wide> <interference: light|ramp_up|flavor_split>"
+  echo "Usage: $0 <filename> <traffic: low|wide> <interference: cpu|l3|membw|mixed>"
   exit 1
 fi
 
 TRAFFIC="${2^^}"
 TRAFFIC_LIST="RPS_30MIN_GRADUAL_$TRAFFIC"
 INTERFERENCE_SCHEDULE="$3"
-FILENAME="$TRAFFIC"_"$INTERFERENCE_SCHEDULE"_"$1"
+FILENAME="$INTERFERENCE_SCHEDULE"_"$1"
 
 # === Paths ===
 #OUTPUT_CSV="$RESULTS_DIR/$FILENAME"
@@ -41,7 +41,7 @@ trap cleanup SIGINT SIGTERM EXIT
   echo "Interference: $INTERFERENCE_SCHEDULE"
   echo "Duration: $DURATION_MINUTES min"
 
-  taskset -c "$TASKSET_CORE" python3 -u "$TRAFFIC_GEN_DIR/generator.py" "$TRAFFIC_LIST" "$FILENAME" "$DURATION_MINUTES" &
+  taskset -c "$TASKSET_CORE" python3 -u "$TRAFFIC_GEN_DIR/generator.py" "$TRAFFIC_LIST" "performance_$FILENAME" "$DURATION_MINUTES" &
   TRAFFIC_PID=$!
 
   taskset -c "$TASKSET_CORE" python3 -u "$INTERFERENCE_DIR/inject_ibench_pods.py" "$INTERFERENCE_SCHEDULE" "$DURATION_MINUTES" &

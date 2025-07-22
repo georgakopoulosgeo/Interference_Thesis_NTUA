@@ -73,7 +73,7 @@ def marla_loop(log_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 marla_loop.py <log_filename>")
+        print("Usage: python3 marla_loop.py <interference_filename>")
         sys.exit(1)
 
     log_filename = sys.argv[1]
