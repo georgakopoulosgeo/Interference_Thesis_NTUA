@@ -125,8 +125,8 @@ def naive_loop(log_path):
             last_replicas = replicas_needed
             logging.info(f"Scaled deployment to {replicas_needed} replicas.")
             # Wait a few seconds for pods to stabilize
-            logging.info("Waiting 4 seconds for replicas to stabilize...")
-            time.sleep(4)
+            logging.info("Waiting 5 seconds for replicas to stabilize...")
+            time.sleep(5)
 
         # After stabilization, get actual distribution
         actual_replicas = get_actual_replicas_per_node()
