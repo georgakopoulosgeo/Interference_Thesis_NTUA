@@ -1,0 +1,14 @@
+{"timestamp": "2025-07-21T12:57:44.273461+00:00", "rps": 1000, "replica_plan": {"minikube": 1, "minikube-m02": 2}}
+{"timestamp": "2025-07-21T12:58:44.295519+00:00", "rps": 500, "replica_plan": {"minikube": 1, "minikube-m02": 0}}
+{"timestamp": "2025-07-21T13:00:44.308125+00:00", "rps": 1000, "replica_plan": {"minikube": 1, "minikube-m02": 2}}
+{"timestamp": "2025-07-21T13:01:44.327786+00:00", "rps": 1000, "replica_plan": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-21T13:02:44.283017+00:00", "rps": 1000, "replica_plan": {"minikube": 1, "minikube-m02": 0}}
+{"timestamp": "2025-07-21T13:04:09.252721+00:00", "rps": 1500, "replica_plan": {"minikube": 0, "minikube-m02": 1}}
+{"timestamp": "2025-07-21T13:05:09.392915+00:00", "rps": 1500, "replica_plan": {"minikube": 2, "minikube-m02": 2}}
+{"timestamp": "2025-07-21T13:06:09.394493+00:00", "rps": 2000, "replica_plan": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-21T13:09:09.395347+00:00", "rps": 2500, "replica_plan": {"minikube": 1, "minikube-m02": 2}}
+{"timestamp": "2025-07-21T13:10:09.379408+00:00", "rps": 2500, "replica_plan": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-21T13:10:44.371430+00:00", "rps": 2500, "replica_plan": {"minikube": 1, "minikube-m02": 2}}
+{"timestamp": "2025-07-21T13:11:44.335958+00:00", "rps": 2500, "replica_plan": {"minikube": 1, "minikube-m02": 3}}
+{"timestamp": "2025-07-21T13:12:44.339822+00:00", "rps": 2500, "replica_plan": {"minikube": 2, "minikube-m02": 2}}
+{"timestamp": "2025-07-21T13:13:44.334225+00:00", "rps": 2500, "replica_plan": {"minikube": 1, "minikube-m02": 3}}
