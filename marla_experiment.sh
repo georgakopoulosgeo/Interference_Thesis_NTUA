@@ -2,8 +2,22 @@
 set -e  # Exit on error
 
 # === Config ===
-VERSION="03"  # ← Change version here
-INTERFERENCE_TYPES=("mixed, l3")
+VERSION="04"  # ← Change version here
+INTERFERENCE_TYPES=("mixed" "l3")  # Fix typo: array should be two strings
+
+# === Handle Ctrl+C ===
+cleanup() {
+    echo ""
+    echo "⚠️ Caught Ctrl+C! Cleaning up..."
+
+    # Kill background jobs if they exist
+    [[ -n "$controller_pid" ]] && kill "$controller_pid" 2>/dev/null || true
+    [[ -n "$experiment_pid" ]] && kill "$experiment_pid" 2>/dev/null || true
+
+    echo "🔚 Exiting early due to interruption."
+    exit 1
+}
+trap cleanup SIGINT
 
 for interference in "${INTERFERENCE_TYPES[@]}"; do
     echo ">>> Starting test for interference type: $interference (version $VERSION)"
@@ -34,6 +48,10 @@ for interference in "${INTERFERENCE_TYPES[@]}"; do
 
     echo ">>> Finished: $interference"
     echo "============================================="
+
+    # Clear background job tracking
+    unset controller_pid
+    unset experiment_pid
 done
 
-echo "✅ All naive experiments completed."
+echo "✅ All marla experiments completed."
