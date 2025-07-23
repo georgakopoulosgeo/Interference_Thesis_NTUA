@@ -1,0 +1,2 @@
+{"timestamp": "2025-07-23T11:27:08.843110+00:00", "rps": "1000_1000", "replica_distribution": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-23T11:28:13.801107+00:00", "rps": "767_1000", "replica_distribution": {"minikube": 0, "minikube-m02": 1}}
