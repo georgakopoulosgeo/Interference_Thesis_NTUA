@@ -1,18 +1,18 @@
 #!/bin/bash
 set -e  # Exit on error
 
-# === Config ===
-VERSION="04"  # ← Change version here
-INTERFERENCE_TYPES=("mixed" "l3")  # Fix typo: array should be two strings
+VERSION="04"
+INTERFERENCE_TYPES=("l3" "cpu2")
 
 # === Handle Ctrl+C ===
 cleanup() {
     echo ""
     echo "⚠️ Caught Ctrl+C! Cleaning up..."
 
-    # Kill background jobs if they exist
-    [[ -n "$controller_pid" ]] && kill "$controller_pid" 2>/dev/null || true
-    [[ -n "$experiment_pid" ]] && kill "$experiment_pid" 2>/dev/null || true
+    if [[ -n "$controller_pid" ]] && ps -p "$controller_pid" > /dev/null 2>&1; then
+        echo "🛑 Stopping controller (PID $controller_pid)..."
+        kill "$controller_pid"
+    fi
 
     echo "🔚 Exiting early due to interruption."
     exit 1
@@ -27,31 +27,42 @@ for interference in "${INTERFERENCE_TYPES[@]}"; do
     echo "Resetting RPS schedule log..."
     cat rps_help_wide.txt > rps_schedule.jsonl
 
-    # Step 1: Run controller
+    # Step 1: Start controller (manual-stop required)
     cd /home/george/Workspace/Interference/Marla
     echo "Running marla_controller..."
     taskset -c 7 python3 controller.py "${interference}_marla_v${VERSION}" &
     controller_pid=$!
 
-    echo "Controller started for $interference. Waiting for 5 seconds..."
-    sleep 5  # Wait for the controller to start
+    echo "Controller started with PID $controller_pid. Waiting 5s..."
+    sleep 5
 
-    # Step 2: Run experiment
+    # Step 2: Start experiment
     cd /home/george/Workspace/Interference
     echo "Running experiment script..."
     ./run_experiment.sh "marla_v${VERSION}" wide "$interference" &
     experiment_pid=$!
 
-    # Wait for both to finish
-    wait $controller_pid
+    # Wait for experiment to finish
     wait $experiment_pid
+    echo "✅ Experiment finished for $interference"
 
-    echo ">>> Finished: $interference"
+    # Wait 10 seconds, then kill controller
+    echo "🕒 Waiting 10 seconds before stopping controller..."
+    sleep 10
+
+    if ps -p "$controller_pid" > /dev/null 2>&1; then
+        echo "🛑 Stopping controller (PID $controller_pid)..."
+        kill "$controller_pid"
+        wait $controller_pid 2>/dev/null || true
+    else
+        echo "⚠️ Controller already exited."
+    fi
+
+    echo "✅ Controller stopped for $interference"
     echo "============================================="
 
-    # Clear background job tracking
     unset controller_pid
     unset experiment_pid
 done
 
-echo "✅ All marla experiments completed."
+echo "🎉 All marla experiments completed successfully."
