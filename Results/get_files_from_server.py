@@ -4,14 +4,14 @@ import os
 remote_user = "george@147.102.13.77"
 
 # For traffic_generator_csvs
-local_subfolder = "traffic_generator_csvs"  # or any name you prefer
-remote_folder = "/home/george/logs/traffic_generator"
-remote_path = f"{remote_user}:{remote_folder}/*.csv"
+#local_subfolder = "traffic_generator_csvs"  # or any name you prefer
+#remote_folder = "/home/george/logs/traffic_generator"
+#remote_path = f"{remote_user}:{remote_folder}/*.csv"
 
 # For naive_logs
-#ocal_subfolder = "naive_logs" 
-#remote_folder = "/home/george/logs/naive"
-#remote_path = f"{remote_user}:{remote_folder}/*.jsonl"
+local_subfolder = "naive_logs" 
+remote_folder = "/home/george/logs/naive"
+remote_path = f"{remote_user}:{remote_folder}/*.jsonl"
 
 # For marla_logs
 #local_subfolder = "marla_logs"
