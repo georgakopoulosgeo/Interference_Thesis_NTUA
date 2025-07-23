@@ -9,6 +9,7 @@ from collections import defaultdict
 import numpy as np
 import joblib
 import json
+import xgboost as xgb
 
 import logging
 import sys
