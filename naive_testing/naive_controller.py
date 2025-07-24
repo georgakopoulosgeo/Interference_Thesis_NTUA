@@ -117,7 +117,8 @@ def naive_loop(log_path):
         logging.info(f"Forecasted RPS: {forecasted_rps}")
 
         # 3. Determine the number of replicas needed based on forecasted RPS  
-        replicas_needed = determine_replica_count_for_rps(forecasted_rps)
+        forecasted_rps_round200 = round(forecasted_rps / 200) * 200 
+        replicas_needed = determine_replica_count_for_rps(forecasted_rps_round200)
         logging.info(f"Determined replicas needed: {replicas_needed}")
 
         if replicas_needed != last_replicas:

@@ -90,56 +90,112 @@ Energy-Aware: Add RAPL metrics to predictor inputs.
 Explainability: Use SHAP values to explain high RiskScores.
 
 
-┌───────────────────────┐     ┌───────────────────────┐
-│      Azure Trace      │     │    Intel PCM Metrics  │
-│ (30-min VM CPU/RPS    │     │ (IPC, Cache Misses,   │
-│  from Public Dataset) │     │  Memory Bandwidth)    │
-└──────────┬────────────┘     └──────────┬────────────┘
-           │                              │
-           ▼                              ▼
-┌───────────────────────┐     ┌───────────────────────┐
-│   ARIMA Forecast      │     │   Replica-Aware       │
-│ (Predicts future RPS  │     │   Predictor           │
-│  → computes desired   │     │ (RandomForest: maps   │
-│    replica count)     │     │  PCM+Replicas →       │
-└──────────┬────────────┘     │  Slowdown Ratio)      │
-           │                  └──────────┬────────────┘
-           │                             │
-           └───────────┐                 │
-                       ▼                 ▼
-                ┌───────────────────────────────────┐
-                │      Custom Scheduler             │
-                │ (Cost Function:                   │
-                │  1. ARIMA desired_replicas        │
-                │  2. Predictor node slowdowns      │
-                │  → Optimal (node, replicas) pair) │
-                └───────────────┬───────────────────┘
-                                │
-                                ▼
-                ┌───────────────────────────────────┐
-                │   Kubernetes Cluster              │
-                │ (Place Nginx/Redis pods           │
-                │  on selected nodes + replicas)    │
-                └───────────────────────────────────┘
+================================================================================================
+================================================================================================
 
+               ┌────────────────────────────┐
+               │      Traffic Generator     │
+               │  • Sends dynamic HTTP load │
+               │  • Used for profiling & RT │
+               └────────────┬───────────────┘
+                            │
+                            ▼
+               ┌────────────────────────────┐
+               │         Controller         │
+               │                            │
+               │  ┌──────────────────────┐  │
+               │  │   1. ARIMA Module    │  │
+               │  │   • Forecast RPS     │  │
+               │  └──────────────────────┘  │
+               │                            │
+               │  ┌──────────────────────┐  │
+               │  │  2. Lookup Table     │  │
+               │  │  • RPS → Replicas    │  │
+               │  └──────────────────────┘  │
+               │                            │
+               │  ┌──────────────────────┐  │
+               │  │ 3. Placement Logic   │  │
+               │  │ • Decide best layout │  │
+               │  └──────────────────────┘  │
+               └────────────────────────────┘
 
+================================================================================================
+================================================================================================
 
-┌─────────────────────────────────────────────────┐
-│               Kubernetes Cluster                │
-│                                                 │
-│  ┌─────────────┐       ┌─────────────────────┐  │
-│  │   Scheduler │───────▶ Predictor API       │  │
-│  └─────────────┘       │ (RandomForest Model)│  │
-│        ▲               └─────────────────────┘  │
-│        │                      ▲                 │
-│  ┌─────┴─────┐                │                 │
-│  │ Extender  │                │                 │
-│  └───────────┘                │                 │
-│        ▲                      │                 │
-│        │               ┌──────┴──────┐          │
-│  ┌─────┴─────┐         │ Metrics     │          │
-│  │ Pod       │         │ Collector   │          │
-│  │ Creation  │         │ (pcm tool)  │          │
-│  └───────────┘         └─────────────┘          │
-│                                                 │
-└─────────────────────────────────────────────────┘
+               ┌────────────────────────────┐
+               │      Traffic Generator     │
+               │  • Sends dynamic HTTP load │
+               └────────────┬───────────────┘
+                            │
+                            ▼
+               ┌────────────────────────────┐
+               │       Naive Controller     │
+               │                            │
+               │  ┌──────────────────────┐  │
+               │  │   ARIMA Module       │  │
+               │  │  • Forecast next RPS │  │
+               │  └──────────────────────┘  │
+               │                            │
+               │  ┌──────────────────────┐  │
+               │  │  Replica Lookup      │  │
+               │  │  • RPS → Replicas    │  │
+               │  └──────────────────────┘  │
+               │                            │
+               │  ❌ No Placement Decision  │
+               │  ✔ Only Scales Deployment  │
+               └────────────┬───────────────┘
+                            │
+                            ▼
+               ┌────────────────────────────┐
+               │       Kube Scheduler       │
+               │  • Chooses node for pods   │
+               │  • Based on CPU/mem reqs   │
+               └────────────┬───────────────┘
+                            │
+                            ▼
+               ┌────────────────────────────┐
+               │    Kubernetes Cluster      │
+               │  • Pods distributed across │
+               │    Node1 (cores 0–2)       │
+               │    Node2 (cores 3–5)       │
+               └────────────────────────────┘
+
+================================================================================================
+================================================================================================
+
+               ┌────────────────────────────┐
+               │       MARLA Controller     │
+               │  (Runs every 60 seconds)   │
+               └────────────┬───────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        ▼                   ▼                   ▼
+┌────────────────┐  ┌────────────────────┐  ┌────────────────────────┐
+│  ARIMA Module  │  │ Replica Lookup     │  │ Slowdown Predictor API │
+│ • Forecast RPS │  │ • RPS → Replicas   │  │ • Input: metrics+rps   │
+└────────────────┘  └────────────────────┘  │ • Output: slowdown     │
+                                            └─────────┬──────────────┘
+                                                      │
+                                                      ▼
+                                        ┌──────────────────────────────┐
+                                        │ Placement Optimizer Logic    │
+                                        │ • Try all (r1, r2) splits    │
+                                        │   Where r1+r2=replicas needed│
+                                        │ • Compute score = (r1×np1 +  │
+                                        │    r2×np2) / (r1 + r2)       │
+                                        │ • Penalize empty nodes       │
+                                        └────────────┬─────────────────┘
+                                                     │
+                                                     ▼
+                                        ┌──────────────────────────────┐
+                                        │ Kubernetes API Interaction   │
+                                        │ • Apply new replica plan     │
+                                        │ • Build Deployment if needed │
+                                        └────────────┬─────────────────┘
+                                                     │
+                                                     ▼
+                                        ┌─────────────────────────────┐
+                                        │       Kubernetes Cluster    │
+                                        │ • Nodes: Node1 / Node2      │
+                                        │ • Nginx + iBench workloads  │
+                                        └─────────────────────────────┘

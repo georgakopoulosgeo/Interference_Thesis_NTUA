@@ -14,10 +14,11 @@ from k8s_interface import apply_replica_plan
 logging.basicConfig(level=logging.INFO) # Logging setup
 last_applied_plan = None
 
-def log_replica_plan(log_path, rps, plan):
+def log_replica_plan(log_path, rps, replicas, plan):
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "rps": rps,
+        "desired_replicas": replicas,
         "replica_distribution": plan
     }
     with open(log_path, "a") as f:
@@ -37,8 +38,8 @@ def marla_loop(log_path):
             # 2. Forecast next-minute RPS
             forecasted_rps = predict_next_rps()
             logging.info(f"Forecasted RPS: {forecasted_rps}")
-            forecasted_rps_round200 = round(forecasted_rps / 200) * 200 
-            forecasted_rps_round500 = round(forecasted_rps / 500) * 500
+            forecasted_rps_round200 = round(forecasted_rps / 200) * 200 # Round to nearest 200 for Lookup Table
+            forecasted_rps_round500 = round(forecasted_rps / 500) * 500 # Round to nearest 500 for slowdown predictions
 
             # 3. Get number of replicas needed based on forecasted RPS, from the lookup table
             replicas_needed = determine_replica_count_for_rps(forecasted_rps_round200)
@@ -59,7 +60,7 @@ def marla_loop(log_path):
                 logging.info("Applied new replica plan.")
             else:
                 logging.info("Current plan already optimal. No changes made.")
-            log_replica_plan(log_path, f"{forecasted_rps}_{forecasted_rps_round500}", best_plan)
+            log_replica_plan(log_path, f"{forecasted_rps}_{forecasted_rps_round500}", replicas_needed, best_plan)
 
             # Log decision
             #log_decision(forecasted_rps, slowdown_predictions, last_applied_plan, best_plan)
