@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # Exit on error
 
-VERSION="31"
+VERSION="32"
 INTERFERENCE_TYPES=("l3_2" "membw2")
 
 # === Handle Ctrl+C ===
