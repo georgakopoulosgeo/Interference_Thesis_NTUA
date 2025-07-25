@@ -39,8 +39,8 @@ def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]],rep
     best_score = -float('inf')
 
     total_replicas_options = [replicas_needed]
-    #if replicas_needed > 1:
-    #    total_replicas_options.append(replicas_needed - 1)
+    if replicas_needed > 1:
+        total_replicas_options.append(replicas_needed - 1)
 
     for total_replicas in total_replicas_options:
         for r1 in range(0, total_replicas + 1):
