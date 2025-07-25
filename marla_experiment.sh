@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e  # Exit on error
 
-VERSION="04"
-INTERFERENCE_TYPES=("l3" "cpu2")
+VERSION="11"
+INTERFERENCE_TYPES=("cpu2" "l3" "membw" "mixed")
 
 # === Handle Ctrl+C ===
 cleanup() {

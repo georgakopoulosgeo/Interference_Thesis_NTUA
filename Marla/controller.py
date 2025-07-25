@@ -50,7 +50,7 @@ def marla_loop(log_path):
             #logging.info(f"Slowdown predictions: {normalized_perfomance_predictions}")
 
             # 5. Choose optimal replica plan
-            best_plan = choose_best_replica_plan(normalized_perfomance_predictions, replicas_needed, last_applied_plan)
+            best_plan = choose_best_replica_plan(normalized_perfomance_predictions, replicas_needed)
             logging.info(f"Best replica plan selected: {best_plan}")
 
             # 6. Apply changes if different from current distribution
