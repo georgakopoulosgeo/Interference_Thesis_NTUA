@@ -1,0 +1,13 @@
+{"timestamp": "2025-07-25T18:44:24.003983+00:00", "rps": "1000_1000", "desired_replicas": 3, "replica_distribution": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:45:24.005690+00:00", "rps": "550_500", "desired_replicas": 1, "replica_distribution": {"minikube": 0, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:46:18.953578+00:00", "rps": "767_1000", "desired_replicas": 1, "replica_distribution": {"minikube": 0, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:47:19.034891+00:00", "rps": "939_1000", "desired_replicas": 3, "replica_distribution": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:48:24.013749+00:00", "rps": "1094_1000", "desired_replicas": 3, "replica_distribution": {"minikube": 0, "minikube-m02": 3}}
+{"timestamp": "2025-07-25T18:49:23.988137+00:00", "rps": "1243_1000", "desired_replicas": 1, "replica_distribution": {"minikube": 0, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:50:23.986000+00:00", "rps": "1489_1500", "desired_replicas": 1, "replica_distribution": {"minikube": 1, "minikube-m02": 0}}
+{"timestamp": "2025-07-25T18:51:19.078985+00:00", "rps": "1701_1500", "desired_replicas": 4, "replica_distribution": {"minikube": 3, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:52:24.114722+00:00", "rps": "1891_2000", "desired_replicas": 4, "replica_distribution": {"minikube": 1, "minikube-m02": 3}}
+{"timestamp": "2025-07-25T18:53:24.072410+00:00", "rps": "2101_2000", "desired_replicas": 3, "replica_distribution": {"minikube": 1, "minikube-m02": 2}}
+{"timestamp": "2025-07-25T18:54:24.121073+00:00", "rps": "2292_2500", "desired_replicas": 3, "replica_distribution": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:55:24.092901+00:00", "rps": "2501_2500", "desired_replicas": 4, "replica_distribution": {"minikube": 1, "minikube-m02": 3}}
+{"timestamp": "2025-07-25T18:56:24.110010+00:00", "rps": "2693_2500", "desired_replicas": 4, "replica_distribution": {"minikube": 3, "minikube-m02": 1}}
