@@ -11,3 +11,8 @@
 {"timestamp": "2025-07-25T18:54:24.121073+00:00", "rps": "2292_2500", "desired_replicas": 3, "replica_distribution": {"minikube": 2, "minikube-m02": 1}}
 {"timestamp": "2025-07-25T18:55:24.092901+00:00", "rps": "2501_2500", "desired_replicas": 4, "replica_distribution": {"minikube": 1, "minikube-m02": 3}}
 {"timestamp": "2025-07-25T18:56:24.110010+00:00", "rps": "2693_2500", "desired_replicas": 4, "replica_distribution": {"minikube": 3, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:57:19.059141+00:00", "rps": "2899_3000", "desired_replicas": 4, "replica_distribution": {"minikube": 3, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T18:58:24.022900+00:00", "rps": "3095_3000", "desired_replicas": 2, "replica_distribution": {"minikube": 0, "minikube-m02": 2}}
+{"timestamp": "2025-07-25T18:59:24.050758+00:00", "rps": "3299_3500", "desired_replicas": 3, "replica_distribution": {"minikube": 3, "minikube-m02": 0}}
+{"timestamp": "2025-07-25T19:00:24.016878+00:00", "rps": "3496_3500", "desired_replicas": 2, "replica_distribution": {"minikube": 1, "minikube-m02": 1}}
+{"timestamp": "2025-07-25T19:01:23.978932+00:00", "rps": "3699_3500", "desired_replicas": 1, "replica_distribution": {"minikube": 0, "minikube-m02": 1}}
