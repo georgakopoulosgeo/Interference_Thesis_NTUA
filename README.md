@@ -75,20 +75,17 @@ Running multiple containerized applications on shared nodes can trigger **resour
 
 ## Installation & Setup
 
-The experiments were conducted on an **Intel NUC** with:
+The experiments were conducted on an Intel NUC with:
 - 8 CPU cores
 - 8 GB RAM
 
-KubeMarla and its supporting services (PCM collector, REST APIs, controller) were pinned to **cores 6–7**.
+KubeMarla and its supporting services (PCM collector, REST APIs, controller) were pinned to cores 6–7.
 
----
+Steps
 
-### Steps
-
-**Step 1 - Create the Minikube Cluster**  
+Step 1 — Create the Minikube Cluster
 Start a 2-node Minikube cluster with explicit CPU and memory allocations:
 
-```bash
 minikube start \
   --driver=docker \
   --cpus=3 \
@@ -97,4 +94,61 @@ minikube start \
   --nodes=2 \
   --extra-config=kube-proxy.mode=ipvs
 
+Step 2 — Configure CPU Pinning
+Manually assign dedicated CPU cores to each node container:
 
+docker update minikube --cpus=3 --cpuset-cpus="0-2"
+docker update minikube-m02 --cpus=3 --cpuset-cpus="3-5"
+
+Step 3 — Verify cgroup Configuration
+Check inside each node (via SSH) that the assigned CPU set is correct:
+
+minikube ssh -n minikube "cat /sys/fs/cgroup/cpuset.cpus"
+minikube ssh -n minikube-m02 "cat /sys/fs/cgroup/cpuset.cpus"
+
+Expected output:
+- minikube → 0-2
+- minikube-m02 → 3-5
+
+Step 4 — Run KubeMarla Components
+
+(a) Run PCM Monitoring (from Interference/metrics_collector):
+./pcm_monitoring
+
+(b) Start Metrics REST API (from same directory):
+python app.py
+
+(c) Start Predictor REST API (from Interference/predictor_api):
+python app.py
+(Ensure the correct Python environment is activated.)
+
+(d) Start KubeMarla controller with log file name:
+python controller.py <name_of_logs>
+
+At this point, KubeMarla is active and ready to schedule workloads under the interference-aware placement policy.
+
+
+
+### How to Run Experiments
+
+### Results (Optional)
+
+### Repository Structure
+Auto Thelei ftiaksimo
+
+### Configuration
+mpa
+
+
+### Reproducibility
+mpa
+
+### Troubleshooting
+
+### References
+
+### Contact / Acknowledgements
+
+### License
+
+### Citation

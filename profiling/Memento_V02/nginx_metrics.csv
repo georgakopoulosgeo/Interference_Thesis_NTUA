@@ -115,7 +115,7 @@ Test_ID,Replicas,Interference_Name,Interference_ID,Given_RPS,Throughput,Avg_Late
 2replicas_scenario22_3500rps,2,2_stress-ng_l3_pods,22,3500,3500.006892166007,0.194,0.135,0.0,0.378,0.571,0.941,6.937,0
 2replicas_scenario23_3500rps,2,3_stress-ng_l3_pods,23,3500,3500.0044045834147,0.42,0.236,0.0,0.931,1.388,2.404,9.087,0
 2replicas_scenario24_3500rps,2,4_stress-ng_l3_pods,24,3500,3499.994877230326,0.629,0.446,0.0,1.352,1.87,2.952,10.508,0
-2replicas_scenario31_3500rps,2,1_iBench_memBW_pod,31,3500,3500.004599354299,0.099,0.09,0.0,0.134,0.153,0.221,3.327,0
+2replicas_scenario31_3500rps,2,1_iBench_memBW_pod,31,3500,3500.004599354299,0.099,0.09,0.0,0.134,0.153,0.235,3.327,0
 2replicas_scenario32_3500rps,2,2_iBench_memBW_pods,32,3500,3500.018025400332,0.104,0.094,0.0,0.143,0.164,0.244,3.811,0
 2replicas_scenario33_3500rps,2,3_iBench_memBW_pods,33,3500,3500.003632965093,0.122,0.099,0.0,0.181,0.234,0.421,4.987,0
 2replicas_scenario34_3500rps,2,4_iBench_memBW_pods,34,3500,3500.0044995490375,0.142,0.107,0.0,0.223,0.287,0.59,7.773,0
