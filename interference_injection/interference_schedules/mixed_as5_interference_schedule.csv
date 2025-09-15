@@ -1,0 +1,81 @@
+timestamp_sec,action,deployment_name,replicas,type,description
+0,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+0,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+9,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+9,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+163,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+163,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+166,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created (r=1)
+166,create,ibench-cpu-node2,1,ibench-cpu,cpu pod for node2 created (r=1)
+200,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+200,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+215,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+215,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+332,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+332,delete,ibench-cpu-node2,,ibench-cpu,cpu pod for node2 deleted
+334,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+334,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+338,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+338,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+384,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created (r=1)
+384,create,ibench-cpu-node2,1,ibench-cpu,cpu pod for node2 created (r=1)
+455,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+455,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+457,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+457,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+564,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+564,delete,ibench-cpu-node2,,ibench-cpu,cpu pod for node2 deleted
+567,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+567,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+593,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+593,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+615,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created (r=1)
+615,create,ibench-cpu-node2,1,ibench-cpu,cpu pod for node2 created (r=1)
+696,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+696,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+698,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+698,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+810,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+810,delete,ibench-cpu-node2,,ibench-cpu,cpu pod for node2 deleted
+810,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+810,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+878,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+878,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+879,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created (r=1)
+879,create,ibench-cpu-node2,1,ibench-cpu,cpu pod for node2 created (r=1)
+1002,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+1002,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1005,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+1005,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+1009,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+1009,delete,ibench-cpu-node2,,ibench-cpu,cpu pod for node2 deleted
+1052,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+1052,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+1181,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+1181,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1181,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created (r=1)
+1181,create,ibench-cpu-node2,1,ibench-cpu,cpu pod for node2 created (r=1)
+1185,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+1185,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+1233,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+1233,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+1347,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+1347,delete,ibench-cpu-node2,,ibench-cpu,cpu pod for node2 deleted
+1348,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+1348,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+1361,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+1361,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1401,create,ibench-membw-node1,1,ibench-membw,membw pod for node1 created (r=1)
+1401,create,ibench-cpu-node2,1,ibench-cpu,cpu pod for node2 created (r=1)
+1533,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+1533,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
+1535,create,ibench-cpu-node1,1,ibench-cpu,cpu pod for node1 created (r=1)
+1535,create,ibench-membw-node2,1,ibench-membw,membw pod for node2 created (r=1)
+1557,delete,ibench-membw-node1,,ibench-membw,membw pod for node1 deleted
+1557,delete,ibench-cpu-node2,,ibench-cpu,cpu pod for node2 deleted
+1587,create,ibench-l3-node1,1,ibench-l3,l3 pod for node1 created (r=1)
+1587,create,ibench-l3-node2,1,ibench-l3,l3 pod for node2 created (r=1)
+1659,delete,ibench-cpu-node1,,ibench-cpu,cpu pod for node1 deleted
+1659,delete,ibench-membw-node2,,ibench-membw,membw pod for node2 deleted
+1746,delete,ibench-l3-node1,,ibench-l3,l3 pod for node1 deleted
+1746,delete,ibench-l3-node2,,ibench-l3,l3 pod for node2 deleted
