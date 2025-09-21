@@ -66,15 +66,15 @@ def model_info():
 def predict():
     """
     Endpoint that predicts slowdown per node based on:
-    - replicas: Number of replicas being deployed
-    - rps: Request rate (requests per second)
+    - replicas: Number of replicas suggested by Scaling Subsystem 
+    - rps: Request rate (RPS) predicted by Scaling Subsystem
     """
     try:
         # Get input parameters
         data = request.get_json()
         replicas = data['replicas']
         rps = data['rps']
-        # Fetch metrics from metrics collector
+        # Fetch metrics from Monitoring Subsystem, from all nodes
         metrics_data = fetch_metrics()
         # Process metrics per node
         node_metrics = process_metrics_per_node(metrics_data)

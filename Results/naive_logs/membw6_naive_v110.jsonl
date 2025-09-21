@@ -1,0 +1,31 @@
+{"timestamp": "2025-09-15T14:44:25.028700+00:00", "rps": 1000, "desired_replicas": 3, "replica_distribution": {"minikube": 2, "minikube-m02": 1}}
+{"timestamp": "2025-09-15T14:45:25.137311+00:00", "rps": 550, "desired_replicas": 1, "replica_distribution": {"minikube-m02": 1}}
+{"timestamp": "2025-09-15T14:46:20.038901+00:00", "rps": 767, "desired_replicas": 1, "replica_distribution": {"minikube-m02": 1}}
+{"timestamp": "2025-09-15T14:47:25.050732+00:00", "rps": 939, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T14:48:20.031444+00:00", "rps": 1094, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T14:49:25.065501+00:00", "rps": 1243, "desired_replicas": 1, "replica_distribution": {"minikube": 1}}
+{"timestamp": "2025-09-15T14:50:20.038543+00:00", "rps": 1489, "desired_replicas": 1, "replica_distribution": {"minikube": 1}}
+{"timestamp": "2025-09-15T14:51:25.062483+00:00", "rps": 1701, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T14:52:20.072010+00:00", "rps": 1891, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T14:53:25.077175+00:00", "rps": 2101, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 1, "minikube": 2}}
+{"timestamp": "2025-09-15T14:54:20.069154+00:00", "rps": 2292, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 1, "minikube": 2}}
+{"timestamp": "2025-09-15T14:55:25.076648+00:00", "rps": 2501, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T14:56:20.102044+00:00", "rps": 2693, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T14:57:20.054139+00:00", "rps": 2899, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T14:58:25.071094+00:00", "rps": 3095, "desired_replicas": 2, "replica_distribution": {"minikube": 2}}
+{"timestamp": "2025-09-15T14:59:25.060508+00:00", "rps": 3299, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 1, "minikube": 2}}
+{"timestamp": "2025-09-15T15:00:25.076726+00:00", "rps": 3496, "desired_replicas": 2, "replica_distribution": {"minikube-m02": 1, "minikube": 1}}
+{"timestamp": "2025-09-15T15:01:25.049056+00:00", "rps": 3699, "desired_replicas": 1, "replica_distribution": {"minikube-m02": 1, "minikube": 1}}
+{"timestamp": "2025-09-15T15:02:20.036241+00:00", "rps": 3897, "desired_replicas": 1, "replica_distribution": {"minikube": 1}}
+{"timestamp": "2025-09-15T15:03:25.054467+00:00", "rps": 4099, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T15:04:20.040442+00:00", "rps": 4101, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T15:05:25.063151+00:00", "rps": 3355, "desired_replicas": 2, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T15:06:20.408683+00:00", "rps": 3459, "desired_replicas": 2, "replica_distribution": {"minikube-m02": 1, "minikube": 1}}
+{"timestamp": "2025-09-15T15:07:26.631940+00:00", "rps": 3219, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T15:08:27.666647+00:00", "rps": 3018, "desired_replicas": 2, "replica_distribution": {"minikube-m02": 2, "minikube": 1}}
+{"timestamp": "2025-09-15T15:09:28.735673+00:00", "rps": 2817, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T15:10:24.640609+00:00", "rps": 2616, "desired_replicas": 4, "replica_distribution": {"minikube-m02": 2, "minikube": 2}}
+{"timestamp": "2025-09-15T15:11:30.520594+00:00", "rps": 2416, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 1, "minikube": 2}}
+{"timestamp": "2025-09-15T15:12:26.328258+00:00", "rps": 2215, "desired_replicas": 3, "replica_distribution": {"minikube-m02": 1, "minikube": 2}}
+{"timestamp": "2025-09-15T15:13:32.153717+00:00", "rps": 2015, "desired_replicas": 2, "replica_distribution": {"minikube-m02": 1, "minikube": 1}}
+{"timestamp": "2025-09-15T15:14:32.841657+00:00", "rps": 1814, "desired_replicas": 4, "replica_distribution": {"minikube": 2, "minikube-m02": 2}}

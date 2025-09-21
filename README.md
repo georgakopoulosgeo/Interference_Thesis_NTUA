@@ -1,6 +1,6 @@
-# KubeMarla — Interference-Aware Resource Management for Kubernetes
+# Interference-Aware Dynamic Resource Manager for LC-Workloads in Kubernetes
 
-> Proof-of-concept scheduler that predicts slowdown from hardware interference and places workloads to minimize it.
+> Proof-of-concept controller that uses a Machine Learning Model to predict the Performance Slowdown from hardware Interference and distributes workload to nodes, in order to maximaze the performance of LC-workloads.
 
 ---
 

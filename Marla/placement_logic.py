@@ -74,6 +74,9 @@ def choose_best_replica_plan(np_predictions_raw: Dict[int, Dict[str, float]],rep
 
 
 
+#############
+## This comes after RIMA model and replica count determination
+## It is part of Scaling Subsystem
 
 # Get the number of replicas needed based on forecasted RPS from the replica_lookup.json file
 def determine_replica_count_for_rps(predicted_rps: int) -> int:
@@ -117,19 +120,3 @@ if __name__ == "__main__":
     print(f"Replicas needed for RPS {rps}: {replicas_needed}")
 
 
-"""
-NOTES
-
-predictions_raw:
-{
-    1: {"node1": 0.91, "node2": 0.95},
-    2: {"node1": 0.75, "node2": 0.85}, etc
-}
-
-
-    # Number of Checks:
-    # 1. Summation formula:
-    #   Total = Sum from i=1 to N of (i + 1) = (N^2 + 3N - 2)/2
-    # 2. Binomial coefficient formula:
-    #   Total = C(N + 2, 2) - 1 = [(N + 1)(N + 2)]/2 - 1
-"""
