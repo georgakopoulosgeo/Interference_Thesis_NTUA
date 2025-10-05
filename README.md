@@ -27,7 +27,10 @@ Running multiple containerized applications on shared nodes can trigger **resour
 ---
 
 ## 2. System Architecture
-*(Insert system diagram: `docs/Marla_architecture.png`)*
+<p align="center">
+  <img src="docs/Marla_architecture.png" alt="MARLA Architecture" width="700">
+</p>
+
 The architecture of MARLA follows a **modular, closed-loop control design** integrated into a two-node Kubernetes cluster.  
 It continuously collects hardware-level telemetry, predicts workload slowdown under different placements, forecasts future load, and issues replica reallocation commands to the cluster.
 
@@ -125,10 +128,10 @@ Features include:
 - Replica count and input RPS  
 
 The **target variable** is the *normalized performance slowdown*, defined as the ratio between the measured and the baseline p99 latency:
-
-\[
+$$
 S_{norm} = \frac{p99_{measured}}{p99_{baseline}}
-\]
+$$
+
 
 where:
 - \( p99_{measured} \) is the observed 99th-percentile latency under the current interference and load conditions, and  
@@ -288,18 +291,10 @@ These results confirm that integrating ML-based slowdown prediction and short-te
 - Maintains QoS without over-provisioning.  
 - Demonstrates practical benefits of ML-guided dynamic replica placement in Kubernetes.  
 
----
-
-## 10. Citation
-*(To cite this work in academic publications: BibTeX entry to be added.)*
 
 ---
 
-## 11. Acknowledgments
+## 10. Acknowledgments
 This work was conducted at the **NETMODE Lab, National Technical University of Athens (NTUA)**.  
-Supervisors: Prof. Simeon Papavassiliou, Dr. Giannis Dimolitsas, Dr. Dimitris Spatharakis.  
+Supervisors: Prof. Simeon Papavassiliou, Dr. Dimitris Spatharakis.  
 
----
-
-## 12. License
-Released under the MIT License. See `LICENSE` for details.
