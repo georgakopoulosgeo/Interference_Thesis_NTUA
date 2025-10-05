@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibench-cpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ibench-cpu
+  template:
+    metadata:
+      labels:
+        app: ibench-cpu
+    spec:
+      containers:
+      - name: ibench
+        image: ibench:latest
+        imagePullPolicy: IfNotPresent
+        command: ["./cpu","80"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "64Mi"
+          limits:
+            cpu: "1"
+            memory: "64Mi"

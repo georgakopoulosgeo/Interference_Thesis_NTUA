@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibench-membw
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ibench-membw
+  template:
+    metadata:
+      labels:
+        app: ibench-membw
+    spec:
+      nodeSelector:
+        nginx: "true"
+      containers:
+      - name: membw
+        image: ibench:latest
+        imagePullPolicy: IfNotPresent
+        command: ["./memBw", "220"]
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "1Gi"
+          limits:
+            cpu: "250m"
+            memory: "1Gi"

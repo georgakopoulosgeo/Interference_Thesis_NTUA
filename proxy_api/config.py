@@ -1,1 +1,0 @@
-LOG_PATH = "/home/george/logs/rps.json"

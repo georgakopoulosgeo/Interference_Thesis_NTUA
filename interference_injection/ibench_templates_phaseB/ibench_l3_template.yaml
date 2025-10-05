@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibench-l3  # Will be overridden in Python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ibench-l3  # Will be overridden in Python
+  template:
+    metadata:
+      labels:
+        app: ibench-l3  # Will be overridden in Python
+    spec:
+      containers:
+      - name: ibench-l3  # Will be overridden in Python
+        image: ibench:latest
+        imagePullPolicy: IfNotPresent
+        command: ["./l3", "220"]  # You can also override this in Python if needed
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+      nodeSelector:
+        kubernetes.io/hostname: minikube  # Will be overridden in Python
