@@ -2,7 +2,7 @@ import subprocess
 import os
 
 # User-defined variables
-name_of_local_folder = "profiling/TheGame_MIX_V02"
+name_of_local_folder = "Profiling/Raw_Data/TheGame_MIX_V02"
 name_of_server_folder = "TheGame_MIX_V02"
 
 # Remote and local paths

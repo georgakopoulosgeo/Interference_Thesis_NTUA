@@ -7,7 +7,7 @@ import subprocess
 import time
 from typing import List, Dict, Optional, Any
 from system_monitor_intepcm import pcm_monitoring
-from workload_run_monitor import store_workload_metrics, parse_workload_output, parse_memtier_output, store_redis_metrics, parse_vegeta_metrics, store_vegeta_metrics
+from workload_run_monitor import store_workload_metrics, parse_workload_output,parse_vegeta_metrics, store_vegeta_metrics
 import threading
 import json
 
@@ -15,17 +15,17 @@ import json
 GENERATOR = "vegeta"  # Options: "wrk", "vegeta"
 
 # Folder Name
-FOLDER_NAME = "TheGame_V02" #Folder to store results
+FOLDER_NAME = "Test_After_Refactor" #Folder to store results
 
 # Nginx service URL and paths
 NGINX_SERVICE_URL = "http://192.168.49.3:30080"
 WRK_PATH = "/home/george/Workspace/Interference/workloads/wrk2/wrk"
 VEGETA_PATH = "vegeta"
-NGINX_SCRIPT = "/home/george/Workspace/Interference/workloads/nginx/run_nginx.py"
+NGINX_SCRIPT = "/home/george/Workspace/Interference/Nginx_Workload/run_nginx.py"
 DURATION = "3m"  # Test duration per run
 THREADS = 1
 CONCURRENT_CONNS = 200
-NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/workloads/nginx/nginx-deploy.yaml"
+NGINX_DEPLOY_YAML = "/home/george/Workspace/Interference/Nginx_Workload/nginx-deploy.yaml"
 NGINX_DEPLOYMENT_NAME = "my-nginx"
 NGINX_METRICS_FIELDNAMES = [
     "Test_ID", "Replicas", "Interference_Name", "Interference_ID", "Given_RPS",
@@ -48,7 +48,7 @@ REPLICAS_TO_TEST = [1,2,3,4]  # Number of replicas to test
 RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
 
 # Path configuration (add to coordinator.py)
-INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
+INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/Interference_Injection/ibench_templates_phaseA/iBench_custom"
 
 # Interference scenarios (to be implemented)
 ######
@@ -405,7 +405,9 @@ def run_nginx_testing():
 
     # Ensure directories are set up
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    main_results_dir, raw_log_folder = ensure_directories(script_dir)
+    # Results Folder in the PM:
+    result_dir = "/home/george/Workspace/Data_Collection"
+    main_results_dir, raw_log_folder = ensure_directories(result_dir)
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Data Files
