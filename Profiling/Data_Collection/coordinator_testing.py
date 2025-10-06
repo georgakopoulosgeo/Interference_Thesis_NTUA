@@ -51,6 +51,9 @@ RPS_STEPS = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to
 INTERFERENCE_SCRIPTS_DIR = "/home/george/Workspace/Interference/injection_interference"
 
 # Interference scenarios (to be implemented)
+######
+######  SOS: THE L3 SCENARIOS HAVE MAY HAVE stress-ng-l3, IN THEIR NAMES BUT WE ENDED UP USING ONLY IBENCH PODS. 
+######
 INTERFERENCE_SCENARIOS = [
     # Baseline Scenarios
     {"id": 0, "name": "Baseline0", "type": None},
@@ -62,10 +65,10 @@ INTERFERENCE_SCENARIOS = [
     {"id": 13, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
     {"id": 14, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
     # Stress-ng L3 Scenarios
-    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
+    {"id": 21, "name": "1_stress-ng_l3_pod", "type": "ibench-l3", "count": 1},
+    {"id": 22, "name": "2_stress-ng_l3_pods", "type": "ibench-l3", "count": 2},
+    {"id": 23, "name": "3_stress-ng_l3_pods", "type": "ibench-l3", "count": 3},
+    {"id": 24, "name": "4_stress-ng_l3_pods", "type": "ibench-l3", "count": 4},
     #iBench MemBW Scenarios
     {"id": 31, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
     {"id": 32, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
@@ -76,7 +79,7 @@ INTERFERENCE_SCENARIOS = [
 INTERFERENCE_SCENARIOS_MIX = [
     {"id": 51, "name": "1_CPU_1_L3", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 1}
+        {"type": "ibench-l3", "count": 1}
     ]},
     {"id": 52, "name": "1_CPU_1_MemBW", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
@@ -92,45 +95,21 @@ INTERFERENCE_SCENARIOS_MIX = [
     ]},
     {"id": 55, "name": "1_CPU_2_L3", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 2}
+        {"type": "ibench-l3", "count": 2}
     ]},
     {"id": 56, "name": "1_CPU_1_L3_1_MemBW", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 1},
-        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-l3", "count": 1},
         {"type": "ibench-membw", "count": 1}
     ]},
     {"id": 57, "name": "2_CPU_1_L3", "type": "mix", "mix": [
         {"type": "ibench-cpu", "count": 2},
-        {"type": "stress-ng-l3", "count": 1}
+        {"type": "ibench-l3", "count": 1}
     ]},
     {"id": 58, "name": "1_L3_3_MemBW", "type": "mix", "mix": [
-        {"type": "stress-ng-l3", "count": 1},
+        {"type": "ibench-l3", "count": 1},
         {"type": "ibench-membw", "count": 3}
     ]}
-]
-
-# Case B Scenarios
-INTERFERENCE_SCENARIOS_B = [
-    # Baseline Scenarios
-    {"id": 100, "name": "BaselineB0", "type": None},
-    #{"id": 101, "name": "BaselineB1", "type": None},
-    #{"id": 102, "name": "BaselineB2", "type": None},
-    #{"id": 103, "name": "BaselineB3", "type": None},
-    # iBench CPU Scenarios
-    {"id": 111, "name": "1_iBench_CPU_pod", "type": "ibench-cpu", "count": 1},
-    {"id": 112, "name": "2_iBench_CPU_pods", "type": "ibench-cpu", "count": 2},
-    {"id": 113, "name": "3_iBench_CPU_pods", "type": "ibench-cpu", "count": 3},
-    {"id": 114, "name": "4_iBench_CPU_pods", "type": "ibench-cpu", "count": 4},
-    # Stress-ng L3 Scenarios
-    {"id": 121, "name": "1_stress-ng_l3_pod", "type": "stress-ng-l3", "count": 1},
-    {"id": 122, "name": "2_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 2},
-    {"id": 123, "name": "3_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 3},
-    {"id": 124, "name": "4_stress-ng_l3_pods", "type": "stress-ng-l3", "count": 4},
-    # iBench MemBW Scenarios
-    {"id": 131, "name": "1_iBench_memBW_pod", "type": "ibench-membw", "count": 1},
-    {"id": 132, "name": "2_iBench_memBW_pods", "type": "ibench-membw", "count": 2},
-    {"id": 133, "name": "3_iBench_memBW_pods", "type": "ibench-membw", "count": 3},
-    {"id": 134, "name": "4_iBench_memBW_pods", "type": "ibench-membw", "count": 4}
 ]
 
 def calculate_duration():
@@ -155,7 +134,7 @@ WARMUP_CONNECTIONS = 200
 WARMUP_CLIENTS = 100
 WARMUP_SCENARIOS = {
     "ibench-cpu": {"id": -1, "name": "WARMUP_CPU", "type": "ibench-cpu", "count": 1},
-    "stress-ng-l3": {"id": -2, "name": "WARMUP_L3", "type": "stress-ng-l3", "count": 1},
+    "ibench-l3": {"id": -2, "name": "WARMUP_L3", "type": "ibench-l3", "count": 1},
     "ibench-membw": {"id": -3, "name": "WARMUP_MEMBW", "type": "ibench-membw", "count": 1}
 }
 
@@ -234,7 +213,7 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = True) -> b
         except subprocess.CalledProcessError as e:
             print(f"Error creating interference: {e.stderr}", flush=True)
             return False
-    elif scenario["type"] == "stress-ng-l3":
+    elif scenario["type"] == "ibench-l3":
         script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_l3.py")
         try:
             if not all_nodes:
@@ -252,7 +231,7 @@ def create_interference(scenario: Dict, from_mix = False, all_nodes = True) -> b
                 ], check=True, capture_output=True)
             return True
         except subprocess.CalledProcessError as e:
-            print(f"stress-ng-l3 deployment failed: {e.stderr.decode()}", flush=True)
+            print(f"ibench-l3 deployment failed: {e.stderr.decode()}", flush=True)
             return False
     elif scenario["type"] == "ibench-membw":
         script_path = os.path.join(INTERFERENCE_SCRIPTS_DIR, "deploy_ibench_membw.py")
@@ -290,7 +269,7 @@ def cleanup_interference(scenario: Dict):
             "python3",
             os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench.py")
         ], capture_output=True)
-    elif scenario["type"] == "stress-ng-l3":
+    elif scenario["type"] == "ibench-l3":
         subprocess.run([
             "python3",
             os.path.join(INTERFERENCE_SCRIPTS_DIR, "cleanup_ibench_l3.py")
