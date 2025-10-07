@@ -29,7 +29,7 @@ def main():
     ns = args.namespace
 
     # Select the appropriate YAML file
-    yaml_file = '/home/george/Workspace/Interference/injection_interference/iBench_custom/ibench-nginx-node-membw.yaml' if args.nginx else '/home/george/Workspace/Interference/injection_interference/iBench_custom/ibench-regular-node-membw.yaml'
+    yaml_file = '/home/george/Workspace/Interference/Interference_Injection/ibench_templates_phaseA/iBench_custom/ibench-nginx-node-membw.yaml' if args.nginx else '/home/george/Workspace/Interference/Interference_Injection/ibench_templates_phaseA/iBench_custom/ibench-regular-node-membw.yaml'
 
     # Load and modify the Deployment manifest
     with open(yaml_file) as f:

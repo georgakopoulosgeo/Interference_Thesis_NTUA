@@ -13,7 +13,7 @@ spec:
         app: my-nginx
     spec:
       nodeSelector:
-        nginx: "true"           # ensure this pod lands on the node you labeled
+        nginx: "true"           # ensure this pod lands on the node you labeled / the node 2
       containers:
       - name: nginx
         image: nginx:1.21-alpine
