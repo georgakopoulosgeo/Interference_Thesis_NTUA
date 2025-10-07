@@ -28,7 +28,7 @@ for interference in "${INTERFERENCE_TYPES[@]}"; do
     cat rps_help_wide.txt > rps_schedule.jsonl
 
     # Step 1: Start controller (manual-stop required)
-    cd /home/george/Workspace/Interference/Marla
+    cd /home/george/Workspace/Interference/Evaluation/marla_testing
     echo "Running marla_controller..."
     taskset -c 7 python3 controller.py "${interference}_marla_v${VERSION}" &
     controller_pid=$!
@@ -37,7 +37,7 @@ for interference in "${INTERFERENCE_TYPES[@]}"; do
     sleep 5
 
     # Step 2: Start experiment
-    cd /home/george/Workspace/Interference
+    cd /home/george/Workspace/Interference/Evaluation
     echo "Running experiment script..."
     ./run_experiment.sh "marla_v${VERSION}" wide "$interference" &
     experiment_pid=$!

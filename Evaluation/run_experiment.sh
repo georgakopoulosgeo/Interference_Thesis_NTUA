@@ -2,9 +2,9 @@
 set -e
 
 # === Config ===
-TRAFFIC_GEN_DIR="/home/george/Workspace/Interference/traffic_generator"
-INTERFERENCE_DIR="/home/george/Workspace/Interference/interference_injection"
-RESULTS_DIR="/home/george/logs/traffic_generator"
+TRAFFIC_GEN_DIR="/home/george/Workspace/Interference/Evaluation/traffic_generator"    # Path to traffic generator
+INTERFERENCE_DIR="/home/george/Workspace/Interference/Interference_Injection"         # Path to interference injection scripts
+RESULTS_DIR="/home/george/logs/traffic_generator"                                     # Where to store results / Path to host machine
 TASKSET_CORE="6"
 DURATION_MINUTES="30"
 DURATION_SECONDS=$((DURATION_MINUTES * 60))
