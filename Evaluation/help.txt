@@ -1,0 +1,25 @@
+
+################################################################################
+################################################################################
+## RUN FINAL EXPERIMENT 
+
+./run_experiment.sh <output_filename.csv> <traffic_type> <interference_type>
+
+
+ARGUMENTS:
+    <output_filename.csv>       Output file where metrics will be saved inside:
+                                /home/george/logs/traffic_generator
+
+    <traffic_type>              Select the RPS profile to apply minute-by-minute
+        - low       → gradually increases from 800 to 2000 RPS
+        - wide      → gradually increases from 500 to 4000 RPS
+
+    <interference_type>         Select the interference schedule
+        - light     → injects constant low interference pods
+        - ramp_up   → ramps interference up during the test
+        - balanced  → injects a balanced and shifting mix of interferences
+
+INCLUDES:
+    - Traffic Generator runs:  generator.py with your selected RPS pattern
+    - Interference Injector:   inject_ibench_pods.py with selected interference
+    - Both run concurrently, and logs are stored in the same folder

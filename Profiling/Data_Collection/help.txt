@@ -1,0 +1,101 @@
+============================================================================================================================
+============================================================================================================================
+============================================================================================================================
+============================================================================================================================
+HOW TO RUN ALL NGINX TESTS
+
+1. Make sure you have the latest version of the repository:
+   git pull origin main
+
+2. Navigate to the Profiling/Data_Collection directory:
+   cd Profiling/Data_Collection
+
+3. Ensure you have installed Intel PCM on your system
+
+4. Change the parameters in the coordinator_testing.py script as needed (e.g., REPLICAS_TO_TEST, RPS_STEPS, INTERFERENCE_SCENARIOS)
+
+5. Change the names of the destionatio folders in the script if needed
+
+6. Run the coordinator_testing.py script with Python 3:
+   python3 coordinator_testing.py
+
+
+
+============================================================================================================================
+============================================================================================================================
+============================================================================================================================
+============================================================================================================================
+ALL NGINX TESTS THAT HAVE BEEN RUN
+
+===============================
+MEMENTO
+V01:
+REPLICAS_TO_TEST = [1]
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  
+All 14 scenarios
+
+V02, V03, V04: Same but with replicas 2, 3, and 4 respectively
+
+V01_mix_scenarios:
+Replicas = 1
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000] 
+mixed scenarios from 51 to 58
+
+V02_3_MixedScenarios
+Same but with replicas 2 and 3 respectively + We also want Memento_V02_3_MixedScenarios_Remains
+
+
+===============================
+SHUTTER ISLAND
+V01: 
+REPLICAS_TO_TEST = [1,2,3,4]  # Number of replicas to test
+RPS_STEPS = [100, 500, 1000, 1500]  # RPS steps to test
+All 14 scenarios but everything deployed in the 1st node (nginx_label=false)
+
+
+===============================
+GREEN BOOK
+6 more mixed scenarios
+V01: 
+REPLICAS_TO_TEST = [1, 2]  # Number of replicas to test
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+
+
+===============================
+# The Substance
+V01: 
+REPLICAS_SCENARIOS_TO_TEST = [
+    # Balanced Scenarios
+    {"node1": 1, "node2": 1, "name": "balanced_1"},
+    {"node1": 2, "node2": 2, "name": "balanced_2"},
+    {"node1": 3, "node2": 3, "name": "balanced_3"}, 
+    # Weighted Scenarios
+    {"node1": 1, "node2": 2, "name": "weighted_1_2"},
+    {"node1": 2, "node2": 1, "name": "weighted_2_1"},
+    {"node1": 3, "node2": 1, "name": "weighted_3_1"},
+    {"node1": 1, "node2": 3, "name": "weighted_1_3"},
+    {"node1": 2, "node2": 3, "name": "weighted_2_3"},
+    {"node1": 3, "node2": 2, "name": "weighted_3_2"},
+]
+RPS_STEPS = [1500]  # RPS steps to test
+# INTERFERENCE_SCENARIOS = range(1, 19)  #1 to 5 pods to all nodes 
+
+
+================================
+# Fight Club
+V01:
+REPLICAS_TO_TEST = [1]
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+All Basic 14 scenarios
+
+V02: same for 2 replicas
+
+
+================================
+# Rear Window
+V01:
+REPLICAS_TO_TEST = [1, 2]
+RPS_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000]  # RPS steps to test
+8 Mix Scenarios
+
+V02: same for replicas 3, and 4

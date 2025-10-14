@@ -58,7 +58,7 @@ Running multiple containerized applications on shared nodes can trigger **resour
 
 ## 2. System Architecture
 <p align="center">
-  <img src="docs/Marla_architecture.png" alt="MARLA Architecture" width="700">
+  <img src="Docs/Marla_architecture.png" alt="MARLA Architecture" width="700">
 </p>
 
 The architecture of MARLA follows a **modular, closed-loop control design** integrated into a two-node Kubernetes cluster.  
@@ -124,7 +124,7 @@ Four stress types are used:
 ---
 ## 4. Phase A Experiments - Interfernce understanding and Dataset Generation
 <p align="center">
-  <img src="docs/PhaseAExperiment_arch_v1.png" alt="Phase A Experiment Architecture" width="700">
+  <img src="Docs/PhaseAExperiment_arch_v1.png" alt="Phase A Experiment Architecture" width="700">
 </p>
 ### 4.1 Objective
 The first phase focuses on building a comprehensive dataset that captures how **hardware-level interference** and **traffic load** affect the performance of a latency-critical workload.  
@@ -223,7 +223,7 @@ This allows MARLA to evaluate multiple replica placement options before applying
 ---
 ## 6. Phase B Experiments - Marla Evaluation
 <p align="center">
-  <img src="docs/PhaseBExperiment_v3.png" alt="Phase B Experiment Architecture" width="700">
+  <img src="Docs/PhaseBExperiment_v3.png" alt="Phase B Experiment Architecture" width="700">
 </p>
 
 ### 6.1 Objective
@@ -282,17 +282,39 @@ MARLA’s performance was compared against:
 ## 7. Repository Structure
 ```bash
 .
-├── marla_controller/
-│   ├── controller.py
-│   ├── predictor_api/
-│   ├── metrics_collector/
-│   ├── arima_forecaster/
-│   └── ...
-├── experiments/
-├── data/
-├── notebooks/
-├── docs/
+├── Docs/                                # Figures, diagrams, and supplementary documentation
+│
+├── Interference_Injection/              # iBench interference workloads and orchestration scripts
+│   ├── ibench_templates_phaseA/         # Templates for Phase A interference profiles
+│   ├── ibench_templates_phaseB/         # Templates for Phase B mixed interference
+│   ├── interference_schedules/          # Predefined interference schedules
+│   └── inject_ibench_pods.py            # Script to deploy interference pods dynamically
+│
+├── Nginx_Workload/                      # Target latency-critical workload
+│
+├── Profiling/                           # Phase A – Dataset generation and model training
+│   ├── Data_Collection/                 # PCM-based metric collection and test orchestration
+│   ├── Raw_Data/                        # Collected experiment results (interference runs)
+│   ├── Data_Analysis_Model_Training/    # Feature analysis, statistical processing, XGBoost training
+│   └── LookUp_Table/                    # Lookup tables for replica placement (phase output)
+│
+├── Marla_Controller/                    # MARLA runtime system (Phase B controller)
+│   ├── Metrics_API/                     # PCM metrics collector and REST API
+│   ├── Predictor_API/                   # ML slowdown predictor API (XGBoost model)
+│   ├── controller.py                    # Main control loop (forecast → predict → decide → act)
+│   ├── placement_logic.py               # Replica placement algorithms (brute force / DP)
+│   ├── arima.py                         # ARIMA-based RPS forecasting
+│   └── config.py                        # Controller configuration parameters
+│
+├── Evaluation/                          # Phase B – MARLA vs Naive comparison experiments
+│   ├── marla_testing/                   # Tests running MARLA under dynamic interference
+│   ├── naive_testing/                   # Baseline tests using Kubernetes default scheduling
+│   ├── Results/                         # Experiment outputs (latency, SLO, p99 comparison)
+│   ├── traffic_generator/               # Vegeta traffic load scripts
+│   └── run_experiment.sh                # Unified script to reproduce all evaluation runs
+│
 └── README.md
+
 ```
 
 ---
@@ -411,7 +433,7 @@ All experiment logs and PCM metrics are stored locally for subsequent analysis a
 
 ## 9. Results & Key Findings
 <p align="center">
-  <img src="docs/results_table.png" alt="Results of Experimental Evaluation" width="700">
+  <img src="Docs/results_table.png" alt="Results of Experimental Evaluation" width="700">
 </p>
 
 Across multiple interference scenarios, MARLA consistently achieved:

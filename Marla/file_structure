@@ -1,7 +1,0 @@
-marla/
-├── controller.py                # Main control loop, runs every 1 minute
-├── placement_logic.py           # Select best replica split using scoring logic
-├── arima.py                     # ARIMA model to forecast next-minute RPS
-├── k8s_interface.py             # Kubernetes interaction (scale, patch affinity)
-├── predictor_client.py          # Requests slowdown predictions from predictor API
-├── config.py                    # Static settings (paths, thresholds, labels)
