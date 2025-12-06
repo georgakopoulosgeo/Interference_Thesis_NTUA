@@ -1,4 +1,4 @@
-# Interference-Aware Dynamic Replica Management for LC-Workloads in Kubernetes
+# Interference Aware Resource Management and Dynamic Placement with Machine Learning in Kubernetes
 
 > In this Proof-of-concept thesis we propose a closed-loop runtime controller that uses a Machine Learning Model to predict the Normalized Perfomance of LC-workloads from hardware Interference and distributes them to nodes, in order to maximaze the performance.
 
@@ -212,7 +212,7 @@ Model validation was performed using 5-fold cross-validation to ensure robustnes
 
 Performance metrics:
 - **Coefficient of determination:** \( R^2 = 0.90 \)  
-- **Cross-validated Mean Absolute Error:** \( \text{CV-MAE} = 0.117 \)
+- **Cross-validated Mean Absolute Error:** \( CV-MAE = 0.117 \)
 - **Mean Absolute Error:** \( MAE: 0.0742 \)
 
 ### 5.4 Output
